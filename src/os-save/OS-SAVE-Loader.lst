@@ -1,0 +1,166 @@
+ AS V1.42 Beta [Bld 55] - source file OS-SAVE-Loader.asm - page 1 - 1/2/2009 19:15:54
+
+
+       1/       0 :                     ; File Name   :	C:\user\hobby\rechner\Z9001\dev\os-save\OS-SAVE-Loader.KCC
+       2/       0 :                     ; Format      :	Binary file
+       3/       0 :                     ; Base Address:	0000h Range: 0080h - 0100h Loaded length: 0080h
+       4/       0 :                     
+       5/       0 :                     
+       6/       0 :                     		cpu	Z80
+       7/       0 :                     
+       8/       0 :                     ;------------------------------------------------------------------------------
+       9/       0 :                     ; OS-SAVE 
+      10/       0 :                     ; ein Block (FF); dieser wird nach 80h geladen
+      11/       0 :                     ; Dieser Code lädt das Hauptprogramm blockweise
+      12/       0 :                     ; führt eine Adresskorrektur aus und verschiebt den geladenen Block ans RAM-Ende
+      13/       0 :                     ;------------------------------------------------------------------------------
+      14/       0 :                     
+      15/      80 :                     		org 	80h
+      16/      80 :                     
+      17/      80 :                     ; Block 00 lesen; dieser enthält am Anfang 4 relevante Datenworte
+      18/      80 :                     ; das Hauptprogramm wird vermutlich mit einem speziellen Programm 
+      19/      80 :                     ; assembliert bzw. weiterverarbeitet. Es muß ein 00-Block mit vier Adressen 
+      20/      80 :                     ; generiert werden, das eigentliche zu verschiebende Programm muß aller 70h 
+      21/      80 :                     ; Byte mit 10h Byte Relocation-Informationen versehen werden.
+      22/      80 :                     
+      23/      80 :                     
+      24/      80 : AF                  loader:		xor	a		; A = 0
+      25/      81 : 32 6C 00            		ld	(6Ch), a	; LBLNR 0
+      26/      84 : 21 00 01            		ld	hl, 100h	; Adresse 100h
+      27/      87 : 22 1B 00            		ld	(1Bh), hl	; DMA
+      28/      8A : CD 34 F4            		call	0F434h		; READ,	BLOCK 00 LESEN SEQUENTIELL
+      29/      8D : D8                  		ret	c
+      30/      8E :                     ;
+      31/      8E : 2A 02 01            		ld	hl, (102h)	; Endeadresse (incl.)	= 1340h
+      32/      91 : ED 5B 04 01         		ld	de, (104h)	; 			= 0FC0h
+      33/      95 : ED 52               		sbc	hl, de					; HL = 380h
+      34/      97 : EB                  		ex	de, hl					; DE = 380h
+      35/      98 : 2A 36 00            		ld	hl, (36h)	; EOR			; z.B. 3FFFh
+      36/      9B : ED 52               		sbc	hl, de					; HL = 3C7F
+      37/      9D : 2E 00               		ld	l, 0					; HL = 3C00
+      38/      9F : ED 5B 06 01         		ld	de, (106h)	; 			= 0077h
+      39/      A3 : ED 52               		sbc	hl, de					; HL = 3B89
+      40/      A5 : 22 75 00            		ld	(75h), hl	; Zieladresse = Programmstart
+      41/      A8 : 22 77 00            		ld	(77h), hl	; Zieladresse f. Blöcke
+      42/      AB : ED 5B 00 01         		ld	de, (100h)	; Anfangsadresse	= 0F89h
+      43/      AF : ED 52               		sbc	hl, de		; HL = Adressoffset 	; HL = 2C00
+      44/      B1 : 22 40 00            		ld	(40h), hl	; PARBU, Hilfszelle zur Parameterpufferung
+      45/      B4 :                     
+      46/      B4 :                     ;------------------------------------------------------------------------------
+      47/      B4 :                     ; Blöcke lesen
+      48/      B4 :                     ;
+      49/      B4 :                     ; die Blöcke 01..FF enthalten das Programm.
+      50/      B4 :                     ; Die letzten 16 Byte eines jeden Blocks enthalten die Adress-Korrektur-Angaben.
+      51/      B4 :                     
+      52/      B4 :                     ; Beispiel
+      53/      B4 :                     ; Block 01                                                                
+      54/      B4 :                     ; 0180: 21 FF*0F 22 36 00 21 23  00 22 82 00 CD EA F1 CD  
+      55/      B4 :                     ; 0190: 8E F2 20 2F 21 03*10 B7  ED 52 28 27 D5 1B 1B 1B  
+      56/      B4 :                     ; 01A0: E1 D5 36 20 11 09 00 19  11 18*10 7E B7 28 07 01  
+      57/      B4 :                     ; 01B0: 0C 00 ED B0 18 F5 12 D1  ED 52 E5 C1 D5 E1 13 36  
+      58/      B4 :                     ; 01C0: 00 ED B0 11 E4*0F CD 19* 13 2A 36 00 23 7C CD F6* 
+      59/      B4 :                     ; 01D0: 12 7D CD F6*12 11 FA*0F  C3 19*13 0A 0D 14 01 45  
+      60/      B4 :                     ; 01E0: 58 54 45 4E 44 45 44 20  4F 53 20 41 54 20 14 04  
+ AS V1.42 Beta [Bld 55] - source file OS-SAVE-Loader.asm - page 2 - 1/2/2009 19:15:54
+
+
+      61/      B4 :                     ; 01F0: 02 00 20 00 00 02 00 00  90 80 48 02 00 00 00 00 
+      62/      B4 :                     ;                                      |  |
+      63/      B4 :                     ;                                      |  -- Adr. 1D9 
+      64/      B4 :                     ;                                      ----- Adr. 1D6, 1D3
+      65/      B4 :                     ; usw.
+      66/      B4 :                     ;------------------------------------------------------------------------------
+      67/      B4 :                     
+      68/      B4 : 21 00 01            loader1:	ld	hl, 100h
+      69/      B7 : 22 1B 00            		ld	(1Bh), hl	; DMA
+      70/      BA : CD 34 F4            		call	0F434h		; READ,	BLOCK LESEN SEQUENTIELL
+      71/      BD : D8                  		ret	c		; bei Lesefehler
+      72/      BE : F5                  		push	af		; A=1 bei EOF merken
+      73/      BF : 06 0E               		ld	b, 0Eh		; 15 x 8 Byte
+      74/      C1 : D9                  		exx
+      75/      C2 : 21 00 01            		ld	hl, 100h	; Anfangsadresse Daten
+      76/      C5 : 11 70 01            		ld	de, 170h	; Anfangsadresse Korrektur
+      77/      C8 : D9                  		exx
+      78/      C9 : D9                  loader2:	exx
+      79/      CA : 06 08               		ld	b, 8		; für je 8 Byte
+      80/      CC : 1A                  		ld	a, (de)		; Korrekturbyte lesen
+      81/      CD : 0F                  loader3:	rrca
+      82/      CE : 30 11               		jr	nc, loader4
+      83/      D0 :                     ; Adress-Korrektur
+      84/      D0 : D5                  		push	de
+      85/      D1 : 5E                  		ld	e, (hl)		; Lo-Byte lesen
+      86/      D2 : 23                  		inc	hl
+      87/      D3 : E5                  		push	hl
+      88/      D4 : 66                  		ld	h, (hl)		; Hi-Byte lesen
+      89/      D5 : 6B                  		ld	l, e
+      90/      D6 : ED 5B 40 00         		ld	de, (40h)	; Adressoffset
+      91/      DA : 19                  		add	hl, de		; addieren
+      92/      DB : EB                  		ex	de, hl
+      93/      DC : E1                  		pop	hl
+      94/      DD : 72                  		ld	(hl), d		; korrigierte Adresse
+      95/      DE : 2B                  		dec	hl
+      96/      DF : 73                  		ld	(hl), e		; zurückschreiben
+      97/      E0 : D1                  		pop	de
+      98/      E1 : 23                  loader4:	inc	hl
+      99/      E2 : 10 E9               		djnz	loader3		; für alle 8 Byte
+     100/      E4 :                     ;
+     101/      E4 : 13                  		inc	de
+     102/      E5 : D9                  		exx
+     103/      E6 : 10 E1               		djnz	loader2		; für alle 8-Byte-Blöcke
+     104/      E8 :                     ; korrigierten Block an Zieladresse schreiben
+     105/      E8 : 21 00 01            		ld	hl, 100h
+     106/      EB : ED 5B 77 00         		ld	de, (77h)	; Zieladresse
+     107/      EF : 01 70 00            		ld	bc, 70h		; 15x8 Byte verschieben
+     108/      F2 : ED B0               		ldir
+     109/      F4 : ED 53 77 00         		ld	(77h), de	; Zieladresse erhöhen
+     110/      F8 :                     ;
+     111/      F8 : F1                  		pop	af		; letzter Block
+     112/      F9 : B7                  		or	a
+     113/      FA : 28 B8               		jr	z, loader1	; nein -> weiterlesen
+     114/      FC :                     ; Starten
+     115/      FC : 2A 75 00            		ld	hl, (75h)
+     116/      FF : E9                  		jp	(hl)
+     117/     100 :                     
+     118/     100 :                     		end
+ AS V1.42 Beta [Bld 55] - source file OS-SAVE-Loader.asm - page 3 - 1/2/2009 19:15:54
+
+
+  symbol table (* = unused):
+  ------------------------
+
+*ARCHITECTURE :  i386-unknown-win32 - | *BIGENDIAN :                      0 - |
+*BRANCHEXT :                      0 - | *CASESENSITIVE :                  0 - |
+*CONSTPI :        3.141592653589793 - | *DATE :                    1/2/2009 - |
+*FALSE :                          0 - | *FULLPMMU :                       1 - |
+*HAS64 :                          1 - | *HASDSP :                         0 - |
+*HASFPU :                         0 - | *HASPMMU :                        0 - |
+*INEXTMODE :                      0 - | *INLWORDMODE :                    0 - |
+*INMAXMODE :                      0 - | *INSRCMODE :                      0 - |
+*INSUPMODE :                      0 - | *LISTON :                         1 - |
+*LOADER :                        80 C |  LOADER1 :                       B4 C |
+ LOADER2 :                       C9 C |  LOADER3 :                       CD C |
+ LOADER4 :                       E1 C | *MACEXP :                         1 - |
+*MOMCPU :                        80 - | *MOMCPUNAME :                   Z80 - |
+*NESTMAX :                      100 - | *PACKING :                        0 - |
+*PADDING :                        1 - | *RELAXED :                        0 - |
+*TIME :                    19:15:54 - | *TRUE :                           1 - |
+*VERSION :                     142F - |
+
+     33 symbols
+     29 unused symbols
+
+ AS V1.42 Beta [Bld 55] - source file OS-SAVE-Loader.asm - page 4 - 1/2/2009 19:15:54
+
+
+  codepages:
+  ----------
+
+STANDARD (0 changed characters)
+
+
+0.04 seconds assembly time
+
+    134 lines source file
+      2 passes
+      0 errors
+      0 warnings

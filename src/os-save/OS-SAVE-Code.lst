@@ -1,0 +1,699 @@
+ AS V1.42 Beta [Bld 55] - source file OS-SAVE-Code.asm - page 1 - 1/2/2009 19:25:28
+
+
+       1/       0 :                     ; File Name   :	C:\user\hobby\rechner\Z9001\dev\os-save\OS-SAVE-Tabelle.KCC
+       2/       0 :                     ; Format      :	Binary file
+       3/       0 :                     ; Base Address:	0000h Range: 0F89h - 1379h Loaded length: 03F0h
+       4/       0 :                     
+       5/       0 :                     ;------------------------------------------------------------------------------
+       6/       0 :                     ; OS-SAVE 
+       7/       0 :                     ; Dieser Code wird an die Zieladresse verschoben (incl. Adresskorrektur)
+       8/       0 :                     ;------------------------------------------------------------------------------
+       9/       0 :                     
+      10/       0 :                     		cpu	z80
+      11/       0 :                     
+      12/       0 :                     ; Systemzellen
+      13/       0 :                     
+      14/       0 :                     ; DMA:		
+      15/       0 :                     ; KEYBU:	
+      16/       0 :                     ; EOR:		
+      17/       0 :                     ; FTYP:		
+      18/       0 :                     ; LBLNR:	
+      19/       0 :                     ; AADR:		
+      20/       0 :                     ; EADR:		
+      21/       0 :                     ; SADR:		
+      22/       0 :                     
+      23/       0 : =1BH                DMA		equ	001Bh		; Zeiger auf Puffer für Kassetten-E/A
+      24/       0 : =25H                KEYBU		equ	0025h		; Tastaturpuffer
+      25/       0 : =36H                EOR		equ	0036h		; Zeiger auf letzte für Anwender freie Adresse
+      26/       0 : =40H                PARBU		equ	0040h		; Hilfszelle zur Paramterpufferung
+      27/       0 : =5CH                FCB		equ	005Ch		; Dateikontrollblock
+      28/       0 : =5CH                FNAME		equ	005Ch		; Dateiname 8 Zeichen
+      29/       0 : =64H                FTYP		equ	0064h		; Dateityp 3 Zeichen
+      30/       0 : =6CH                LBLNR		equ	006Ch		; gesuchte Blocknummer bei Lesen
+      31/       0 : =6DH                AADR		equ	006Dh		; Dateianfangsadresse
+      32/       0 : =6FH                EADR		equ	006Fh		; Dateiendeadresse
+      33/       0 : =71H                SADR		equ	0071h		; Startadresse, wenn Datei ein Maschinencodeprogramm ist
+      34/       0 : =73H                SBY		equ	0073h		; Schutzbyte. 0 nicht geschützt, 1 geschützt
+      35/       0 : =80H                CONBU		equ	0080h		; CCP-Eingabepuffer und Standardpuffer für Kassetten-E/A
+      36/       0 : =100H               INTLN		equ	0100h		; interner Zeichenkettenpuffer
+      37/       0 :                     
+      38/       0 :                     
+      39/     F89 :                     		org	0F89h
+      40/     F89 :                     
+      41/     F89 : 21 FF 0F            start:		ld	hl, 0FFFh
+      42/     F8C : 22 36 00            		ld	(EOR), hl
+      43/     F8F : 21 23 00            		ld	hl, 23h	; '#'
+      44/     F92 : 22 82 00            		ld	(CONBU+2), hl
+      45/     F95 : CD EA F1            		call	0F1EAh
+      46/     F98 : CD 8E F2            		call	0F28Eh
+      47/     F9B : 20 2F               		jr	nz, start3
+      48/     F9D : 21 03 10            		ld	hl, aCold	; "#	   "
+      49/     FA0 : B7                  		or	a
+      50/     FA1 : ED 52               		sbc	hl, de
+      51/     FA3 : 28 27               		jr	z, start3
+      52/     FA5 : D5                  		push	de
+      53/     FA6 : 1B                  		dec	de
+      54/     FA7 : 1B                  		dec	de
+      55/     FA8 : 1B                  		dec	de
+      56/     FA9 : E1                  		pop	hl
+      57/     FAA : D5                  		push	de
+      58/     FAB : 36 20               		ld	(hl), 20h ; ' '
+      59/     FAD : 11 09 00            		ld	de, 9
+      60/     FB0 : 19                  		add	hl, de
+ AS V1.42 Beta [Bld 55] - source file OS-SAVE-Code.asm - page 2 - 1/2/2009 19:25:28
+
+
+      61/     FB1 : 11 18 10            		ld	de, unk_1018
+      62/     FB4 : 7E                  start1:		ld	a, (hl)
+      63/     FB5 : B7                  		or	a
+      64/     FB6 : 28 07               		jr	z, start2
+      65/     FB8 : 01 0C 00            		ld	bc, 0Ch
+      66/     FBB : ED B0               		ldir
+      67/     FBD : 18 F5               		jr	start1
+      68/     FBF :                     ;
+      69/     FBF : 12                  start2:		ld	(de), a
+      70/     FC0 : D1                  		pop	de
+      71/     FC1 : ED 52               		sbc	hl, de
+      72/     FC3 : E5                  		push	hl
+      73/     FC4 : C1                  		pop	bc
+      74/     FC5 : D5                  		push	de
+      75/     FC6 : E1                  		pop	hl
+      76/     FC7 : 13                  		inc	de
+      77/     FC8 : 36 00               		ld	(hl), 0
+      78/     FCA : ED B0               		ldir
+      79/     FCC :                     ;
+      80/     FCC : 11 E4 0F            start3:		ld	de, aExtendedOsAt ; "EXTENDED OS AT "
+      81/     FCF : CD 19 13            		call	upprs
+      82/     FD2 : 2A 36 00            		ld	hl, (EOR)
+      83/     FD5 : 23                  		inc	hl
+      84/     FD6 : 7C                  		ld	a, h
+      85/     FD7 : CD F6 12            		call	aanz
+      86/     FDA : 7D                  		ld	a, l
+      87/     FDB : CD F6 12            		call	aanz
+      88/     FDE : 11 FA 0F            		ld	de, aH		; "H"
+      89/     FE1 : C3 19 13            		jp	upprs
+      90/     FE4 :                     
+      91/     FE4 : 0A                  aExtendedOsAt:	db 0Ah
+      92/     FE5 : 0D 14 01 45 58 54   		db 0Dh,14h,1,"EXTENDED OS AT ",14h,4,0
+                    45 4E 44 45 44 20 
+                    4F 53 20 41 54 20 
+                    14 04 00 
+      93/     FFA : 48 14 02 0A         aH:		db 'H',14h,2,0Ah
+      94/     FFE : 0D 00               		db 0Dh,0
+      95/    1000 :                     
+      96/    1000 :                     		; org 1000h
+      97/    1000 :                     
+      98/    1000 : C3 99 10            		jp	cold
+      99/    1003 : 23 20 20 20 20 20   aCold:		db "#       ",0
+                    20 20 00 
+     100/    100C : C3 AD 10            		jp	save
+     101/    100F : 53 41 56 45 20 20   		db "SAVE    ",0
+                    20 20 00 
+     102/    1018 : 00                  unk_1018:	db    0
+     103/    1019 : 00                  		db    0
+     104/    101A :                     ; Platz für weitere Kommandos, Ende der Liste mit 00h 00h
+     105/    101A : FF                  		db 0FFh
+     106/    101B : 00                  		db    0
+     107/    101C : FF                  		db 0FFh
+     108/    101D : 00                  		db    0
+     109/    101E : FF                  		db 0FFh
+     110/    101F : 00                  		db    0
+     111/    1020 : FF                  		db 0FFh
+     112/    1021 : 00                  		db    0
+     113/    1022 : FF                  		db 0FFh
+     114/    1023 : 00                  		db    0
+     115/    1024 : FF                  		db 0FFh
+ AS V1.42 Beta [Bld 55] - source file OS-SAVE-Code.asm - page 3 - 1/2/2009 19:25:28
+
+
+     116/    1025 : 00                  		db    0
+     117/    1026 : FF                  		db 0FFh
+     118/    1027 : 00                  		db    0
+     119/    1028 : FF                  		db 0FFh
+     120/    1029 : 00                  		db    0
+     121/    102A : FF                  		db 0FFh
+     122/    102B : 00                  		db    0
+     123/    102C : FF                  		db 0FFh
+     124/    102D : 00                  		db    0
+     125/    102E : FF                  		db 0FFh
+     126/    102F : 00                  		db    0
+     127/    1030 : FF                  		db 0FFh
+     128/    1031 : 00                  		db    0
+     129/    1032 : FF                  		db 0FFh
+     130/    1033 : 00                  		db    0
+     131/    1034 : FF                  		db 0FFh
+     132/    1035 : 00                  		db    0
+     133/    1036 : FF                  		db 0FFh
+     134/    1037 : 00                  		db    0
+     135/    1038 : FF                  		db 0FFh
+     136/    1039 : 00                  		db    0
+     137/    103A : FF                  		db 0FFh
+     138/    103B : 00                  		db    0
+     139/    103C : FF                  		db 0FFh
+     140/    103D : 00                  		db    0
+     141/    103E : FF                  		db 0FFh
+     142/    103F : 00                  		db    0
+     143/    1040 : FF                  		db 0FFh
+     144/    1041 : 00                  		db    0
+     145/    1042 : FF                  		db 0FFh
+     146/    1043 : 00                  		db    0
+     147/    1044 : FF                  		db 0FFh
+     148/    1045 : 00                  		db    0
+     149/    1046 : FF                  		db 0FFh
+     150/    1047 : 00                  		db    0
+     151/    1048 : FF                  		db 0FFh
+     152/    1049 : 00                  		db    0
+     153/    104A : FF                  		db 0FFh
+     154/    104B : 00                  		db    0
+     155/    104C : FF                  		db 0FFh
+     156/    104D : 00                  		db    0
+     157/    104E : FF                  		db 0FFh
+     158/    104F : 00                  		db    0
+     159/    1050 : FF                  		db 0FFh
+     160/    1051 : 00                  		db    0
+     161/    1052 : FF                  		db 0FFh
+     162/    1053 : 00                  		db    0
+     163/    1054 : FF                  		db 0FFh
+     164/    1055 : 00                  		db    0
+     165/    1056 : FF                  		db 0FFh
+     166/    1057 : 00                  		db    0
+     167/    1058 : FF                  		db 0FFh
+     168/    1059 : 00                  		db    0
+     169/    105A : FF                  		db 0FFh
+     170/    105B : 00                  		db    0
+     171/    105C : FF                  		db 0FFh
+     172/    105D : 00                  		db    0
+     173/    105E : FF                  		db 0FFh
+     174/    105F : 00                  		db    0
+     175/    1060 : FF                  		db 0FFh
+ AS V1.42 Beta [Bld 55] - source file OS-SAVE-Code.asm - page 4 - 1/2/2009 19:25:28
+
+
+     176/    1061 : 00                  		db    0
+     177/    1062 : FF                  		db 0FFh
+     178/    1063 : 00                  		db    0
+     179/    1064 : FF                  		db 0FFh
+     180/    1065 : 00                  		db    0
+     181/    1066 : FF                  		db 0FFh
+     182/    1067 : 00                  		db    0
+     183/    1068 : FF                  		db 0FFh
+     184/    1069 : 00                  		db    0
+     185/    106A : FF                  		db 0FFh
+     186/    106B : 00                  		db    0
+     187/    106C : FF                  		db 0FFh
+     188/    106D : 00                  		db    0
+     189/    106E : FF                  		db 0FFh
+     190/    106F : 00                  		db    0
+     191/    1070 : FF                  		db 0FFh
+     192/    1071 : 00                  		db    0
+     193/    1072 : FF                  		db 0FFh
+     194/    1073 : 00                  		db    0
+     195/    1074 : FF                  		db 0FFh
+     196/    1075 : 00                  		db    0
+     197/    1076 : FF                  		db 0FFh
+     198/    1077 : 00                  		db    0
+     199/    1078 : FF                  		db 0FFh
+     200/    1079 : 00                  		db    0
+     201/    107A : FF                  		db 0FFh
+     202/    107B : 00                  		db    0
+     203/    107C : FF                  		db 0FFh
+     204/    107D : 00                  		db    0
+     205/    107E : FF                  		db 0FFh
+     206/    107F : 00                  		db    0
+     207/    1080 : FF                  		db 0FFh
+     208/    1081 : 22                  		db  22h	; "
+     209/    1082 : FF                  		db 0FFh
+     210/    1083 : 00                  		db    0
+     211/    1084 : FF                  		db 0FFh
+     212/    1085 : 00                  		db    0
+     213/    1086 : FF                  		db 0FFh
+     214/    1087 : 00                  		db    0
+     215/    1088 : FF                  		db 0FFh
+     216/    1089 : 00                  		db    0
+     217/    108A : FF                  		db 0FFh
+     218/    108B : 00                  		db    0
+     219/    108C : FF                  		db 0FFh
+     220/    108D : 00                  		db    0
+     221/    108E : FF                  		db 0FFh
+     222/    108F : 00                  		db    0
+     223/    1090 : FF                  		db 0FFh
+     224/    1091 : 00                  		db    0
+     225/    1092 : FF                  		db 0FFh
+     226/    1093 : 00                  		db    0
+     227/    1094 : FF                  		db 0FFh
+     228/    1095 : 00                  		db    0
+     229/    1096 : FF                  		db 0FFh
+     230/    1097 : 00                  		db    0
+     231/    1098 : FF                  		db 0FFh
+     232/    1099 :                     
+     233/    1099 :                     ;------------------------------------------------------------------------------
+     234/    1099 :                     ; 
+     235/    1099 :                     ;------------------------------------------------------------------------------
+ AS V1.42 Beta [Bld 55] - source file OS-SAVE-Code.asm - page 5 - 1/2/2009 19:25:28
+
+
+     236/    1099 :                     
+     237/    1099 : 11 A2 10            cold:		ld	de, aEos	; "EOS"
+     238/    109C : CD 19 13            		call	upprs
+     239/    109F : C3 89 F0            		jp	0F089h
+     240/    10A2 :                     
+     241/    10A2 : 0B 14 01 45 4F 53   aEos:		db 0Bh,14h,1,"EOS",14h,2,0Ah
+                    14 02 0A 
+     242/    10AB : 0D 00               		db 0Dh,0
+     243/    10AD :                     
+     244/    10AD :                     ;------------------------------------------------------------------------------
+     245/    10AD :                     ; SAVE filename[.filetyp] aadr eadr [sadr]
+     246/    10AD :                     ;------------------------------------------------------------------------------
+     247/    10AD :                     
+     248/    10AD : 08                  save:		ex	af, af'
+     249/    10AE : 21 E6 F5            		ld	hl, 0F5E6h
+     250/    10B1 : E5                  		push	hl
+     251/    10B2 : D8                  		ret	c
+     252/    10B3 :                     ; Einlesen Name
+     253/    10B3 : CD AD 12            		call	eing
+     254/    10B6 : C8                  		ret	z
+     255/    10B7 : 08                  		ex	af, af'
+     256/    10B8 : D8                  		ret	c
+     257/    10B9 : 3A 00 01            		ld	a, (100h)
+     258/    10BC : B7                  		or	a
+     259/    10BD : C8                  		ret	z
+     260/    10BE : FE 09               		cp	9
+     261/    10C0 : D0                  		ret	nc
+     262/    10C1 : 11 5C 00            		ld	de, FNAME
+     263/    10C4 : 3E 08               		ld	a, 8
+     264/    10C6 : CD 88 F5            		call	0F588h
+     265/    10C9 :                     ; Einlesen Dateityp
+     266/    10C9 : 79                  		ld	a, c
+     267/    10CA : FE 2E               		cp	'.'
+     268/    10CC : 28 0E               		jr	z, sa1
+     269/    10CE : 21 43 4F            		ld	hl, 4F43h	; "COM"
+     270/    10D1 : 22 64 00            		ld	(FTYP),	hl
+     271/    10D4 : 3E 4D               		ld	a, 'M'
+     272/    10D6 : 32 66 00            		ld	(FTYP+2), a
+     273/    10D9 : B7                  		or	a
+     274/    10DA : 18 10               		jr	sa2
+     275/    10DC :                     
+     276/    10DC : CD AD 12            sa1:		call	eing
+     277/    10DF : C8                  		ret	z
+     278/    10E0 : 08                  		ex	af, af'
+     279/    10E1 : D8                  		ret	c
+     280/    10E2 : 3E 03               		ld	a, 3
+     281/    10E4 : B8                  		cp	b
+     282/    10E5 : D8                  		ret	c
+     283/    10E6 : 11 64 00            		ld	de, FTYP
+     284/    10E9 : CD 88 F5            		call	0F588h
+     285/    10EC :                     ; Einlesen Anfangsadresse
+     286/    10EC : CD AD 12            sa2:		call	eing
+     287/    10EF : C0                  		ret	nz
+     288/    10F0 : D8                  		ret	c
+     289/    10F1 : 08                  		ex	af, af'
+     290/    10F2 : D8                  		ret	c
+     291/    10F3 : ED 53 6D 00         		ld	(AADR),	de
+     292/    10F7 :                     ; Einlesen Endadresse
+     293/    10F7 : CD AD 12            		call	eing
+     294/    10FA : C0                  		ret	nz
+ AS V1.42 Beta [Bld 55] - source file OS-SAVE-Code.asm - page 6 - 1/2/2009 19:25:28
+
+
+     295/    10FB : D8                  		ret	c
+     296/    10FC : ED 53 6F 00         		ld	(EADR),	de
+     297/    1100 : 08                  		ex	af, af'
+     298/    1101 : 30 06               		jr	nc, sa3
+     299/    1103 :                     ; Einlesen Startadresse
+     300/    1103 : ED 5B 6D 00         		ld	de, (AADR)
+     301/    1107 : 18 07               		jr	sa4
+     302/    1109 :                     
+     303/    1109 : CD AD 12            sa3:		call	eing
+     304/    110C : C0                  		ret	nz
+     305/    110D : D8                  		ret	c
+     306/    110E : 08                  		ex	af, af'
+     307/    110F : D0                  		ret	nc
+     308/    1110 :                     
+     309/    1110 : ED 53 71 00         sa4:		ld	(SADR),	de
+     310/    1114 : E1                  		pop	hl
+     311/    1115 : 2A 6F 00            		ld	hl, (EADR)
+     312/    1118 : ED 5B 6D 00         		ld	de, (AADR)
+     313/    111C : B7                  		or	a
+     314/    111D : ED 52               		sbc	hl, de
+     315/    111F : DA E2 F5            		jp	c, 0F5E2h
+     316/    1122 :                     ;
+     317/    1122 :                     ; Ausgeben auf Band
+     318/    1122 :                     ;
+     319/    1122 : 21 3C 13            		ld	hl, nokey
+     320/    1125 : E5                  		push	hl
+     321/    1126 : CD 0D 13            		call	upopw
+     322/    1129 : D8                  		ret	c
+     323/    112A : CD 2B 13            		call	saa1
+     324/    112D : DA DF 11            		jp	c, saa2
+     325/    1130 : EB                  		ex	de, hl
+     326/    1131 : 22 1B 00            		ld	(DMA), hl
+     327/    1134 : 2A 1B 00            sav2:		ld	hl, (DMA)
+     328/    1137 : 11 7F 00            		ld	de, 7Fh	; ''
+     329/    113A : 19                  		add	hl, de
+     330/    113B : ED 5B 6F 00         		ld	de, (EADR)
+     331/    113F : ED 52               		sbc	hl, de
+     332/    1141 : 30 0F               		jr	nc, sav1
+     333/    1143 : CD 11 13            		call	upwrs
+     334/    1146 : 32 3A 13            		ld	(puf1),	a
+     335/    1149 : D8                  		ret	c
+     336/    114A : CD 2B 13            		call	saa1
+     337/    114D : DA FD 11            		jp	c, saa3
+     338/    1150 : 18 E2               		jr	sav2
+     339/    1152 :                     ;
+     340/    1152 : CD 15 13            sav1:		call	upclw
+     341/    1155 : D8                  		ret	c
+     342/    1156 : 21 3A 13            		ld	hl, puf1
+     343/    1159 : 34                  		inc	(hl)
+     344/    115A : 11 5E 12            		ld	de, aVerifyYN	; "VERIFY ((Y)/N)?:"
+     345/    115D : CD 19 13            		call	upprs
+     346/    1160 : CD 5C F3            		call	0F35Ch
+     347/    1163 : DA FD 11            		jp	c, saa3
+     348/    1166 : 3A 82 00            		ld	a, (CONBU+2)
+     349/    1169 : FE 4E               		cp	'N'
+     350/    116B : CA 03 12            		jp	z, saa4
+     351/    116E :                     ;
+     352/    116E :                     ; Verify
+     353/    116E :                     ;
+     354/    116E : 11 71 12            		ld	de, aRewind	; "REWIND <--"
+ AS V1.42 Beta [Bld 55] - source file OS-SAVE-Code.asm - page 7 - 1/2/2009 19:25:28
+
+
+     355/    1171 : CD 19 13            		call	upprs
+     356/    1174 : CD 5C F3            		call	0F35Ch
+     357/    1177 : DA FD 11            		jp	c, saa3
+     358/    117A :                     
+     359/    117A : CD 1D 13            sav4:		call	upopr
+     360/    117D : 38 07               		jr	c, sav4a
+     361/    117F : CD 2E 13            		call	saa5
+     362/    1182 : 30 1F               		jr	nc, sav5
+     363/    1184 : 18 77               		jr	saa3
+     364/    1186 :                     
+     365/    1186 : B7                  sav4a:		or	a
+     366/    1187 : 28 74               		jr	z, saa3
+     367/    1189 : CD A6 F5            		call	0F5A6h
+     368/    118C : 38 6F               		jr	c, saa3
+     369/    118E : 18 EA               		jr	sav4
+     370/    1190 :                     
+     371/    1190 : CD 21 13            sav8:		call	upres
+     372/    1193 : 30 07               		jr	nc, sav7
+     373/    1195 : CD A6 F5            		call	0F5A6h
+     374/    1198 : 38 7B               		jr	c, saa6
+     375/    119A : 18 F4               		jr	sav8
+     376/    119C :                     
+     377/    119C : 6F                  sav7:		ld	l, a
+     378/    119D : CD 2E 13            		call	saa5
+     379/    11A0 : 38 73               		jr	c, saa6
+     380/    11A2 : 7D                  		ld	a, l
+     381/    11A3 :                     
+     382/    11A3 : 21 80 00            sav5:		ld	hl, 80h	; '€'
+     383/    11A6 : 22 1B 00            		ld	(DMA), hl
+     384/    11A9 : B7                  		or	a
+     385/    11AA : 28 E4               		jr	z, sav8
+     386/    11AC : 11 1A 12            		ld	de, aSaveComplete ; "SAVE COMPLETE"
+     387/    11AF :                     
+     388/    11AF : CD 19 13            saa7:		call	upprs
+     389/    11B2 : 3E 14               		ld	a, 14h
+     390/    11B4 : CD 25 13            		call	upcod
+     391/    11B7 : 3E 04               		ld	a, 4
+     392/    11B9 : CD 25 13            		call	upcod
+     393/    11BC : 3A 3A 13            		ld	a, (puf1)
+     394/    11BF : CD F6 12            		call	aanz
+     395/    11C2 : 11 2F 12            		ld	de, aRecordSWritten ; "	RECORD(S) WRITTEN"
+     396/    11C5 : CD 19 13            		call	upprs
+     397/    11C8 : 3E 14               		ld	a, 14h
+     398/    11CA : CD 25 13            		call	upcod
+     399/    11CD : 3E 04               		ld	a, 4
+     400/    11CF : CD 25 13            		call	upcod
+     401/    11D2 : 3A 6C 00            		ld	a, (LBLNR)
+     402/    11D5 : 3D                  		dec	a
+     403/    11D6 : CD F6 12            		call	aanz
+     404/    11D9 : 11 46 12            		ld	de, aRecordSChecked ; "	RECORD(S) CHECKED"
+     405/    11DC : C3 19 13            		jp	upprs
+     406/    11DF :                     
+     407/    11DF : 11 83 12            saa2:		ld	de, aBreakByStopKey ; "BREAK BY "STOP"-KEY!"
+     408/    11E2 : CD 19 13            		call	upprs
+     409/    11E5 : 11 A6 12            		ld	de, aNo		; "NO"
+     410/    11E8 : CD 19 13            		call	upprs
+     411/    11EB :                     
+     412/    11EB : 11 2F 12            saa8:		ld	de, aRecordSWritten ; "	RECORD(S) WRITTEN"
+     413/    11EE : CD 19 13            		call	upprs
+     414/    11F1 : 11 A6 12            		ld	de, aNo		; "NO"
+ AS V1.42 Beta [Bld 55] - source file OS-SAVE-Code.asm - page 8 - 1/2/2009 19:25:28
+
+
+     415/    11F4 : CD 19 13            		call	upprs
+     416/    11F7 : 11 46 12            		ld	de, aRecordSChecked ; "	RECORD(S) CHECKED"
+     417/    11FA : C3 19 13            		jp	upprs
+     418/    11FD :                     
+     419/    11FD : 11 83 12            saa3:		ld	de, aBreakByStopKey ; "BREAK BY "STOP"-KEY!"
+     420/    1200 : CD 19 13            		call	upprs
+     421/    1203 :                     ;
+     422/    1203 :                     ; Abschluss
+     423/    1203 :                     ;
+     424/    1203 : 3E 14               saa4:		ld	a, 14h
+     425/    1205 : CD 25 13            		call	upcod
+     426/    1208 : 3E 04               		ld	a, 4
+     427/    120A : CD 25 13            		call	upcod
+     428/    120D : 3A 3A 13            		ld	a, (puf1)
+     429/    1210 : CD F6 12            		call	aanz
+     430/    1213 : 18 D6               		jr	saa8
+     431/    1215 :                     
+     432/    1215 : 11 83 12            saa6:		ld	de, aBreakByStopKey ; "BREAK BY "STOP"-KEY!"
+     433/    1218 : 18 95               		jr	saa7
+     434/    121A :                     
+     435/    121A : 0A                  aSaveComplete:	db 0Ah
+     436/    121B : 0D 14 01 53 41 56   		db 0Dh,14h,1,"SAVE COMPLETE",0Ah
+                    45 20 43 4F 4D 50 
+                    4C 45 54 45 0A 
+     437/    122C : 0D 0A 00            		db 0Dh,0Ah,0
+     438/    122F : 14 02 20 52 45 43   aRecordSWritten:db 14h,2," RECORD(S) WRITTEN",0Ah
+                    4F 52 44 28 53 29 
+                    20 57 52 49 54 54 
+                    45 4E 0A 
+     439/    1244 : 0D 00               		db 0Dh,0
+     440/    1246 : 14 02 20 52 45 43   aRecordSChecked:db 14h,2," RECORD(S) CHECKED",0Ah
+                    4F 52 44 28 53 29 
+                    20 43 48 45 43 4B 
+                    45 44 0A 
+     441/    125B : 0D 0A 00            		db 0Dh,0Ah,0
+     442/    125E : 0A                  aVerifyYN:	db 0Ah
+     443/    125F : 0D 56 45 52 49 46   		db 0Dh,"VERIFY ((Y)/N)?:",0
+                    59 20 28 28 59 29 
+                    2F 4E 29 3F 3A 00 
+     444/    1271 : 0A                  aRewind:	db 0Ah
+     445/    1272 : 0D 52 45 57 49 4E   		db 0Dh,"REWIND ",14h,1,"<--",14h,2,' ',0
+                    44 20 14 01 3C 2D 
+                    2D 14 02 20 00 
+     446/    1283 : 0A                  aBreakByStopKey:db 0Ah
+     447/    1284 : 0D 14 01 42 52 45   		db 0Dh,14h,1,"BREAK BY ",14h,4,"\"STOP\"",14h,1,"-KEY!",14h,2,0Ah
+                    41 4B 20 42 59 20 
+                    14 04 22 53 54 4F 
+                    50 22 14 01 2D 4B 
+                    45 59 21 14 02 0A 
+     448/    12A2 : 0D 0D 0A 00         		db 0Dh,0Dh,0Ah,0
+     449/    12A6 : 14 04 4E 4F 14 02   aNo:		db 14h,4,"NO",14h,2,0
+                    00 
+     450/    12AD :                     
+     451/    12AD :                     ;------------------------------------------------------------------------------
+     452/    12AD :                     ; Parametereingabe Hexzahl
+     453/    12AD :                     ;------------------------------------------------------------------------------
+     454/    12AD :                     
+     455/    12AD : CD EA F1            eing:		call	0F1EAh
+     456/    12B0 : C0                  		ret	nz
+     457/    12B1 : E5                  		push	hl
+ AS V1.42 Beta [Bld 55] - source file OS-SAVE-Code.asm - page 9 - 1/2/2009 19:25:28
+
+
+     458/    12B2 : C5                  		push	bc
+     459/    12B3 : 11 00 01            		ld	de, 100h
+     460/    12B6 : CD C3 12            		call	ein3
+     461/    12B9 : C1                  		pop	bc
+     462/    12BA : E1                  		pop	hl
+     463/    12BB : 38 02               		jr	c, ein1
+     464/    12BD : BF                  		cp	a
+     465/    12BE : C9                  		ret
+     466/    12BF :                     ;
+     467/    12BF : BF                  ein1:		cp	a
+     468/    12C0 : C3 E2 F5            		jp	0F5E2h
+     469/    12C3 :                     ;
+     470/    12C3 : 1A                  ein3:		ld	a, (de)
+     471/    12C4 : B7                  		or	a
+     472/    12C5 : 37                  		scf
+     473/    12C6 : C8                  		ret	z
+     474/    12C7 : 3E 04               		ld	a, 4
+     475/    12C9 : CD 36 F8            		call	0F836h
+     476/    12CC : D8                  		ret	c
+     477/    12CD : 21 3B 13            		ld	hl, puf2
+     478/    12D0 : 06 02               		ld	b, 2
+     479/    12D2 : CD E5 12            ein2:		call	ein4
+     480/    12D5 : D8                  		ret	c
+     481/    12D6 : 77                  		ld	(hl), a
+     482/    12D7 : CD E5 12            		call	ein4
+     483/    12DA : D8                  		ret	c
+     484/    12DB : ED 6F               		rld
+     485/    12DD : 2B                  		dec	hl
+     486/    12DE : 10 F2               		djnz	ein2
+     487/    12E0 : ED 5B 3A 13         		ld	de, (puf1)
+     488/    12E4 : C9                  		ret
+     489/    12E5 :                     ;
+     490/    12E5 : 1A                  ein4:		ld	a, (de)
+     491/    12E6 : 13                  		inc	de
+     492/    12E7 : FE 30               		cp	30h ; '0'
+     493/    12E9 : D8                  		ret	c
+     494/    12EA : FE 3A               		cp	3Ah ; ':'
+     495/    12EC : 3F                  		ccf
+     496/    12ED : D0                  		ret	nc
+     497/    12EE : E6 DF               		and	0DFh ; 'ß'
+     498/    12F0 : D6 07               		sub	7
+     499/    12F2 : FE 40               		cp	40h ; '@'
+     500/    12F4 : 3F                  		ccf
+     501/    12F5 : C9                  		ret
+     502/    12F6 :                     
+     503/    12F6 :                     ;------------------------------------------------------------------------------
+     504/    12F6 :                     ; Ausgabe A hexadezimal
+     505/    12F6 :                     ;------------------------------------------------------------------------------
+     506/    12F6 :                     
+     507/    12F6 : F5                  aanz:		push	af
+     508/    12F7 : E6 F0               		and	0F0h
+     509/    12F9 : 07                  		rlca
+     510/    12FA : 07                  		rlca
+     511/    12FB : 07                  		rlca
+     512/    12FC : 07                  		rlca
+     513/    12FD : CD 03 13            		call	aan1
+     514/    1300 : F1                  		pop	af
+     515/    1301 : E6 0F               		and	0Fh
+     516/    1303 : C6 30               aan1:		add	a, 30h ; '0'
+     517/    1305 : FE 3A               		cp	3Ah ; ':'
+ AS V1.42 Beta [Bld 55] - source file OS-SAVE-Code.asm - page 10 - 1/2/2009 19:25:28
+
+
+     518/    1307 : 38 02               		jr	c, aan2
+     519/    1309 : C6 07               		add	a, 7
+     520/    130B : 18 18               aan2:		jr	upcod
+     521/    130D :                     
+     522/    130D :                     ;------------------------------------------------------------------------------
+     523/    130D :                     ; Systemaufrufe
+     524/    130D :                     ;------------------------------------------------------------------------------
+     525/    130D :                     
+     526/    130D : 0E 0F               upopw:		ld	c, 0Fh
+     527/    130F : 18 17               		jr	c5
+     528/    1311 :                     
+     529/    1311 : 0E 15               upwrs:		ld	c, 15h
+     530/    1313 : 18 13               		jr	c5
+     531/    1315 :                     
+     532/    1315 : 0E 10               upclw:		ld	c, 10h
+     533/    1317 : 18 0F               		jr	c5
+     534/    1319 :                     
+     535/    1319 : 0E 09               upprs:		ld	c, 9
+     536/    131B : 18 0B               		jr	c5
+     537/    131D :                     
+     538/    131D : 0E 0D               upopr:		ld	c, 0Dh
+     539/    131F : 18 07               		jr	c5
+     540/    1321 :                     
+     541/    1321 : 0E 14               upres:		ld	c, 14h
+     542/    1323 : 18 03               		jr	c5
+     543/    1325 :                     
+     544/    1325 : 0E 02               upcod:		ld	c, 2
+     545/    1327 : 5F                  		ld	e, a
+     546/    1328 :                     
+     547/    1328 : C3 05 00            c5:		jp	5
+     548/    132B :                     
+     549/    132B :                     ;------------------------------------------------------------------------------
+     550/    132B :                     ; 
+     551/    132B :                     ;------------------------------------------------------------------------------
+     552/    132B :                     
+     553/    132B : CD 10 F3            saa1:		call	0F310h
+     554/    132E :                     ;
+     555/    132E : CD 33 FD            saa5:		call	0FD33h
+     556/    1331 : FB                  		ei
+     557/    1332 : B7                  		or	a
+     558/    1333 : C8                  		ret	z
+     559/    1334 : FE 03               		cp	3
+     560/    1336 : 37                  		scf
+     561/    1337 : C8                  		ret	z
+     562/    1338 : 3F                  		ccf
+     563/    1339 : C9                  		ret
+     564/    133A :                     
+     565/    133A : 00                  puf1:		db 	0
+     566/    133B : 00                  puf2:		db    	0
+     567/    133C :                     
+     568/    133C : AF                  nokey:		xor	a
+     569/    133D : 32 25 00            		ld	(KEYBU), a
+     570/    1340 : C9                  		ret
+     571/    1341 :                     
+     572/    1341 :                     		end
+ AS V1.42 Beta [Bld 55] - source file OS-SAVE-Code.asm - page 11 - 1/2/2009 19:25:28
+
+
+  symbol table (* = unused):
+  ------------------------
+
+ AADR :                          6D - |  AAN1 :                        1303 C |
+ AAN2 :                        130B C |  AANZ :                        12F6 C |
+ ABREAKBYSTOPKEY :             1283 C |  ACOLD :                       1003 C |
+ AEOS :                        10A2 C |  AEXTENDEDOSAT :                FE4 C |
+ AH :                           FFA C |  ANO :                         12A6 C |
+*ARCHITECTURE :  i386-unknown-win32 - |  ARECORDSCHECKED :             1246 C |
+ ARECORDSWRITTEN :             122F C |  AREWIND :                     1271 C |
+ ASAVECOMPLETE :               121A C |  AVERIFYYN :                   125E C |
+*BIGENDIAN :                      0 - | *BRANCHEXT :                      0 - |
+ C5 :                          1328 C | *CASESENSITIVE :                  0 - |
+ COLD :                        1099 C |  CONBU :                         80 - |
+*CONSTPI :        3.141592653589793 - | *DATE :                    1/2/2009 - |
+ DMA :                           1B - |  EADR :                          6F - |
+ EIN1 :                        12BF C |  EIN2 :                        12D2 C |
+ EIN3 :                        12C3 C |  EIN4 :                        12E5 C |
+ EING :                        12AD C |  EOR :                           36 - |
+*FALSE :                          0 - | *FCB :                           5C - |
+ FNAME :                         5C - |  FTYP :                          64 - |
+*FULLPMMU :                       1 - | *HAS64 :                          1 - |
+*HASDSP :                         0 - | *HASFPU :                         0 - |
+*HASPMMU :                        0 - | *INEXTMODE :                      0 - |
+*INLWORDMODE :                    0 - | *INMAXMODE :                      0 - |
+*INSRCMODE :                      0 - | *INSUPMODE :                      0 - |
+*INTLN :                        100 - |  KEYBU :                         25 - |
+ LBLNR :                         6C - | *LISTON :                         1 - |
+*MACEXP :                         1 - | *MOMCPU :                        80 - |
+*MOMCPUNAME :                   Z80 - | *NESTMAX :                      100 - |
+ NOKEY :                       133C C | *PACKING :                        0 - |
+*PADDING :                        1 - | *PARBU :                         40 - |
+ PUF1 :                        133A C |  PUF2 :                        133B C |
+*RELAXED :                        0 - |  SA1 :                         10DC C |
+ SA2 :                         10EC C |  SA3 :                         1109 C |
+ SA4 :                         1110 C |  SAA1 :                        132B C |
+ SAA2 :                        11DF C |  SAA3 :                        11FD C |
+ SAA4 :                        1203 C |  SAA5 :                        132E C |
+ SAA6 :                        1215 C |  SAA7 :                        11AF C |
+ SAA8 :                        11EB C |  SADR :                          71 - |
+ SAV1 :                        1152 C |  SAV2 :                        1134 C |
+ SAV4 :                        117A C |  SAV4A :                       1186 C |
+ SAV5 :                        11A3 C |  SAV7 :                        119C C |
+ SAV8 :                        1190 C |  SAVE :                        10AD C |
+*SBY :                           73 - | *START :                        F89 C |
+ START1 :                       FB4 C |  START2 :                       FBF C |
+ START3 :                       FCC C | *TIME :                    19:25:28 - |
+*TRUE :                           1 - |  UNK_1018 :                    1018 C |
+ UPCLW :                       1315 C |  UPCOD :                       1325 C |
+ UPOPR :                       131D C |  UPOPW :                       130D C |
+ UPPRS :                       1319 C |  UPRES :                       1321 C |
+ UPWRS :                       1311 C | *VERSION :                     142F - |
+
+     98 symbols
+     33 unused symbols
+
+ AS V1.42 Beta [Bld 55] - source file OS-SAVE-Code.asm - page 12 - 1/2/2009 19:25:28
+
+
+  codepages:
+  ----------
+
+STANDARD (0 changed characters)
+
+
+0.06 seconds assembly time
+
+    573 lines source file
+      2 passes
+      0 errors
+      0 warnings
