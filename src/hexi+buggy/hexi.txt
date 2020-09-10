@@ -1,0 +1,72 @@
+Reihe Original-Baupläne 70
+Klaus Schlenzig, Stefan Schlenzig
+Kleincomputer-Mosaik Hardware-Software
+Berlin, Militärverlag der DDR, 1989
+
+#------------------------------------------------------------------------------
+# HEXI-Beschreibung 	3C00-3FBF,3C00 Start mit HEXI
+#------------------------------------------------------------------------------
+
+HEXI ist ein bildschirmorientierter Hexmonitor zum komfortablen Eingeben, Saven 
+und Laden von Hexdumps. Nach dem Laden erscheint am oberen Bildschirmrand die 
+Informationszeile, in der ständig die aktuelle Zeit ablesbar ist (siehe TIME-
+Kommando des Betriebsystems). Weiterhin wird die aktuelle Adresse mit ihren 
+Inhalten angezeigt. Mit den horizontalen Cursortasten kann man in der Zeile hin-
+und herwandern und so beliebige Änderungen, sowohl an den Bytes wie in der 
+Adresse, vornehmen. Diese Änderungen werden mit ENTER übernommen, und es wird 
+zur nächsten Adresse weitergeschaltet.
+
+Mit den vertikalen Pfeiltasten kann um jeweils 8 Bytes zurück- bzw. 
+vorwärtsgeschaltet werden. Die letzten Änderungen werden dabei nicht übernommen. 
+Bei Überschreiten der Bildschirmränder scrollt HEXI.
+
+In HEXI sind verschiedene Kommandos verfügbar. Sie bestehen jeweils aus einem 
+Zeichen und können überall in der Zeile eingegeben werden. Nach ENTER werden sie 
+aus- geführt:
+
+/ bzw. =, gefolgt von einer 4stelligen Hexzahl, schaltet auf die mit dieser Zahl 
+	angesprochene Adresse,
+;	schaltet von Prüfsummen - auf ASCII-Anzeige am Ende der Zeile um (und 
+	umgekehrt) - sehr nützlich bei Textsuche,
+.	beendet die Eingabe und verläßt HEXI.
+
+Steht statt einer 2stelligen Hexzahl eine Kombination von Komma und ASCII-
+Zeichen, so wird dieses Zeichen nach ENTER automatisch in die entsprechende 
+Hexzahl gewandelt und in den Speicher eingetragen.
+
+Weitere Kommandos, die aber nur am Zeilenanfang gegeben werden dürfen, sind:
+
+? 	Überprüfen der letzten Kassettenaufzeichnung
+<Name Adr - Laden eines Files mit dem Namen «Name» an Adresse Adr. Ist Adr 
+	    (eine 4stellige Hexzahl) nicht angegeben, wird das File an seine 
+	    Ursprungsadresse geladen.
+>Name Adr Aadr Eadr Stadr - Saven des Speicherbereichs ab Adresse Adr. In den 
+			    Vorblock werden Anfangsadresse Aadr, Endadresse Eadr 
+			    und Startadresse Stadr eingetragen.
+			    
+Diese Trennung von Adresse des Speicherbereichs und Anfangsadresse erlaubt das 
+Speichern eines Bereichs, der später von einer anderen Adresse ab eingeladen 
+werden soll. Der Parameter Stadr ist «optional», also nur bei Bedarf zu 
+verwenden. Fehlt er, nimmt ihn der Computer mit 0FFFFh an (Programm nicht 
+selbststartend). Der Name darf maximal 8 Zeichen lang sein und erhält 
+automatisch den Typ.com angehängt.
+
+#------------------------------------------------------------------------------
+# Das Spiel Buggy	1000-27FF,1000 Start mit BUGGY oder QRXCV
+#------------------------------------------------------------------------------
+
+Sobald HEXI richtig funktioniert, kann man damit z. B. Buggy eintippen (Tabelle 
+3). Das dürfte in 6 Stunden erledigt sein. Zwischendurch sollte der erreichte 
+Stand periodisch mit dem SAVE-Kommando gespeichert werden (genaue Syntax 
+beachten!!). Auch am Ende des Eintippens und nach dem Überprüfen erst saven, 
+dann starten. Das geschieht so: 
+Saven mit >BUGGY 1000 1000 2800 1000 (selbststartend), 
+HEXI mit Eingabe von «.» verlassen,
+BUGGY und ENTER eingeben.
+
+War die Eingabe in allen Bytes korrekt, erscheint das Startbild. Das Spiel 
+enthält eine kleine Beschreibung. Wie sie zu finden ist, sagt das Startbild. 
+Nach Bewältigen der 4 Levels wird man mit einem hübschen Schlußbild belohnt.
+
+Tip für Schummler: Es gibt eine Zeichenfolge, mit der man das Spiel auch 
+aufrufen kann (aus dem OS heraus) und die unendlich viel Lebensenergie beschert.

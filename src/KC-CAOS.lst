@@ -1,0 +1,2567 @@
+ AS V1.42 Beta [Bld 55] - source file KC-CAOS.asm - page 1 - 4/9/2008 16:59:08
+
+
+       1/       0 :                     	cpu	z80
+       2/       0 :                     
+       3/       0 :                     ;  **********************************
+       4/       0 :                     ;  ***  BETRIEBSSYSTEM F]R KC 87  ***
+       5/       0 :                     ;  ***  VERSION 3.1 , vp080331    ***
+       6/       0 :                     ;  ***  DIRK AMBRAS , 01.07.1988  ***
+       7/       0 :                     ;  **********************************
+       8/       0 :                     ;
+       9/    8000 :                     	ORG	08000H
+      10/    8000 :                     
+      11/    8000 : C3 25 81            CAOS:	JP	START
+      12/    8003 : 23 20 20 20 20 20   	DB	"#       "
+                    20 20 
+      13/    800B : 00                  	DB	0
+      14/    800C :                     
+      15/    800C : =7F00H              BSST:	EQU	CAOS-00100H
+      16/    800C : =7FFFH              JPM:	EQU	BSST+000FFH	; =0BBH: Systemerweiterung inaktiv, = EEH: Warmstart
+      17/    800C : =7F00H              AME:	EQU	BSST
+      18/    800C : =7F01H              HLM:	EQU	AME+1		; Merkzelle HL für UP, Parameter 1
+      19/    800C : =7F03H              DEM:	EQU	AME+3		; Merkzelle DE für UP, Parameter 2
+      20/    800C : =7F05H              BCM:	EQU	AME+5		; Merkzelle BC für UP, Parameter 3
+      21/    800C : =7F10H              MEMA:	EQU	AME+16		; Merkzelle A
+      22/    800C : =7F11H              MEMHL:	EQU	AME+17		; Merkzelle HL
+      23/    800C : =7F13H              MEMDE:	EQU	AME+19		; Merkzelle DE
+      24/    800C : =7F15H              MESC:	EQU	AME+21		; Merke ESC, 0: kein ESC-Modus, 20H: ESC-Modus
+      25/    800C : =7F16H              SPM:	EQU	AME+22		; Merkzelle SP
+      26/    800C : =7F18H              SCUR:	EQU	AME+24		; Symbol f. Cursor
+      27/    800C : =7F1AH              FMHL:	EQU	AME+26
+      28/    800C : =7F1EH              FLAG:	EQU	AME+30		; 0: im OS, 1: im BASIC-Modus
+      29/    800C : =7F1FH              FFLAG:	EQU	AME+31
+      30/    800C : =7F21H              KEYTA:	EQU	AME+33
+      31/    800C :                     ;Teil2
+      32/    800C : =7FF8H              EKEY:	EQU	AME+000F8H	; + 248
+      33/    800C :                     
+      34/    800C : =27H                COL:	EQU	00027H		; aktuelles Farbattribut
+      35/    800C : =34H                CCOL:	EQU	00034H		; Puffer für das Attribut des von Cursor überlagerten Zeichens
+      36/    800C : =3FH                MCUR:	EQU	0003FH		; Puffer für das vom Cursor überschriebene Zeichen
+      37/    800C :                     ;
+      38/    800C :                     ;   VERBINDUNGEN ZUM 2.TEIL
+      39/    800C :                     ;
+      40/    800C :                     ;SWIT:	EQU	CAOS+00AA4H
+      41/    800C :                     ;KEY:	EQU	CAOS+00AF1H
+      42/    800C :                     ;SAVE:	EQU	CAOS+00B86H
+      43/    800C :                     ;VERIF:	EQU	CAOS+00C3BH
+      44/    800C :                     ;LOAD:	EQU	CAOS+00C3FH
+      45/    800C :                     ;
+      46/    800C :                     ;
+      47/    800C :                     ;**********************************
+      48/    800C :                     ;* Sprungverteiler (#-Kdo steht oben !!!)
+      49/    800C :                     ;**********************************
+      50/    800C :                     
+      51/    800C : C3 A4 8A            	JP	SWIT
+      52/    800F : 53 57 49 54 43 48   	DB	"SWITCH  "
+                    20 20 
+      53/    8017 : 00                  	DB	0
+      54/    8018 : C3 21 84            	JP	JUMP
+      55/    801B : 4A 55 4D 50 20 20   	DB	"JUMP    "
+                    20 20 
+      56/    8023 : 00                  	DB	0
+      57/    8024 : C3 7C 81            	JP	MENU
+ AS V1.42 Beta [Bld 55] - source file KC-CAOS.asm - page 2 - 4/9/2008 16:59:08
+
+
+      58/    8027 : 4D 45 4E 55 20 20   	DB	"MENU    "
+                    20 20 
+      59/    802F : 00                  	DB	0
+      60/    8030 : C3 86 8B            	JP	SAVE
+      61/    8033 : 53 41 56 45 20 20   	DB	"SAVE    "
+                    20 20 
+      62/    803B : 00                  	DB	0
+      63/    803C : C3 3B 8C            	JP	VERIF
+      64/    803F : 56 45 52 49 46 59   	DB	"VERIFY  "
+                    20 20 
+      65/    8047 : 00                  	DB	0
+      66/    8048 : C3 3F 8C            	JP	LOAD
+      67/    804B : 4C 4F 41 44 20 20   	DB	"LOAD    "
+                    20 20 
+      68/    8053 : 00                  	DB	0
+      69/    8054 : C3 2F 84            	JP	COLOR
+      70/    8057 : 43 4F 4C 4F 52 20   	DB	"COLOR   "
+                    20 20 
+      71/    805F : 00                  	DB	0
+      72/    8060 : C3 79 84            	JP	MODIF
+      73/    8063 : 4D 4F 44 49 46 59   	DB	"MODIFY  "
+                    20 20 
+      74/    806B : 00                  	DB	0
+      75/    806C : C3 FE 84            	JP	DISP
+      76/    806F : 44 49 53 50 4C 41   	DB	"DISPLAY "
+                    59 20 
+      77/    8077 : 00                  	DB	0
+      78/    8078 : C3 F1 8A            	JP	KEY
+      79/    807B : 4B 45 59 20 20 20   	DB	"KEY     "
+                    20 20 
+      80/    8083 : 00                  	DB	0
+      81/    8084 : C3 A6 87            	JP	KEYLI
+      82/    8087 : 4B 45 59 4C 49 53   	DB	"KEYLIST "
+                    54 20 
+      83/    808F : 00                  	DB	0
+      84/    8090 : C3 4D 89            	JP	UPIN
+      85/    8093 : 69 6E 20 20 20 20   	DB	"in      "
+                    20 20 
+      86/    809B : 00                  	DB	0
+      87/    809C : C3 57 89            	JP	UPOUT
+      88/    809F : 6F 75 74 20 20 20   	DB	"out     "
+                    20 20 
+      89/    80A7 : 00                  	DB	0
+      90/    80A8 : C3 F5 89            	JP	WRITE
+      91/    80AB : 77 72 69 74 65 20   	DB	"write   "
+                    20 20 
+      92/    80B3 : 00                  	DB	0
+      93/    80B4 : C3 5C 89            	JP	TIME0
+      94/    80B7 : 74 69 6D 65 20 20   	DB	"time    "
+                    20 20 
+      95/    80BF : 00                  	DB	0
+      96/    80C0 : C3 43 8A            	JP	VCOL
+      97/    80C3 : 76 63 6F 6C 6F 72   	DB	"vcolor  "
+                    20 20 
+      98/    80CB : 00                  	DB	0
+      99/    80CC : C3 F8 81            	JP	LDIR
+     100/    80CF : 6C 64 69 72 20 20   	DB	"ldir    "
+                    20 20 
+     101/    80D7 : 00                  	DB	0
+     102/    80D8 : C3 FB 81            	JP	GOTO
+ AS V1.42 Beta [Bld 55] - source file KC-CAOS.asm - page 3 - 4/9/2008 16:59:08
+
+
+     103/    80DB : 67 6F 20 20 20 20   	DB	"go      "
+                    20 20 
+     104/    80E3 : 00 00               	DW	0
+     105/    80E5 :                     ;
+     106/    80E5 : 2A 20 20 4B 43 2D   TEXTM:	DB	"*  KC-CAOS "
+                    43 41 4F 53 20 
+     107/    80F0 : 33 2E 31 20 20 2A   	DB	"3.1  *"
+     108/    80F6 : 0A                  CRL:	DB	10
+     109/    80F7 : 0D                  	DB	13
+     110/    80F8 : 25                  	DB	"%"
+     111/    80F9 : 00                  	DB	0
+     112/    80FA :                     
+     113/    80FA : 20 28 43 29 20 38   RESET:	DB	" (C) 89 D. "
+                    39 20 44 2E 20 
+     114/    8105 : 41 6D 62 72 61 73   	DB	"Ambras     "
+                    20 20 20 20 20 
+     115/    8110 : 4A 2E 54 65 63 68   	DB	"J.Techniker "
+                    6E 69 6B 65 72 20 
+     116/    811C : 48 41 2D 4E 45 55   	DB	"HA-NEU"
+     117/    8122 : 0A 0D               CRL2:	DW	00D0AH
+     118/    8124 : 00                  	DB	0
+     119/    8125 :                     ;
+     120/    8125 :                     
+     121/    8125 :                     ;
+     122/    8125 :                     ;**********************************
+     123/    8125 :                     ; Monitorerweiterung '#'
+     124/    8125 :                     ; Initialisierung
+     125/    8125 :                     ;**********************************
+     126/    8125 :                     ;
+     127/    8125 : 21 FF 7F            START:	LD	HL,JPM
+     128/    8128 : 7E                  	LD	A,(HL)
+     129/    8129 : FE BB               	CP	0BBH		; Erweiterung inaktiv?
+     130/    812B : CA 89 F0            	JP	Z,0F089H	; JPM = 0BBh -> Sprung ins OS, GOCPM
+     131/    812E :                     ;
+     132/    812E : 31 FE 01            	LD	SP,001FEH
+     133/    8131 : ED 73 16 7F         	LD	(SPM),SP
+     134/    8135 : CD 68 85            	CALL	COPYR		; neuen Unterprogrammverteiler für CALL 5 einrichten
+     135/    8138 :                     ;
+     136/    8138 : FE EE               	CP	0EEH		; JPM = 0EEh -> Warmstart
+     137/    813A : 28 1D               	JR	Z,WST
+     138/    813C :                     ;
+     139/    813C : 21 00 7F            	LD	HL,BSST		; Arbeitsspeicherbereich
+     140/    813F : E5                  	PUSH	HL
+     141/    8140 : D1                  	POP	DE
+     142/    8141 : 13                  	INC	DE
+     143/    8142 : 36 00               	LD	(HL),0
+     144/    8144 : 01 FF 00            	LD	BC,255
+     145/    8147 : ED B0               	LDIR			; leeren
+     146/    8149 :                     ;
+     147/    8149 : 11 21 7F            	LD	DE,KEYTA
+     148/    814C : 21 4A 87            	LD	HL,MKEY
+     149/    814F : 01 5C 00            	LD	BC,92		; KEYLI-MKEY Länge der Liste
+     150/    8152 : ED B0               	LDIR
+     151/    8154 : 3E F9               	LD	A,0F9H		; Cursorzeichen (Unterstich)
+     152/    8156 : 32 18 7F            	LD	(SCUR),A	; festlegen
+     153/    8159 :                     ;
+     154/    8159 : 3E 46               WST:	LD	A,046H		; blau auf cyan
+     155/    815B : 32 27 00            	LD	(COL),A		; aktuelles Farbattribut setzen
+     156/    815E :                     
+     157/    815E : 3E 30               	LD	A,030H
+ AS V1.42 Beta [Bld 55] - source file KC-CAOS.asm - page 4 - 4/9/2008 16:59:08
+
+
+     158/    8160 : 32 C8 EF            	LD	(0EFC8H),A	; E000-EFFF,F000-FFFF als ROM deklarieren
+     159/    8163 :                     
+     160/    8163 : 3E 20               	LD	A,020H
+     161/    8165 : 32 3F 00            	LD	(MCUR),A	; aktuelles Zeichen unter Cursor
+     162/    8168 :                     
+     163/    8168 : 3E 10               	LD	A,010H		; Randfarbe Grün
+     164/    816A : D3 88               	OUT	(088H),A	; setzen
+     165/    816C :                     ;
+     166/    816C : CD FC 81            	CALL	CLS
+     167/    816F : 11 FA 80            	LD	DE,RESET	; Copyright-Meldung
+     168/    8172 : CD 59 82            	CALL	PRNST
+     169/    8175 : 3E 00               	LD	A,0
+     170/    8177 : 32 15 7F            	LD	(MESC),A	; kein ESCAPE gedrückt
+     171/    817A : 18 0D               	JR	MENU2		; Menü anzeigen
+     172/    817C :                     
+     173/    817C :                     ;**********************************
+     174/    817C :                     ;* Aufruf des Grundmenüs
+     175/    817C :                     ;**********************************
+     176/    817C :                     
+     177/    817C : 31 FE 01            MENU:	LD	SP,001FEH
+     178/    817F : ED 73 16 7F         	LD	(SPM),SP
+     179/    8183 : CD 68 85            	CALL	COPYR		; neuen Unterprogrammverteiler für CALL 5 einrichten
+     180/    8186 : CD FC 81            	CALL	CLS
+     181/    8189 : 11 E5 80            MENU2:	LD	DE,TEXTM	; "KC-Caos 3.1"
+     182/    818C : CD 59 82            	CALL	PRNST
+     183/    818F : 3E EE               	LD	A,0EEH
+     184/    8191 : 32 FF 7F            	LD	(JPM),A		; Warmstart merken
+     185/    8194 : 26 C0               SUCH:	LD	H,0C0H		; Suche von 0C000h aufwärts
+     186/    8196 : 16 F0               	LD	D,0F0H		; bis 0F000h
+     187/    8198 : CD B9 81            	CALL	SUCH2
+     188/    819B : 21 00 80            	LD	HL,CAOS		; Suche von CAOS bis RESET
+     189/    819E : 11 FA 80            	LD	DE,RESET
+     190/    81A1 : CD B9 81            	CALL	SUCH2
+     191/    81A4 : 26 02               	LD	H,2		; Suche von 200h bis CAOS
+     192/    81A6 : 11 00 80            	LD	DE,CAOS
+     193/    81A9 : 15                  	DEC	D
+     194/    81AA : 15                  	DEC	D
+     195/    81AB : CD B9 81            	CALL	SUCH2
+     196/    81AE : 21 3F 8C            	LD	HL,LOAD		; suche von LOAD bis BF00h
+     197/    81B1 : 16 BF               	LD	D,0BFH
+     198/    81B3 : CD B9 81            	CALL	SUCH2
+     199/    81B6 : C3 65 82            	JP	INPUT		; Zeicheneingabe+Ausgabe abschließendes ENTER
+     200/    81B9 :                     ;
+     201/    81B9 : 2E 00               SUCH2:	LD	L,0		; Suche an ..00h-Grenze
+     202/    81BB : E5                  SUCH3:	PUSH	HL
+     203/    81BC :                     ;
+     204/    81BC : 7E                  SUCH4:	LD	A,(HL)
+     205/    81BD : FE C3               	CP	0C3H
+     206/    81BF : 20 27               	JR	NZ,SUCH6
+     207/    81C1 : 23                  	INC	HL
+     208/    81C2 : 23                  	INC	HL
+     209/    81C3 : 23                  	INC	HL
+     210/    81C4 : E5                  	PUSH	HL
+     211/    81C5 : 7E                  	LD	A,(HL)
+     212/    81C6 : FE 23               	CP	"#"
+     213/    81C8 : 28 0F               	JR	Z,SUCH5		; System-Erweiterung übergehen
+     214/    81CA : FE 28               	CP	028H
+     215/    81CC : 38 21               	JR	C,FO02		; Prg.mame beginnt mit Sonderzeichen
+     216/    81CE : FE 5C               	CP	"\\"
+     217/    81D0 : 30 1D               	JR	NC,FO02		; Prg.mame beginnt mit Kleinbuchstaben
+ AS V1.42 Beta [Bld 55] - source file KC-CAOS.asm - page 5 - 4/9/2008 16:59:08
+
+
+     218/    81D2 : D5                  	PUSH	DE
+     219/    81D3 : 54                  	LD	D,H
+     220/    81D4 : 5D                  	LD	E,L
+     221/    81D5 : CD 59 82            	CALL	PRNST		; sonst Namen ausgeben
+     222/    81D8 : D1                  	POP	DE
+     223/    81D9 : E1                  SUCH5:	POP	HL
+     224/    81DA : D5                  	PUSH	DE
+     225/    81DB : 11 09 00            	LD	DE,9
+     226/    81DE : 19                  	ADD	HL,DE
+     227/    81DF : 11 F6 80            	LD	DE,CRL
+     228/    81E2 : CD 59 82            	CALL	PRNST
+     229/    81E5 : D1                  	POP	DE
+     230/    81E6 : 18 D4               	JR	SUCH4
+     231/    81E8 :                     ;
+     232/    81E8 : E1                  SUCH6:	POP	HL
+     233/    81E9 : 7C                  	LD	A,H
+     234/    81EA : 24                  	INC	H
+     235/    81EB : BA                  	CP	D
+     236/    81EC : 20 CB               	JR	NZ,SUCH2
+     237/    81EE : C9                  	RET
+     238/    81EF :                     ;nächste Suchposition
+     239/    81EF : E1                  FO02:	POP	HL
+     240/    81F0 : D5                  	PUSH	DE
+     241/    81F1 : 11 09 00            	LD	DE,9
+     242/    81F4 : 19                  	ADD	HL,DE
+     243/    81F5 : D1                  	POP	DE
+     244/    81F6 : 18 C4               	JR	SUCH4
+     245/    81F8 :                     
+     246/    81F8 :                     ;**********************************
+     247/    81F8 :                     ; transportiert Speicherbereiche im Rechner
+     248/    81F8 :                     ; Format: ldir Quelladresse Zieladresse Länge
+     249/    81F8 :                     ;**********************************
+     250/    81F8 :                     
+     251/    81F8 : ED B0               LDIR:	LDIR
+     252/    81FA : C9                  	RET
+     253/    81FB :                     
+     254/    81FB :                     ;**********************************
+     255/    81FB :                     ; Start eines Maschinenprogrammes auf der angegebenen Startadresse
+     256/    81FB :                     ; Format: go Startadresse
+     257/    81FB :                     ;**********************************
+     258/    81FB :                     
+     259/    81FB : E9                  GOTO:	JP	(HL)
+     260/    81FC :                     
+     261/    81FC :                     
+     262/    81FC :                     ; schnelles Fensterlöschen
+     263/    81FC :                     ; über Srungverteiler eingebunden für ^C
+     264/    81FC :                     ;
+     265/    81FC : 3A 3B 00            CLS:	LD	A,(0003BH)	; 1. rollende Zeile - 1
+     266/    81FF : 57                  	LD	D,A
+     267/    8200 : 3A 3C 00            CLS3:	LD	A,(0003CH)	; letzte zu rollende Zeile + 1
+     268/    8203 : 92                  	SUB	D
+     269/    8204 : 3D                  	DEC	A
+     270/    8205 : 47                  	LD	B,A
+     271/    8206 : CD 17 82            	CALL	CLS1
+     272/    8209 : 14                  CLS2:	INC	D
+     273/    820A : D5                  	PUSH	DE
+     274/    820B : C5                  	PUSH	BC
+     275/    820C : ED 53 2B 00         	LD	(0002BH),DE	; aktuelle Spalte d. Cursors
+     276/    8210 : CD 45 88            	CALL	CLLN
+     277/    8213 : C1                  	POP	BC
+ AS V1.42 Beta [Bld 55] - source file KC-CAOS.asm - page 6 - 4/9/2008 16:59:08
+
+
+     278/    8214 : D1                  	POP	DE
+     279/    8215 : 10 F2               	DJNZ	CLS2
+     280/    8217 :                     ;
+     281/    8217 : 3A 3B 00            CLS1:	LD	A,(0003BH)	; 1. rollende Zeile - 1
+     282/    821A : 3C                  	INC	A
+     283/    821B : D5                  	PUSH	DE
+     284/    821C : C5                  	PUSH	BC
+     285/    821D : 57                  	LD	D,A
+     286/    821E : 3A 3D 00            	LD	A,(0003DH)	; 1. zu rollende Spalte - 1
+     287/    8221 : 3C                  	INC	A
+     288/    8222 : 5F                  	LD	E,A
+     289/    8223 : 0E 12               	LD	C,18		; SETCU 	Setzen logische Cursoradresse
+     290/    8225 : CD 14 F3            	CALL	0F314H		; OS: BOS
+     291/    8228 : C1                  	POP	BC
+     292/    8229 : D1                  	POP	DE
+     293/    822A : 3E 20               	LD	A,020H
+     294/    822C : 32 3F 00            	LD	(MCUR),A	; aktuelles Zeichen unter Cursor
+     295/    822F : C9                  	RET
+     296/    8230 :                     
+     297/    8230 :                     ; Zeichenausgabe E
+     298/    8230 : F5                  DRUCK:	PUSH	AF
+     299/    8231 : 7B                  	LD	A,E
+     300/    8232 : FE 20               	CP	32
+     301/    8234 : 30 09               	JR	NC,DRBS		; normales Zeichen
+     302/    8236 : C5                  	PUSH	BC
+     303/    8237 : 0E 02               	LD	C,2		; Sonderzeichen auseben über
+     304/    8239 : CD 6F 85            	CALL	VKEY		; neuen Unterprogrammverteiler für CALL 5
+     305/    823C : C1                  	POP	BC
+     306/    823D : F1                  	POP	AF
+     307/    823E : C9                  	RET
+     308/    823F :                     ; Druck Bildschirm
+     309/    823F : E5                  DRBS:	PUSH	HL
+     310/    8240 : D5                  	PUSH	DE
+     311/    8241 : F5                  	PUSH	AF
+     312/    8242 : 7B                  	LD	A,E
+     313/    8243 : CD 77 86            	CALL	GETHL		; Ermitteln aktuelle Cursorposition
+     314/    8246 : 77                  	LD	(HL),A
+     315/    8247 : 3A 27 00            	LD	A,(COL)		; aktuelles Farbattribut
+     316/    824A : CB DF               	SET	3,A		;
+     317/    824C : 32 34 00            	LD	(CCOL),A	; aktuelles Farbattribut Zeichen unter Cursor
+     318/    824F : 1E 09               	LD	E,9		; Cursor nach rechts
+     319/    8251 : CD 30 82            	CALL	DRUCK		; Zeichenausgabe E
+     320/    8254 : F1                  	POP	AF
+     321/    8255 : D1                  	POP	DE
+     322/    8256 : E1                  	POP	HL
+     323/    8257 : F1                  	POP	AF
+     324/    8258 : C9                  	RET
+     325/    8259 :                     
+     326/    8259 :                     ; Ausgabe Zeichenkette ab (DE)
+     327/    8259 : 1A                  PRNST:	LD	A,(DE)
+     328/    825A : B7                  	OR	A
+     329/    825B : C8                  	RET	Z
+     330/    825C : D5                  	PUSH	DE
+     331/    825D : 5F                  	LD	E,A
+     332/    825E : CD 30 82            	CALL	DRUCK		; Zeichenausgabe E
+     333/    8261 : D1                  	POP	DE
+     334/    8262 : 13                  	INC	DE
+     335/    8263 : 18 F4               	JR	PRNST
+     336/    8265 :                     
+     337/    8265 :                     ; Zeicheneingabe+Ausgabe abschließendes ENTER
+ AS V1.42 Beta [Bld 55] - source file KC-CAOS.asm - page 7 - 4/9/2008 16:59:08
+
+
+     338/    8265 : AF                  INPUT:	XOR	A
+     339/    8266 : 32 1E 7F            	LD	(FLAG),A	; kein BASIC-Modus
+     340/    8269 : CD 6E 82            	CALL	INLIN
+     341/    826C : 18 6A               	JR	ENT		; Ausgabe ENTER
+     342/    826E :                     
+     343/    826E :                     ; Eingabe einer Zeile, Abschluß mit ENTER
+     344/    826E : CD 68 85            INLIN:	CALL	COPYR		; neuen Unterprogrammverteiler für CALL 5 einrichten
+     345/    8271 : 0E 01               	LD	C,1		; CONSI
+     346/    8273 : CD 05 00            	CALL	5
+     347/    8276 : 18 0C               	JR	INL2
+     348/    8278 :                     
+     349/    8278 :                     ; Reset Cursor
+     350/    8278 : CD 6F 86            RESC:	CALL	GETCU		; Ermitteln aktuelle Cursorposition BC
+     351/    827B : ED 43 13 7F         	LD	(MEMDE),BC
+     352/    827F : 3A 3F 00            	LD	A,(MCUR)	; aktuelles Zeichen unter Cursor
+     353/    8282 : 02                  	LD	(BC),A
+     354/    8283 : C9                  	RET
+     355/    8284 :                     
+     356/    8284 :                     ;
+     357/    8284 : 5F                  INL2:	LD	E,A
+     358/    8285 : F5                  	PUSH	AF
+     359/    8286 : CD 30 82            	CALL	DRUCK		; Zeichenausgabe E
+     360/    8289 : FE 04               	CP	4		; ^D
+     361/    828B : 20 0F               	JR	NZ,NO4
+     362/    828D : 3A 1F 7F            	LD	A,(FFLAG)
+     363/    8290 : A7                  	AND	A
+     364/    8291 : 28 09               	JR	Z,NO4
+     365/    8293 : F1                  	POP	AF
+     366/    8294 : 1E 02               	LD	E,2
+     367/    8296 : CD 30 82            	CALL	DRUCK		; Zeichenausgabe E
+     368/    8299 : 3E 02               	LD	A,2
+     369/    829B : C9                  	RET
+     370/    829C :                     ;
+     371/    829C : F1                  NO4:	POP	AF
+     372/    829D : FE 0D               	CP	13		; <ENTER>
+     373/    829F : 28 06               	JR	Z,IN1
+     374/    82A1 : FE 03               	CP	3		; <STOP>
+     375/    82A3 : 28 02               	JR	Z,IN1
+     376/    82A5 : 18 C7               	JR	INLIN		; Eingabe einer Zeile, Abschluß mit ENTER
+     377/    82A7 :                     ;
+     378/    82A7 : 1E 0A               IN1:	LD	E,10		; Parallelausgabe auf LIST (^P)
+     379/    82A9 : CD 30 82            	CALL	DRUCK		; Zeichenausgabe E
+     380/    82AC : 1E 0B               	LD	E,11		; Kontrollton EIN/AUS (^Q)
+     381/    82AE : CD 30 82            	CALL	DRUCK		; Zeichenausgabe E
+     382/    82B1 : CD 6F 86            	CALL	GETCU		; Ermitteln aktuelle Cursorposition BC
+     383/    82B4 : C5                  	PUSH	BC
+     384/    82B5 : 1E 0A               	LD	E,10		; Parallelausgabe auf LIST (^P)
+     385/    82B7 : CD 30 82            	CALL	DRUCK		; Zeichenausgabe E
+     386/    82BA : D1                  	POP	DE
+     387/    82BB : C9                  	RET
+     388/    82BC :                     
+     389/    82BC :                     ; Set Cursor
+     390/    82BC : 3E 30               SETC:	LD	A,030H
+     391/    82BE : 32 C8 EF            	LD	(0EFC8H),A	; E000-EFFF,F000-FFFF als ROM deklarieren
+     392/    82C1 : CD 6F 86            	CALL	GETCU		; Ermitteln aktuelle Cursorposition BC
+     393/    82C4 : 0A                  	LD	A,(BC)
+     394/    82C5 : 32 3F 00            	LD	(MCUR),A	; aktuelles Zeichen unter Cursor
+     395/    82C8 : 3A 18 7F            	LD	A,(SCUR)	; Symbol f. Cursor
+     396/    82CB : FE 20               	CP	020H
+     397/    82CD : D8                  	RET	C
+ AS V1.42 Beta [Bld 55] - source file KC-CAOS.asm - page 8 - 4/9/2008 16:59:08
+
+
+     398/    82CE : 02                  	LD	(BC),A
+     399/    82CF : 21 00 FC            	LD	HL,0FC00H	; -400H
+     400/    82D2 : 09                  	ADD	HL,BC
+     401/    82D3 : 3A 34 00            	LD	A,(CCOL)	; aktuelles Farbattribut Zeichen unter Cursor
+     402/    82D6 : 77                  	LD	(HL),A
+     403/    82D7 : C9                  	RET
+     404/    82D8 :                     
+     405/    82D8 :                     ; Ausgabe ENTER
+     406/    82D8 : FE 03               ENT:	CP	3		; <STOP> ?
+     407/    82DA : 20 08               	JR	NZ,NO3
+     408/    82DC : 1E 0D               	LD	E,13		; <ENTER> ?
+     409/    82DE : CD 30 82            	CALL	DRUCK		; Zeichenausgabe E
+     410/    82E1 : C3 A9 83            	JP	RET
+     411/    82E4 :                     
+     412/    82E4 : 13                  NO3:	INC	DE
+     413/    82E5 : 1A                  	LD	A,(DE)
+     414/    82E6 : FE 21               	CP	021H
+     415/    82E8 : DA A9 83            	JP	C,RET
+     416/    82EB : 21 00 80            	LD	HL,CAOS
+     417/    82EE : 06 F0               	LD	B,0F0H
+     418/    82F0 : CD BB 83            	CALL	PSUCH
+     419/    82F3 : 38 14               	JR	C,PROG
+     420/    82F5 : 26 02               	LD	H,2
+     421/    82F7 : 01 00 80            	LD	BC,CAOS
+     422/    82FA : 05                  	DEC	B
+     423/    82FB : 05                  	DEC	B
+     424/    82FC : CD BB 83            	CALL	PSUCH
+     425/    82FF : 38 08               	JR	C,PROG
+     426/    8301 : 1E 46               	LD	E,"F"
+     427/    8303 : CD 30 82            	CALL	DRUCK		; Zeichenausgabe E
+     428/    8306 : C3 13 84            	JP	ERROR
+     429/    8309 :                     
+     430/    8309 : 13                  PROG:	INC	DE
+     431/    830A : E5                  	PUSH	HL
+     432/    830B : 1A                  	LD	A,(DE)
+     433/    830C : FE 21               	CP	021H
+     434/    830E : 38 03               	JR	C,NPARA
+     435/    8310 : 1B                  	DEC	DE
+     436/    8311 : 18 08               	JR	PARA
+     437/    8313 :                     
+     438/    8313 : 3E 00               NPARA:	LD	A,0
+     439/    8315 : 32 00 7F            	LD	(AME),A
+     440/    8318 : C3 94 83            	JP	GPARA
+     441/    831B :                     
+     442/    831B : 3E 00               PARA:	LD	A,0
+     443/    831D : 32 00 7F            	LD	(AME),A
+     444/    8320 : D5                  	PUSH	DE
+     445/    8321 : 11 01 7F            	LD	DE,HLM
+     446/    8324 : ED 53 13 7F         	LD	(MEMDE),DE
+     447/    8328 : D1                  	POP	DE
+     448/    8329 : 13                  	INC	DE
+     449/    832A : CD 5B 83            PARA1:	CALL	RHEX		; (DE) ff. als Hexzahl konvertieren
+     450/    832D : 30 08               	JR	NC,PARA2
+     451/    832F : 1E 50               	LD	E,"P"
+     452/    8331 : CD 30 82            	CALL	DRUCK		; Zeichenausgabe E
+     453/    8334 : C3 13 84            	JP	ERROR
+     454/    8337 :                     
+     455/    8337 : D5                  PARA2:	PUSH	DE
+     456/    8338 : 2A 13 7F            	LD	HL,(MEMDE)
+     457/    833B : ED 5B 11 7F         	LD	DE,(MEMHL)
+ AS V1.42 Beta [Bld 55] - source file KC-CAOS.asm - page 9 - 4/9/2008 16:59:08
+
+
+     458/    833F : 73                  	LD	(HL),E
+     459/    8340 : 23                  	INC	HL
+     460/    8341 : 72                  	LD	(HL),D
+     461/    8342 : 23                  	INC	HL
+     462/    8343 : 22 13 7F            	LD	(MEMDE),HL
+     463/    8346 : 3A 00 7F            	LD	A,(AME)
+     464/    8349 : 3C                  	INC	A
+     465/    834A : FE 0B               	CP	11
+     466/    834C : 32 00 7F            	LD	(AME),A
+     467/    834F : D1                  	POP	DE
+     468/    8350 : D2 94 83            	JP	NC,GPARA
+     469/    8353 : 13                  	INC	DE
+     470/    8354 : 1A                  	LD	A,(DE)
+     471/    8355 : FE 20               	CP	020H
+     472/    8357 : 20 D1               	JR	NZ,PARA1
+     473/    8359 : 18 39               	JR	GPARA
+     474/    835B :                     
+     475/    835B :                     
+     476/    835B :                     ; (DE) ff. als Hexzahl konvertieren
+     477/    835B : 21 00 00            RHEX:	LD	HL,0
+     478/    835E : 22 11 7F            	LD	(MEMHL),HL
+     479/    8361 : AF                  	XOR	A
+     480/    8362 : 21 10 7F            	LD	HL,MEMA
+     481/    8365 : 77                  	LD	(HL),A
+     482/    8366 : 1A                  RHEX1:	LD	A,(DE)
+     483/    8367 : FE 21               	CP	021H
+     484/    8369 : 38 02               	JR	C,NOTC
+     485/    836B : 18 06               	JR	RHEX2
+     486/    836D :                     ;
+     487/    836D : 37                  NOTC:	SCF
+     488/    836E : 3F                  	CCF
+     489/    836F : 00                  	NOP
+     490/    8370 : 00                  	NOP
+     491/    8371 : 00                  	NOP
+     492/    8372 : C9                  	RET
+     493/    8373 :                     ;
+     494/    8373 : D6 30               RHEX2:	SUB	030H
+     495/    8375 : D8                  	RET	C
+     496/    8376 : FE 0A               	CP	10
+     497/    8378 : 38 0B               	JR	C,RH3
+     498/    837A : D6 07               	SUB	7
+     499/    837C : FE 0A               	CP	10
+     500/    837E : D8                  	RET	C
+     501/    837F : FE 10               	CP	16
+     502/    8381 : 38 02               	JR	C,RH3
+     503/    8383 : 37                  	SCF
+     504/    8384 : C9                  	RET
+     505/    8385 :                     ;
+     506/    8385 : 13                  RH3:	INC	DE
+     507/    8386 : 34                  	INC	(HL)
+     508/    8387 : 23                  	INC	HL
+     509/    8388 : ED 6F               	RLD
+     510/    838A : 23                  	INC	HL
+     511/    838B : ED 6F               	RLD
+     512/    838D : 2B                  	DEC	HL
+     513/    838E : 2B                  	DEC	HL
+     514/    838F : 28 D5               	JR	Z,RHEX1
+     515/    8391 : 1B                  	DEC	DE
+     516/    8392 : 37                  	SCF
+     517/    8393 : C9                  	RET
+ AS V1.42 Beta [Bld 55] - source file KC-CAOS.asm - page 10 - 4/9/2008 16:59:08
+
+
+     518/    8394 :                     
+     519/    8394 :                     ;
+     520/    8394 : E1                  GPARA:	POP	HL
+     521/    8395 : 11 A9 83            	LD	DE,RET
+     522/    8398 : D5                  	PUSH	DE
+     523/    8399 : E5                  	PUSH	HL
+     524/    839A : 2A 01 7F            	LD	HL,(HLM)
+     525/    839D : ED 5B 03 7F         	LD	DE,(DEM)
+     526/    83A1 : ED 4B 05 7F         	LD	BC,(BCM)
+     527/    83A5 : 3A 00 7F            	LD	A,(AME)
+     528/    83A8 : C9                  GJP:	RET
+     529/    83A9 :                     ;
+     530/    83A9 : 31 FE 01            RET:	LD	SP,001FEH
+     531/    83AC : ED 73 16 7F         	LD	(SPM),SP
+     532/    83B0 : 1E 25               	LD	E,"%"
+     533/    83B2 : CD 30 82            	CALL	DRUCK		; Zeichenausgabe E
+     534/    83B5 : CD 68 85            	CALL	COPYR		; neuen Unterprogrammverteiler für CALL 5 einrichten
+     535/    83B8 : C3 65 82            	JP	INPUT		; Zeicheneingabe+Ausgabe abschließendes ENTER
+     536/    83BB :                     
+     537/    83BB :                     ; Programmsuche
+     538/    83BB : 04                  PSUCH:	INC	B
+     539/    83BC : D5                  	PUSH	DE
+     540/    83BD : ED 53 13 7F         	LD	(MEMDE),DE
+     541/    83C1 : 2E 00               PSV:	LD	L,0
+     542/    83C3 : E5                  PS1:	PUSH	HL
+     543/    83C4 : 7E                  PS2:	LD	A,(HL)
+     544/    83C5 : FE C3               	CP	0C3H
+     545/    83C7 : 20 25               	JR	NZ,PS4
+     546/    83C9 : 23                  	INC	HL
+     547/    83CA : 23                  	INC	HL
+     548/    83CB : 23                  	INC	HL
+     549/    83CC : E5                  	PUSH	HL
+     550/    83CD : D5                  	PUSH	DE
+     551/    83CE : C5                  	PUSH	BC
+     552/    83CF : ED 5B 13 7F         	LD	DE,(MEMDE)
+     553/    83D3 : 1A                  PSF:	LD	A,(DE)
+     554/    83D4 : FE 21               	CP	021H
+     555/    83D6 : 38 24               	JR	C,FOU
+     556/    83D8 : BE                  	CP	(HL)
+     557/    83D9 : 20 04               	JR	NZ,NFOU
+     558/    83DB : 23                  	INC	HL
+     559/    83DC : 13                  	INC	DE
+     560/    83DD : 18 F4               	JR	PSF
+     561/    83DF :                     
+     562/    83DF :                     ; nicht gefunden
+     563/    83DF : C1                  NFOU:	POP	BC
+     564/    83E0 : D1                  	POP	DE
+     565/    83E1 : E1                  	POP	HL
+     566/    83E2 : D5                  	PUSH	DE
+     567/    83E3 : 11 09 00            	LD	DE,9
+     568/    83E6 : 19                  	ADD	HL,DE
+     569/    83E7 : D1                  	POP	DE
+     570/    83E8 : ED 5B 13 7F         	LD	DE,(MEMDE)
+     571/    83EC : 18 D6               	JR	PS2
+     572/    83EE :                     
+     573/    83EE : E1                  PS4:	POP	HL
+     574/    83EF : 24                  	INC	H
+     575/    83F0 : 7C                  	LD	A,H
+     576/    83F1 : B8                  	CP	B
+     577/    83F2 : 38 CD               	JR	C,PSV
+ AS V1.42 Beta [Bld 55] - source file KC-CAOS.asm - page 11 - 4/9/2008 16:59:08
+
+
+     578/    83F4 : 37                  	SCF
+     579/    83F5 : 3F                  	CCF
+     580/    83F6 : D1                  	POP	DE
+     581/    83F7 : ED 5B 13 7F         	LD	DE,(MEMDE)
+     582/    83FB : C9                  	RET
+     583/    83FC :                     
+     584/    83FC :                     ; gefunden
+     585/    83FC : C1                  FOU:	POP	BC
+     586/    83FD : C1                  	POP	BC
+     587/    83FE : E1                  	POP	HL
+     588/    83FF : 2B                  	DEC	HL
+     589/    8400 : 46                  	LD	B,(HL)
+     590/    8401 : 2B                  	DEC	HL
+     591/    8402 : 4E                  	LD	C,(HL)
+     592/    8403 : C5                  	PUSH	BC
+     593/    8404 : E1                  	POP	HL
+     594/    8405 : C1                  	POP	BC
+     595/    8406 : C1                  	POP	BC
+     596/    8407 : 37                  	SCF
+     597/    8408 : C9                  	RET
+     598/    8409 :                     
+     599/    8409 :                     ; Fehlermeldung
+     600/    8409 : 20 45 52 52 4F 52   ERRM:	DB	" ERROR"
+     601/    840F : 0D 0A               	DW	00A0DH
+     602/    8411 : 07 00               	DW	00007H
+     603/    8413 :                     
+     604/    8413 :                     ; Fehler
+     605/    8413 : CD 18 84            ERROR:	CALL	ERR1		; Ausgabe " FEHLER"
+     606/    8416 : 18 91               	JR	RET
+     607/    8418 :                     
+     608/    8418 :                     ; Ausgabe " FEHLER"
+     609/    8418 : D5                  ERR1:	PUSH	DE
+     610/    8419 : 11 09 84            	LD	DE,ERRM
+     611/    841C : CD 59 82            	CALL	PRNST
+     612/    841F : D1                  	POP	DE
+     613/    8420 : C9                  CAOSE:	RET
+     614/    8421 :                     
+     615/    8421 :                     
+     616/    8421 :                     ;**********************************
+     617/    8421 :                     ; Systemerweiterung inaktiv schalten
+     618/    8421 :                     ;**********************************
+     619/    8421 :                     
+     620/    8421 : 3E BB               JUMP:	LD	A,0BBH
+     621/    8423 : 32 FF 7F            	LD	(JPM),A
+     622/    8426 : 21 14 F3            	LD	HL,0F314H	; OS: BOS
+     623/    8429 : 22 06 00            	LD	(6),HL
+     624/    842C : C3 89 F0            	JP	0F089H		; OS: GOCPM
+     625/    842F :                     
+     626/    842F :                     ;**********************************
+     627/    842F :                     ; stellt ab dem nächsten Zeichen die gewählte Farbkombination ein.
+     628/    842F :                     ; Format: COLOR Vordergrundfarbe Hintergrundfarbe
+     629/    842F :                     ;**********************************
+     630/    842F :                     
+     631/    842F : 7D                  COLOR:	LD	A,L
+     632/    8430 : 3D                  	DEC	A
+     633/    8431 : CB 27               	SLA	A
+     634/    8433 : CB 27               	SLA	A
+     635/    8435 : CB 27               	SLA	A
+     636/    8437 : CB 27               	SLA	A
+     637/    8439 : F5                  	PUSH	AF
+ AS V1.42 Beta [Bld 55] - source file KC-CAOS.asm - page 12 - 4/9/2008 16:59:08
+
+
+     638/    843A : 7B                  	LD	A,E
+     639/    843B : C1                  	POP	BC
+     640/    843C : 3D                  	DEC	A
+     641/    843D : B0                  	OR	B
+     642/    843E : 32 27 00            	LD	(COL),A
+     643/    8441 : C9                  	RET
+     644/    8442 :                     
+     645/    8442 :                     ; A hexadezimal ausgeben
+     646/    8442 : F5                  AHEX:	PUSH	AF
+     647/    8443 : F5                  	PUSH	AF
+     648/    8444 : 1F                  	RRA
+     649/    8445 : 1F                  	RRA
+     650/    8446 : 1F                  	RRA
+     651/    8447 : 1F                  	RRA
+     652/    8448 : CD 51 84            	CALL	AHEX2
+     653/    844B : F1                  	POP	AF
+     654/    844C : CD 51 84            	CALL	AHEX2
+     655/    844F : F1                  	POP	AF
+     656/    8450 : C9                  	RET
+     657/    8451 :                     ;
+     658/    8451 : E6 0F               AHEX2:	AND	00FH
+     659/    8453 : C6 30               	ADD	A,030H
+     660/    8455 : FE 3A               	CP	03AH
+     661/    8457 : 38 02               	JR	C,ADR
+     662/    8459 : C6 07               	ADD	A,007H
+     663/    845B : D5                  ADR:	PUSH	DE
+     664/    845C : 5F                  	LD	E,A
+     665/    845D : CD 30 82            	CALL	DRUCK		; Zeichenausgabe E
+     666/    8460 : D1                  	POP	DE
+     667/    8461 : C9                  	RET
+     668/    8462 :                     
+     669/    8462 :                     ;HL hexadezimal + Leerzeichen ausgeben
+     670/    8462 : F5                  HLHEX:	PUSH	AF
+     671/    8463 : D5                  	PUSH	DE
+     672/    8464 : 7C                  	LD	A,H
+     673/    8465 : CD 42 84            	CALL	AHEX		; A hexadezimal ausgeben
+     674/    8468 : 7D                  	LD	A,L
+     675/    8469 : CD 42 84            	CALL	AHEX		; A hexadezimal ausgeben
+     676/    846C : 1E 20               	LD	E,020H
+     677/    846E : CD 30 82            	CALL	DRUCK		; Zeichenausgabe E
+     678/    8471 : D1                  	POP	DE
+     679/    8472 : F1                  	POP	AF
+     680/    8473 : C9                  	RET
+     681/    8474 :                     
+     682/    8474 :                     ;**********************************
+     683/    8474 :                     ; Beschreiben (modifizieren) von Speicherzellen
+     684/    8474 :                     ; Format: MODIPY Anfangsadreese
+     685/    8474 :                     ; Der angezeigte hexadezimale Wert der Speicherzelle kann auf diese
+     686/    8474 :                     ; Weise geändert werden. Gleichfalls ist die Eingabe eines ASCII-Zei-
+     687/    8474 :                     ; chens mit vorlaufendem Komma möglich. Nach einem Schrägstrich kann-
+     688/    8474 :                     ; ein anderer Speicherbereich gewählt werden.
+     689/    8474 :                     ; Durch die Eingabe des Punktes wird dieser Modus abgebrochen.
+     690/    8474 :                     ;**********************************
+     691/    8474 :                     
+     692/    8474 : 20                  MTEXT:	DB	020H
+     693/    8475 : 08 08               	DW	00808H
+     694/    8477 : 08 00               	DW	00008H
+     695/    8479 :                     
+     696/    8479 : CD 62 84            MODIF:	CALL	HLHEX		; HL hexadezimal + Leerzeichen ausgeben
+     697/    847C : 22 01 7F            	LD	(HLM),HL
+ AS V1.42 Beta [Bld 55] - source file KC-CAOS.asm - page 13 - 4/9/2008 16:59:08
+
+
+     698/    847F : 3E 00               	LD	A,0
+     699/    8481 : 32 00 7F            	LD	(AME),A
+     700/    8484 : 7E                  	LD	A,(HL)
+     701/    8485 : CD 42 84            	CALL	AHEX		; A hexadezimal ausgeben
+     702/    8488 : 11 74 84            	LD	DE,MTEXT
+     703/    848B : CD 59 82            	CALL	PRNST
+     704/    848E : CD 6E 82            	CALL	INLIN		; Eingabe einer Zeile, Abschluß mit ENTER
+     705/    8491 : CD 5B 83            	CALL	RHEX		; (DE) ff. als Hexzahl konvertieren
+     706/    8494 : 30 08               	JR	NC,RIG1
+     707/    8496 : CD 18 84            MERR:	CALL	ERR1		; Ausgabe " FEHLER"
+     708/    8499 : 2A 01 7F            	LD	HL,(HLM)
+     709/    849C : 18 DB               	JR	MODIF
+     710/    849E :                     
+     711/    849E : 7E                  RIG1:	LD	A,(HL)
+     712/    849F : 28 F5               	JR	Z,MERR
+     713/    84A1 : 21 11 7F            	LD	HL,MEMHL
+     714/    84A4 : D5                  	PUSH	DE
+     715/    84A5 : 5E                  	LD	E,(HL)
+     716/    84A6 : 23                  	INC	HL
+     717/    84A7 : 56                  	LD	D,(HL)
+     718/    84A8 : EB                  	EX	DE,HL
+     719/    84A9 : D1                  	POP	DE
+     720/    84AA : 06 00               	LD	B,0
+     721/    84AC : E5                  MSUCH:	PUSH	HL
+     722/    84AD : 13                  	INC	DE
+     723/    84AE : CD 5B 83            	CALL	RHEX		; (DE) ff. als Hexzahl konvertieren
+     724/    84B1 : 7E                  	LD	A,(HL)
+     725/    84B2 : B7                  	OR	A
+     726/    84B3 : 28 0C               	JR	Z,EZ1
+     727/    84B5 : 23                  	INC	HL
+     728/    84B6 : 7E                  	LD	A,(HL)
+     729/    84B7 : E1                  	POP	HL
+     730/    84B8 : 77                  MSET:	LD	(HL),A
+     731/    84B9 : 04                  	INC	B
+     732/    84BA : 23                  	INC	HL
+     733/    84BB : 3E 00               	LD	A,0
+     734/    84BD : 32 00 7F            	LD	(AME),A
+     735/    84C0 : E5                  	PUSH	HL
+     736/    84C1 : E1                  EZ1:	POP	HL
+     737/    84C2 : 1A                  	LD	A,(DE)
+     738/    84C3 : FE 2E               	CP	'.'		; Abbrechen ?
+     739/    84C5 : C8                  	RET	Z
+     740/    84C6 : FE 2C               	CP	','		; ASCII-Eingabe folgt
+     741/    84C8 : 20 05               	JR	NZ,EZ2
+     742/    84CA : 13                  	INC	DE
+     743/    84CB : 1A                  	LD	A,(DE)		; ASCII-Zeichen
+     744/    84CC : 13                  	INC	DE
+     745/    84CD : 18 E9               	JR	MSET
+     746/    84CF :                     
+     747/    84CF : 78                  EZ2:	LD	A,B
+     748/    84D0 : B7                  	OR	A
+     749/    84D1 : 20 01               	JR	NZ,EZ3
+     750/    84D3 : 23                  	INC	HL
+     751/    84D4 : 1A                  EZ3:	LD	A,(DE)
+     752/    84D5 : FE 3A               	CP	':'
+     753/    84D7 : 20 04               	JR	NZ,EZ4
+     754/    84D9 : 2B                  	DEC	HL
+     755/    84DA : 2B                  	DEC	HL
+     756/    84DB : 18 9C               	JR	MODIF
+     757/    84DD : FE 2F               EZ4:	CP	'/'		; neuer Speicherbereich?
+ AS V1.42 Beta [Bld 55] - source file KC-CAOS.asm - page 14 - 4/9/2008 16:59:08
+
+
+     758/    84DF : 20 0B               	JR	NZ,EZ5
+     759/    84E1 : 13                  	INC	DE
+     760/    84E2 : CD 5B 83            	CALL	RHEX		; (DE) ff. als Hexzahl konvertieren
+     761/    84E5 : 38 AF               	JR	C,MERR
+     762/    84E7 : 2A 11 7F            	LD	HL,(MEMHL)
+     763/    84EA : 18 8D               	JR	MODIF
+     764/    84EC :                     
+     765/    84EC : FE 20               EZ5:	CP	020H
+     766/    84EE : 20 A6               	JR	NZ,MERR
+     767/    84F0 : 3A 00 7F            	LD	A,(AME)
+     768/    84F3 : 3C                  	INC	A
+     769/    84F4 : 32 00 7F            	LD	(AME),A
+     770/    84F7 : FE 02               	CP	2
+     771/    84F9 : 38 B1               	JR	C,MSUCH
+     772/    84FB : C3 79 84            	JP	MODIF
+     773/    84FE :                     
+     774/    84FE :                     ;**********************************
+     775/    84FE :                     ; Anzeige beliebiger Speicherbereiche des Rechners
+     776/    84FE :                     ; Format: DISPLAY Anfangsadresse Endadresse
+     777/    84FE :                     ; Es werden jeweils 8 Byte hexadezimal mit den entsprechenden ASCII-
+     778/    84FE :                     ; Code angezeigt. Mit einer beliebigen Taste wird weitergeblättert.
+     779/    84FE :                     ; Durch Drücken der RUN-Taste wird in den MODIFY-Modus übergegangen.
+     780/    84FE :                     ; Mit der STOP-Taste kann die Speicheranzeige abgebrochen werden.
+     781/    84FE :                     ;**********************************
+     782/    84FE :                     
+     783/    84FE : FE 03               DISP:	CP	3
+     784/    8500 : 30 02               	JR	NC,SWJ
+     785/    8502 : 0E 08               	LD	C,8
+     786/    8504 : C5                  SWJ:	PUSH	BC
+     787/    8505 : CD 62 84            DISP2:	CALL	HLHEX		; HL hexadezimal + Leerzeichen ausgeben
+     788/    8508 : E5                  	PUSH	HL
+     789/    8509 : 06 08               	LD	B,8
+     790/    850B : 7E                  DIS2:	LD	A,(HL)
+     791/    850C : CD 42 84            	CALL	AHEX		; A hexadezimal ausgeben
+     792/    850F : 05                  	DEC	B
+     793/    8510 : 28 0A               	JR	Z,BEDZ
+     794/    8512 : D5                  	PUSH	DE
+     795/    8513 : 1E 20               	LD	E,020H
+     796/    8515 : CD 30 82            	CALL	DRUCK		; Zeichenausgabe E
+     797/    8518 : D1                  	POP	DE
+     798/    8519 : 23                  	INC	HL
+     799/    851A : 18 EF               	JR	DIS2
+     800/    851C :                     ;
+     801/    851C : D5                  BEDZ:	PUSH	DE
+     802/    851D : 1E 20               	LD	E,32
+     803/    851F : CD 30 82            	CALL	DRUCK		; Zeichenausgabe E
+     804/    8522 : 1E 20               	LD	E,32
+     805/    8524 : CD 30 82            	CALL	DRUCK		; Zeichenausgabe E
+     806/    8527 : D1                  	POP	DE
+     807/    8528 : E1                  	POP	HL
+     808/    8529 : 06 08               	LD	B,8
+     809/    852B : D5                  DZE1:	PUSH	DE
+     810/    852C : 5E                  	LD	E,(HL)
+     811/    852D : 7B                  	LD	A,E
+     812/    852E : FE 20               	CP	020H
+     813/    8530 : 30 02               	JR	NC,DZE2
+     814/    8532 : 1E F8               	LD	E,0F8H
+     815/    8534 : CD 30 82            DZE2:	CALL	DRUCK		; Zeichenausgabe E
+     816/    8537 : D1                  	POP	DE
+     817/    8538 : 23                  	INC	HL
+ AS V1.42 Beta [Bld 55] - source file KC-CAOS.asm - page 15 - 4/9/2008 16:59:08
+
+
+     818/    8539 : 10 F0               	DJNZ	DZE1
+     819/    853B : D5                  	PUSH	DE
+     820/    853C : 11 22 81            	LD	DE,CRL2
+     821/    853F : CD 59 82            	CALL	PRNST
+     822/    8542 : D1                  	POP	DE
+     823/    8543 : D5                  	PUSH	DE
+     824/    8544 : EB                  	EX	DE,HL
+     825/    8545 : ED 52               	SBC	HL,DE
+     826/    8547 : EB                  	EX	DE,HL
+     827/    8548 : D1                  	POP	DE
+     828/    8549 : 38 15               	JR	C,DIEND
+     829/    854B : 0D                  	DEC	C
+     830/    854C : 20 B7               	JR	NZ,DISP2
+     831/    854E : C5                  	PUSH	BC
+     832/    854F : 0E 01               	LD	C,1		; CONSI
+     833/    8551 : CD 05 00            	CALL	5
+     834/    8554 : C1                  	POP	BC
+     835/    8555 : FE 03               	CP	3		; <STOP>?
+     836/    8557 : C1                  	POP	BC
+     837/    8558 : C8                  	RET	Z
+     838/    8559 : FE 1D               	CP	01DH		; <RUN>?
+     839/    855B : 20 A7               	JR	NZ,SWJ
+     840/    855D : C3 79 84            	JP	MODIF
+     841/    8560 : C1                  DIEND:	POP	BC
+     842/    8561 : C9                  	RET
+     843/    8562 :                     
+     844/    8562 : 21 1A 7F            ESC:	LD	HL,FMHL
+     845/    8565 : 2B                  	DEC	HL
+     846/    8566 : 36 00               	LD	(HL),0
+     847/    8568 :                     
+     848/    8568 :                     
+     849/    8568 :                     ;------------------------------------------------------------------------------
+     850/    8568 :                     ;neuer Unterprogrammverteiler für CALL 5
+     851/    8568 :                     ;------------------------------------------------------------------------------
+     852/    8568 :                     
+     853/    8568 :                     ;neuen Unterprogrammverteiler für CALL 5 einrichten
+     854/    8568 : 21 6F 85            COPYR:	LD	HL,VKEY
+     855/    856B : 22 06 00            	LD	(6),HL
+     856/    856E : C9                  	RET
+     857/    856F :                     
+     858/    856F :                     ; neuer Unterprogrammverteiler für CALL 5
+     859/    856F : 32 10 7F            VKEY:	LD	(MEMA),A
+     860/    8572 : 79                  	LD	A,C
+     861/    8573 : FE 02               	CP	2
+     862/    8575 : 28 1F               	JR	Z,DRKEY		; Umleitung CONSO
+     863/    8577 : FE 01               	CP	1
+     864/    8579 : 28 35               	JR	Z,FTAST		; Umleitung CONSI
+     865/    857B : FE 22               	CP	022H
+     866/    857D : D2 53 8A            	JP	NC,VERW		; C >= 22, d.h. nicht def. UP
+     867/    8580 : 3A 10 7F            VMON:	LD	A,(MEMA)
+     868/    8583 : C3 14 F3            	JP	0F314H		; OS: BOS
+     869/    8586 :                     
+     870/    8586 :                     
+     871/    8586 : 3A 2B 00            DRBAS:	LD	A,(0002BH)	; aktuelle Spalte d. Cursors
+     872/    8589 : 57                  	LD	D,A
+     873/    858A : 3A 3D 00            	LD	A,(0003DH)	; 1. zu rollende Spalte - 1
+     874/    858D : 3C                  	INC	A
+     875/    858E : 92                  	SUB	D
+     876/    858F : B7                  	OR	A
+     877/    8590 : CA 0E 86            	JP	Z,NKEY		; dann Ende
+ AS V1.42 Beta [Bld 55] - source file KC-CAOS.asm - page 16 - 4/9/2008 16:59:08
+
+
+     878/    8593 : C3 07 86            	JP	NKEY2		; sonst Zeichenausgabe
+     879/    8596 :                     
+     880/    8596 :                     ; Umleitung System-Call 5 CONSO
+     881/    8596 :                     ; Ausgabe eines Zeichens zum aktuellen CONST-Gerät
+     882/    8596 : 3A 27 00            DRKEY:	LD	A,(COL)
+     883/    8599 : CB DF               	SET	3,A
+     884/    859B : 32 27 00            	LD	(COL),A
+     885/    859E : 3A 10 7F            	LD	A,(MEMA)
+     886/    85A1 : E5                  	PUSH	HL
+     887/    85A2 : C5                  	PUSH	BC
+     888/    85A3 : D5                  	PUSH	DE
+     889/    85A4 : 7B                  	LD	A,E
+     890/    85A5 : FE 20               	CP	020H
+     891/    85A7 : DA FA 87            	JP	C,STCOD		; wenn Steuerzeichen
+     892/    85AA : FE 3E               	CP	">"
+     893/    85AC : 28 D8               	JR	Z,DRBAS
+     894/    85AE : 18 57               	JR	NKEY2		; Zeichenausgabe
+     895/    85B0 :                     
+     896/    85B0 :                     ; Umleitung System-Call 5 CONSI
+     897/    85B0 :                     ; Eingabe eines Zeichen vom aktuellen CONST-Gerät
+     898/    85B0 : 3A 10 7F            FTAST:	LD	A,(MEMA)
+     899/    85B3 : E5                  	PUSH	HL
+     900/    85B4 : C5                  	PUSH	BC
+     901/    85B5 : D5                  	PUSH	DE
+     902/    85B6 : 21 1A 7F            	LD	HL,FMHL
+     903/    85B9 : 2B                  	DEC	HL
+     904/    85BA : 7E                  	LD	A,(HL)
+     905/    85BB : A7                  	AND	A
+     906/    85BC : C2 FD 86            	JP	NZ,FEND
+     907/    85BF : CD BC 82            	CALL	SETC		; Set Cursor
+     908/    85C2 : D1                  	POP	DE
+     909/    85C3 : C1                  	POP	BC
+     910/    85C4 : E1                  	POP	HL
+     911/    85C5 : E5                  	PUSH	HL
+     912/    85C6 : C5                  	PUSH	BC
+     913/    85C7 : D5                  	PUSH	DE
+     914/    85C8 : CD 14 F3            	CALL	0F314H		; OS: BOS
+     915/    85CB : F5                  	PUSH	AF
+     916/    85CC : CD 78 82            	CALL	RESC		; Reset Cursor
+     917/    85CF : 3A 1E 7F            	LD	A,(FLAG)	; BASIC-Modus?
+     918/    85D2 : A7                  	AND	A
+     919/    85D3 : 28 22               	JR	Z,BNO		; nein
+     920/    85D5 : 3A 1F 7F            	LD	A,(FFLAG)
+     921/    85D8 : A7                  	AND	A
+     922/    85D9 : 20 1C               	JR	NZ,BNO
+     923/    85DB :                     ; BASIC ja	
+     924/    85DB : 3E 01               BJA:	LD	A,1
+     925/    85DD : 32 1F 7F            	LD	(FFLAG),A
+     926/    85E0 : F1                  	POP	AF
+     927/    85E1 : FE 0D               	CP	13
+     928/    85E3 : 20 08               	JR	NZ,NO13
+     929/    85E5 : 1E 0A               	LD	E,10
+     930/    85E7 : CD 30 82            	CALL	DRUCK		; Zeichenausgabe E
+     931/    85EA : C3 95 86            	JP	BASET
+     932/    85ED :                     
+     933/    85ED :                     ; kein Enter-Zeichen
+     934/    85ED : 5F                  NO13:	LD	E,A
+     935/    85EE : CD 30 82            	CALL	DRUCK		; Zeichenausgabe E
+     936/    85F1 : CD 6E 82            	CALL	INLIN		; Eingabe einer Zeile, Abschluß mit ENTER
+     937/    85F4 : C3 95 86            	JP	BASET
+ AS V1.42 Beta [Bld 55] - source file KC-CAOS.asm - page 17 - 4/9/2008 16:59:08
+
+
+     938/    85F7 :                     
+     939/    85F7 :                     ;BASIC no
+     940/    85F7 : 21 40 87            BNO:	LD	HL,NRKEY	; Tabelle der belegten Funktions-Tasten
+     941/    85FA : F1                  	POP	AF
+     942/    85FB : E5                  	PUSH	HL
+     943/    85FC : D1                  	POP	DE
+     944/    85FD : 01 0A 00            	LD	BC,10
+     945/    8600 : ED B1               	CPIR			; Taste suchen
+     946/    8602 : CA 22 87            	JP	Z,FKEY		; wenn gefunden
+     947/    8605 : 18 07               	JR	NKEY		; sonst Ende
+     948/    8607 :                     
+     949/    8607 :                     ; Zeichenausgabe
+     950/    8607 : D1                  NKEY2:	POP	DE
+     951/    8608 : D5                  	PUSH	DE
+     952/    8609 : 0E 02               	LD	C,2		; CONSO
+     953/    860B : CD 14 F3            	CALL	0F314H		; OS: BOS
+     954/    860E : D1                  NKEY:	POP	DE
+     955/    860F : C1                  	POP	BC
+     956/    8610 : E1                  	POP	HL
+     957/    8611 : C9                  	RET
+     958/    8612 :                     
+     959/    8612 :                     ;**********************************
+     960/    8612 :                     
+     961/    8612 :                     ;Cursor runter
+     962/    8612 : 5F                  STDR:	LD	E,A
+     963/    8613 : 3A 3C 00            	LD	A,(0003CH)	; letzte zu rollende Zeile + 1
+     964/    8616 : 3D                  	DEC	A
+     965/    8617 : 47                  	LD	B,A
+     966/    8618 : 3A 2C 00            	LD	A,(0002CH)	; aktuelle Zeile d. Cursors
+     967/    861B : 90                  	SUB	B
+     968/    861C : 28 29               	JR	Z,SCUP
+     969/    861E : 18 E7               	JR	NKEY2		; Zeichenausgabe
+     970/    8620 :                     
+     971/    8620 : CD 77 86            SCUPT:	CALL	GETHL		; Ermitteln aktuelle Cursorposition
+     972/    8623 : 3A 34 00            	LD	A,(CCOL)	; aktuelles Farbattribut Zeichen unter Cursor
+     973/    8626 : 11 00 FC            	LD	DE,0FC00H	; -400H
+     974/    8629 : 19                  	ADD	HL,DE
+     975/    862A : 77                  	LD	(HL),A
+     976/    862B : 21 28 E8            	LD	HL,0E828H	; Beginn 2. Zeile Farbspeicher
+     977/    862E : 11 00 E8            	LD	DE,0E800H	; Beginn 1. Zeile Farbspeicher
+     978/    8631 : 01 98 03            	LD	BC,920		; 23 * 40
+     979/    8634 : C5                  	PUSH	BC
+     980/    8635 : ED B0               	LDIR
+     981/    8637 : 21 28 EC            	LD	HL,0EC28H	; Beginn 2. Zeile BWS
+     982/    863A : 11 00 EC            	LD	DE,0EC00H	; Beginn 1. Zeile BWS
+     983/    863D : C1                  	POP	BC
+     984/    863E : ED B0               	LDIR
+     985/    8640 : CD 45 88            	CALL	CLLN
+     986/    8643 : AF                  	XOR	A
+     987/    8644 : C3 0E 86            	JP	NKEY		; Ende
+     988/    8647 :                     
+     989/    8647 :                     ;Scroll up
+     990/    8647 : 3A 3B 00            SCUP:	LD	A,(0003BH)	; 1. rollende Zeile - 1
+     991/    864A : FE 00               	CP	0
+     992/    864C : 20 16               	JR	NZ,SCUPN
+     993/    864E : 3A 3C 00            	LD	A,(0003CH)	; letzte zu rollende Zeile + 1
+     994/    8651 : FE 19               	CP	25
+     995/    8653 : 20 0F               	JR	NZ,SCUPN
+     996/    8655 : 3A 3D 00            	LD	A,(0003DH)	; 1. zu rollende Spalte - 1
+     997/    8658 : FE 00               	CP	0
+ AS V1.42 Beta [Bld 55] - source file KC-CAOS.asm - page 18 - 4/9/2008 16:59:08
+
+
+     998/    865A : C2 64 86            	JP	NZ,SCUPN
+     999/    865D : 3A 3E 00            	LD	A,(0003EH)	; letzte zu rollende Spalte + 1
+    1000/    8660 : FE 29               	CP	41
+    1001/    8662 : 28 BC               	JR	Z,SCUPT
+    1002/    8664 : 0E 02               SCUPN:	LD	C,2		; CONSO
+    1003/    8666 : CD 14 F3            	CALL	0F314H		; OS: BOS
+    1004/    8669 : CD 45 88            	CALL	CLLN
+    1005/    866C : C3 0E 86            	JP	NKEY		;Ende
+    1006/    866F :                     
+    1007/    866F :                     ; Ermitteln aktuelle Cursorposition BC
+    1008/    866F : E5                  GETCU:	PUSH	HL
+    1009/    8670 : CD 77 86            	CALL	GETHL		; Ermitteln aktuelle Cursorposition
+    1010/    8673 : E5                  	PUSH	HL
+    1011/    8674 : C1                  	POP	BC
+    1012/    8675 : E1                  	POP	HL
+    1013/    8676 : C9                  	RET
+    1014/    8677 :                     
+    1015/    8677 :                     ; Ermitteln aktuelle Cursorposition
+    1016/    8677 : C5                  GETHL:	PUSH	BC
+    1017/    8678 : F5                  	PUSH	AF
+    1018/    8679 : 11 28 00            	LD	DE,40		; Länge Bildschirmzeile
+    1019/    867C : 21 00 EC            	LD	HL,0EC00H	; Beginn BWS
+    1020/    867F : 3A 2C 00            	LD	A,(0002CH)	; aktuelle Zeile d. Cursors
+    1021/    8682 : 47                  	LD	B,A
+    1022/    8683 : 19                  GETZ:	ADD	HL,DE
+    1023/    8684 : 10 FD               	DJNZ	GETZ
+    1024/    8686 : ED 52               	SBC	HL,DE
+    1025/    8688 : 3A 2B 00            	LD	A,(0002BH)	; aktuelle Spalte d. Cursors
+    1026/    868B : 3D                  	DEC	A
+    1027/    868C : 5F                  	LD	E,A
+    1028/    868D : 19                  	ADD	HL,DE
+    1029/    868E : ED 5B 2B 00         	LD	DE,(0002BH)	; aktuelle Spalte d. Cursors
+    1030/    8692 : F1                  	POP	AF
+    1031/    8693 : C1                  	POP	BC
+    1032/    8694 : C9                  	RET
+    1033/    8695 :                     
+    1034/    8695 : F5                  BASET:	PUSH	AF
+    1035/    8696 : AF                  	XOR	A
+    1036/    8697 : 32 1F 7F            	LD	(FFLAG),A
+    1037/    869A : 3A 3D 00            	LD	A,(0003DH)	; 1. zu rollende Spalte - 1
+    1038/    869D : 3C                  	INC	A
+    1039/    869E : 32 2B 00            	LD	(0002BH),A	; aktuelle Spalte d. Cursors
+    1040/    86A1 : 1E 0B               	LD	E,11		; CTRL/Q	Kontrollton EIN/AUS
+    1041/    86A3 : 0E 02               	LD	C,2		; CONSO
+    1042/    86A5 : CD 14 F3            	CALL	0F314H		; OS: BOS
+    1043/    86A8 : 11 62 03            	LD	DE,00362H	; BASIC INPBUF+1, EINGABEPUFFER
+    1044/    86AB : 06 46               	LD	B,046H		; = 70, max. Länge BASIC-Zeile
+    1045/    86AD : D5                  	PUSH	DE
+    1046/    86AE : CD 77 86            LDBAS:	CALL	GETHL		; Ermitteln aktuelle Cursorposition
+    1047/    86B1 : D1                  	POP	DE
+    1048/    86B2 : 7E                  	LD	A,(HL)
+    1049/    86B3 : FE 20               	CP	020H
+    1050/    86B5 : CC DE 86            	CALL	Z,ZLEER
+    1051/    86B8 : 12                  	LD	(DE),A
+    1052/    86B9 : FE 00               	CP	0		; Zeilenende
+    1053/    86BB : 28 0E               	JR	Z,LDBE
+    1054/    86BD : 13                  	INC	DE
+    1055/    86BE : 0E 02               	LD	C,2		; CONSO
+    1056/    86C0 : D5                  	PUSH	DE
+    1057/    86C1 : 1E 09               	LD	E,9		; Cursor nach rechts
+ AS V1.42 Beta [Bld 55] - source file KC-CAOS.asm - page 19 - 4/9/2008 16:59:08
+
+
+    1058/    86C3 : C5                  	PUSH	BC
+    1059/    86C4 : CD 14 F3            	CALL	0F314H		; OS: BOS
+    1060/    86C7 : C1                  	POP	BC
+    1061/    86C8 : 10 E4               	DJNZ	LDBAS
+    1062/    86CA : D1                  	POP	DE
+    1063/    86CB : 3A 3D 00            LDBE:	LD	A,(0003DH)	; 1. zu rollende Spalte - 1
+    1064/    86CE : 3C                  	INC	A
+    1065/    86CF : 32 2B 00            	LD	(0002BH),A	; aktuelle Spalte d. Cursors
+    1066/    86D2 : 04                  	INC	B
+    1067/    86D3 : 04                  	INC	B
+    1068/    86D4 : 04                  	INC	B
+    1069/    86D5 : AF                  	XOR	A
+    1070/    86D6 : 12                  LDB0:	LD	(DE),A
+    1071/    86D7 : 13                  	INC	DE
+    1072/    86D8 : 10 FC               	DJNZ	LDB0
+    1073/    86DA : F1                  	POP	AF
+    1074/    86DB : C3 0E 86            	JP	NKEY		; Ende
+    1075/    86DE :                     
+    1076/    86DE : 3A 34 00            ZLEER:	LD	A,(CCOL)	; aktuelles Farbattribut Zeichen unter Cursor
+    1077/    86E1 : CB 5F               	BIT	3,A
+    1078/    86E3 : 20 02               	JR	NZ,ZL1
+    1079/    86E5 : AF                  ZL0:	XOR	A
+    1080/    86E6 : C9                  	RET
+    1081/    86E7 :                     ;
+    1082/    86E7 : 3E 20               ZL1:	LD	A,020H
+    1083/    86E9 : C9                  	RET
+    1084/    86EA :                     
+    1085/    86EA :                     ; CONSO-Treiber: CTRL/D Aktivierung BASIC-Fullscreen-Editor
+    1086/    86EA : 3A 38 03            TFLAG:	LD	A,(00338H)	; Merkzelle vom BASIC (RNDVR3+xx)
+    1087/    86ED : FE D6               	CP	0D6H		; Test auf ROM-BASIC
+    1088/    86EF : C2 0E 86            	JP	NZ,NKEY		; Ende
+    1089/    86F2 : 3A 1E 7F            	LD	A,(FLAG)
+    1090/    86F5 : EE 01               	XOR	1		; BASIC-Modeus togglen
+    1091/    86F7 : 32 1E 7F            	LD	(FLAG),A
+    1092/    86FA : C3 0E 86            	JP	NKEY		; Ende
+    1093/    86FD :                     
+    1094/    86FD : 2A 1A 7F            FEND:	LD	HL,(FMHL)
+    1095/    8700 : 23                  	INC	HL
+    1096/    8701 :                     ; Ausgabe Funktionsstasten-String ab (HL)
+    1097/    8701 : 22 1A 7F            KEYF:	LD	(FMHL),HL
+    1098/    8704 : 7E                  	LD	A,(HL)
+    1099/    8705 : B7                  	OR	A
+    1100/    8706 : CC 18 87            	CALL	Z,ESCC		; Ende erreicht (Nullbyte) -> ESC rücksetzen
+    1101/    8709 : 7E                  	LD	A,(HL)
+    1102/    870A : 21 1A 7F            	LD	HL,FMHL
+    1103/    870D : 2B                  	DEC	HL
+    1104/    870E : 77                  	LD	(HL),A
+    1105/    870F : C3 0E 86            	JP	NKEY		; Ende
+    1106/    8712 :                     
+    1107/    8712 :                     ; CONSO-Treiber: ESC
+    1108/    8712 : CD 18 87            EESC:	CALL	ESCC
+    1109/    8715 : C3 07 86            	JP	NKEY2		; Zeichenausgabe
+    1110/    8718 :                     
+    1111/    8718 : 3A 15 7F            ESCC:	LD	A,(MESC)	; Escape-Tasten-Druck merken/löschen
+    1112/    871B : EE 20               	XOR	020H		; toggle Flag
+    1113/    871D : 32 15 7F            	LD	(MESC),A
+    1114/    8720 : AF                  	XOR	A
+    1115/    8721 : C9                  	RET
+    1116/    8722 :                     
+    1117/    8722 : F5                  FKEY:	PUSH	AF		; Funktions-Tasten ausführen
+ AS V1.42 Beta [Bld 55] - source file KC-CAOS.asm - page 20 - 4/9/2008 16:59:08
+
+
+    1118/    8723 : 3A 15 7F            	LD	A,(MESC)
+    1119/    8726 : FE 00               	CP	0
+    1120/    8728 : 20 04               	JR	NZ,ME1		; nur wenn vorheriges Zeichen Escape war
+    1121/    872A : F1                  ME0:	POP	AF
+    1122/    872B : C3 0E 86            	JP	NKEY		; Ende
+    1123/    872E :                     ;
+    1124/    872E : F1                  ME1:	POP	AF
+    1125/    872F : AF                  	XOR	A
+    1126/    8730 : ED 52               	SBC	HL,DE
+    1127/    8732 : EB                  	EX	DE,HL		; DE = Offset in Tabelle der belegten Funktions-Tasten
+    1128/    8733 : 21 21 7F            	LD	HL,KEYTA
+    1129/    8736 : 01 00 01            	LD	BC,00100H
+    1130/    8739 : 1D                  CPIR:	DEC	E
+    1131/    873A : 28 C5               	JR	Z,KEYF		; wenn zugehörigen String gefunden
+    1132/    873C : ED B1               	CPIR			; suche Abschluss des Strings (A=0)
+    1133/    873E : 18 F9               	JR	CPIR		; weitersuchen
+    1134/    8740 :                     
+    1135/    8740 :                     ;
+    1136/    8740 : 30                  NRKEY:	DB	"0"		; Tabelle der belegten ESC-Tasten
+    1137/    8741 : 31                  	DB	"1"
+    1138/    8742 : 32                  	DB	"2"
+    1139/    8743 : 33                  	DB	"3"
+    1140/    8744 : 34                  	DB	"4"
+    1141/    8745 : 35                  	DB	"5"
+    1142/    8746 : 36                  	DB	"6"
+    1143/    8747 : 37                  	DB	"7"
+    1144/    8748 : 38                  	DB	"8"
+    1145/    8749 : 39                  	DB	"9"
+    1146/    874A :                     
+    1147/    874A : 02                  MKEY:	DB	2		; ESC 0: <CL LN>
+    1148/    874B : 25 42               	DB	"%B"		; Basic starten
+    1149/    874D : 0D                  	DB	13		; <ENTER>
+    1150/    874E : 33 32 35 30 30      	DB	"32500"		; max. Speichergröße
+    1151/    8753 : 0D 00               	DW	13		; <ENTER>
+    1152/    8755 : 47 4F 53 55 42      	DB	"GOSUB"
+    1153/    875A : 00                  	DB	0
+    1154/    875B : 50 52 49 4E 54 41   	DB	"PRINTAT("	; ESC 1
+                    54 28 
+    1155/    8763 : 00                  	DB	0
+    1156/    8764 : 52 45 54 55 52 4E   	DB	"RETURN"	; ESC 2
+    1157/    876A : 00                  	DB	0
+    1158/    876B : 57 49 4E 44 4F 57   	DB	"WINDOW"	; ESC 3
+    1159/    8771 : 00                  	DB	0
+    1160/    8772 : 45 44 49 54         	DB	"EDIT"		; ESC 4
+    1161/    8776 : 00                  	DB	0
+    1162/    8777 : 41 55 54 4F         	DB	"AUTO"		; ESC 5
+    1163/    877B : 00                  	DB	0
+    1164/    877C : 49 4E 4B 35 3A 50   	DB	"INK5:PAP"	; ESC 6
+                    41 50 
+    1165/    8784 : 45 52 37 3A 42 4F   	DB	"ER7:BORD"
+                    52 44 
+    1166/    878C : 45 52 33            	DB	"ER3"
+    1167/    878F : 0D 00               	DW	13
+    1168/    8791 : 57 49 4E 44 4F 57   	DB	"WINDOW:"
+                    3A 
+    1169/    8798 : 43 4C 53            	DB	"CLS"
+    1170/    879B : 0D 00               	DW	13
+    1171/    879D : 02                  	DB	2
+    1172/    879E : 25 74               	DB	"%t"
+    1173/    87A0 : 0D                  	DB	13
+ AS V1.42 Beta [Bld 55] - source file KC-CAOS.asm - page 21 - 4/9/2008 16:59:08
+
+
+    1174/    87A1 : 0B                  	DB	11
+    1175/    87A2 : 0B                  	DB	11
+    1176/    87A3 : 1B                  	DB	01BH
+    1177/    87A4 : 00 00               	DW	0
+    1178/    87A6 :                     
+    1179/    87A6 :                     ;**********************************
+    1180/    87A6 :                     ; Aufruf und Anzeige der aktuellen Punktionstastenbelegung auf den
+    1181/    87A6 :                     ; Bildschirm.
+    1182/    87A6 :                     ;**********************************
+    1183/    87A6 :                     
+    1184/    87A6 : 06 00               KEYLI:	LD	B,0
+    1185/    87A8 : 11 21 7F            	LD	DE,KEYTA
+    1186/    87AB : D5                  KL2:	PUSH	DE
+    1187/    87AC : 11 D4 87            	LD	DE,KEYM1
+    1188/    87AF : CD 59 82            	CALL	PRNST
+    1189/    87B2 : 78                  	LD	A,B
+    1190/    87B3 : CD 51 84            	CALL	AHEX2
+    1191/    87B6 : 11 D9 87            	LD	DE,KEYM2	; Doppelpunkt ausgeben
+    1192/    87B9 : CD 59 82            	CALL	PRNST
+    1193/    87BC : D1                  	POP	DE
+    1194/    87BD : CD DD 87            	CALL	PRKEY
+    1195/    87C0 : ED 5B 13 7F         	LD	DE,(MEMDE)
+    1196/    87C4 : 13                  	INC	DE
+    1197/    87C5 : 04                  	INC	B
+    1198/    87C6 : D5                  	PUSH	DE
+    1199/    87C7 : 11 22 81            	LD	DE,CRL2
+    1200/    87CA : CD 59 82            	CALL	PRNST
+    1201/    87CD : D1                  	POP	DE
+    1202/    87CE : 78                  	LD	A,B
+    1203/    87CF : FE 0A               	CP	00AH
+    1204/    87D1 : 38 D8               	JR	C,KL2
+    1205/    87D3 : C9                  	RET
+    1206/    87D4 :                     
+    1207/    87D4 : 4B 45 59 20         KEYM1:	DB	"KEY "
+    1208/    87D8 : 00                  	DB	0
+    1209/    87D9 : 20 3A 20            KEYM2:	DB	" : "
+    1210/    87DC : 00                  	DB	0
+    1211/    87DD :                     
+    1212/    87DD : F5                  PRKEY:	PUSH	AF
+    1213/    87DE : D5                  	PUSH	DE
+    1214/    87DF : 1A                  PRK1:	LD	A,(DE)
+    1215/    87E0 : FE 00               	CP	0
+    1216/    87E2 : 28 0F               	JR	Z,PRK3
+    1217/    87E4 : D5                  	PUSH	DE
+    1218/    87E5 : FE 20               	CP	020H
+    1219/    87E7 : 30 02               	JR	NC,PRK2
+    1220/    87E9 : 3E FF               	LD	A,0FFH
+    1221/    87EB : 5F                  PRK2:	LD	E,A
+    1222/    87EC : CD 30 82            	CALL	DRUCK		; Zeichenausgabe E
+    1223/    87EF : D1                  	POP	DE
+    1224/    87F0 : 13                  	INC	DE
+    1225/    87F1 : 18 EC               	JR	PRK1
+    1226/    87F3 :                     ;
+    1227/    87F3 : ED 53 13 7F         PRK3:	LD	(MEMDE),DE
+    1228/    87F7 : D1                  	POP	DE
+    1229/    87F8 : F1                  	POP	AF
+    1230/    87F9 : C9                  	RET
+    1231/    87FA :                     
+    1232/    87FA :                     ; CONSO-Treiber: Steuercodes
+    1233/    87FA : FE 0A               STCOD:	CP	00AH		; Cursor runter
+ AS V1.42 Beta [Bld 55] - source file KC-CAOS.asm - page 22 - 4/9/2008 16:59:08
+
+
+    1234/    87FC : CA 12 86            	JP	Z,STDR
+    1235/    87FF : FE 1B               	CP	01BH		; <ESC>
+    1236/    8801 : CA 12 87            	JP	Z,EESC
+    1237/    8804 : FE 1D               	CP	01DH		; <RUN>		Backspace
+    1238/    8806 : 28 2B               	JR	Z,ST01
+    1239/    8808 : FE 0C               	CP	00CH		; CTRL/L	Bildschirm löschen
+    1240/    880A : 28 2F               	JR	Z,ST0C
+    1241/    880C : FE 1A               	CP	01AH		; <INS>
+    1242/    880E : CA B7 88            	JP	Z,ST1A
+    1243/    8811 : FE 19               	CP	019H		; tab left, CTRL/Y
+    1244/    8813 : CA AD 88            	JP	Z,ST19
+    1245/    8816 : FE 18               	CP	018H		; tab right, CTRL/X
+    1246/    8818 : CA A3 88            	JP	Z,ST18
+    1247/    881B : FE 02               	CP	002H		; <CL LN>
+    1248/    881D : 28 21               	JR	Z,ST02
+    1249/    881F : FE 1F               	CP	01FH		; <DEL>
+    1250/    8821 : CA ED 88            	JP	Z,ST1F
+    1251/    8824 : FE 04               	CP	004H		; CTRL/D 	Aktivierung BASIC-Fullscreen-Editor
+    1252/    8826 : CA EA 86            	JP	Z,TFLAG
+    1253/    8829 : C3 07 86            STE0:	JP	NKEY2		; Zeichenausgabe
+    1254/    882C : C3 0E 86            STE1:	JP	NKEY		; Ende
+    1255/    882F :                     
+    1256/    882F : 08 20               MST01:	DW	02008H
+    1257/    8831 : 08 00               	DW	00008H
+    1258/    8833 :                     
+    1259/    8833 :                     ; CONSO-Treiber: RUN
+    1260/    8833 : 11 2F 88            ST01:	LD	DE,MST01
+    1261/    8836 : CD 59 82            	CALL	PRNST		; Backspace-Funktion
+    1262/    8839 : 18 F1               	JR	STE1		; Ende
+    1263/    883B :                     
+    1264/    883B :                     ; CONSO-Treiber: CTRL/L
+    1265/    883B : CD FC 81            ST0C:	CALL	CLS
+    1266/    883E : 18 EC               	JR	STE1		; Ende
+    1267/    8840 :                     
+    1268/    8840 :                     ; CONSO-Treiber: CLLN
+    1269/    8840 : CD 45 88            ST02:	CALL	CLLN
+    1270/    8843 : 18 E7               	JR	STE1		; Ende
+    1271/    8845 :                     
+    1272/    8845 : 3A 3D 00            CLLN:	LD	A,(0003DH)	; 1. zu rollende Spalte - 1
+    1273/    8848 : 3C                  	INC	A
+    1274/    8849 : 32 2B 00            	LD	(0002BH),A	; aktuelle Spalte d. Cursors := 0
+    1275/    884C : 3A 3D 00            	LD	A,(0003DH)	; 1. zu rollende Spalte - 1
+    1276/    884F : 47                  	LD	B,A
+    1277/    8850 : 3A 3E 00            	LD	A,(0003EH)	; letzte zu rollende Spalte + 1
+    1278/    8853 : 90                  	SUB	B
+    1279/    8854 : 3D                  	DEC	A
+    1280/    8855 : 47                  	LD	B,A
+    1281/    8856 : CD 77 86            CLL1:	CALL	GETHL		; Ermitteln aktuelle Cursorposition
+    1282/    8859 : E5                  	PUSH	HL
+    1283/    885A : 11 00 FC            	LD	DE,0FC00H
+    1284/    885D : 19                  	ADD	HL,DE
+    1285/    885E : E5                  	PUSH	HL
+    1286/    885F : D1                  	POP	DE
+    1287/    8860 : E1                  	POP	HL
+    1288/    8861 : 3A 27 00            CLL2:	LD	A,(COL)
+    1289/    8864 : CB 9F               	RES	3,A
+    1290/    8866 : 12                  	LD	(DE),A
+    1291/    8867 : 32 34 00            	LD	(CCOL),A	; aktuelles Farbattribut Zeichen unter Cursor
+    1292/    886A : 3E 20               	LD	A,32
+    1293/    886C : 77                  	LD	(HL),A
+ AS V1.42 Beta [Bld 55] - source file KC-CAOS.asm - page 23 - 4/9/2008 16:59:08
+
+
+    1294/    886D : 32 3F 00            	LD	(MCUR),A	; aktuelles Zeichen unter Cursor
+    1295/    8870 : 23                  	INC	HL
+    1296/    8871 : 13                  	INC	DE
+    1297/    8872 : 10 ED               	DJNZ	CLL2
+    1298/    8874 : C9                  	RET
+    1299/    8875 :                     
+    1300/    8875 :                     ;(toter Code)
+    1301/    8875 : F5                  ST0A:	PUSH	AF
+    1302/    8876 : 3A 3C 00            	LD	A,(0003CH)	; letzte zu rollende Zeile + 1
+    1303/    8879 : 47                  	LD	B,A
+    1304/    887A : 3A 2C 00            	LD	A,(0002CH)	; aktuelle Zeile d. Cursors(1-24)
+    1305/    887D : B8                  	CP	B
+    1306/    887E : 38 0A               	JR	C,ESTC
+    1307/    8880 : 0E 02               	LD	C,2
+    1308/    8882 : 1E 0A               	LD	E,00AH		; Cursor down ausgeben
+    1309/    8884 : CD 14 F3            	CALL	0F314H		; OS: BOS
+    1310/    8887 : CD 45 88            	CALL	CLLN
+    1311/    888A : F1                  ESTC:	POP	AF
+    1312/    888B : C9                  	RET
+    1313/    888C :                     
+    1314/    888C :                     ;(toter Code)
+    1315/    888C : F5                  ST0B:	PUSH	AF
+    1316/    888D : 3A 3B 00            	LD	A,(0003BH)	; 1. rollende Zeile - 1
+    1317/    8890 : 47                  	LD	B,A
+    1318/    8891 : 3A 2C 00            	LD	A,(0002CH)	; aktuelle Zeile d. Cursors(1-24)
+    1319/    8894 : B8                  	CP	B
+    1320/    8895 : 30 F3               	JR	NC,ESTC
+    1321/    8897 : 0E 02               	LD	C,2		; CONSO
+    1322/    8899 : 1E 0B               	LD	E,00BH		; cu up
+    1323/    889B : CD 14 F3            	CALL	0F314H		; OS: BOS
+    1324/    889E : CD 45 88            	CALL	CLLN
+    1325/    88A1 : 18 E7               	JR	ESTC
+    1326/    88A3 :                     
+    1327/    88A3 :                     ; CONSO-Treiber: tab right, CTRL/X
+    1328/    88A3 : 3A 3E 00            ST18:	LD	A,(0003EH)	; letzte zu rollende Spalte + 1
+    1329/    88A6 : 3D                  	DEC	A
+    1330/    88A7 : 32 2B 00            	LD	(0002BH),A	; aktuelle Spalte d. Cursors(1-40)
+    1331/    88AA : C3 2C 88            	JP	STE1		; Ende
+    1332/    88AD :                     
+    1333/    88AD :                     ; CONSO-Treiber: tab left, CTRL/Y
+    1334/    88AD : 3A 3D 00            ST19:	LD	A,(0003DH)	; 1. zu rollende Spalte - 1
+    1335/    88B0 : 3C                  	INC	A
+    1336/    88B1 : 32 2B 00            	LD	(0002BH),A	; aktuelle Spalte d. Cursors(1-40)
+    1337/    88B4 : C3 2C 88            	JP	STE1		; Ende
+    1338/    88B7 :                     
+    1339/    88B7 :                     ; CONSO-Treiber: INS
+    1340/    88B7 : CD 77 86            ST1A:	CALL	GETHL		; Ermitteln aktuelle Cursorposition
+    1341/    88BA : 3A 3E 00            	LD	A,(0003EH)	; letzte zu rollende Spalte + 1
+    1342/    88BD : 3D                  	DEC	A
+    1343/    88BE : 47                  	LD	B,A
+    1344/    88BF : 3E 28               	LD	A,40
+    1345/    88C1 : 90                  	SUB	B
+    1346/    88C2 : 47                  	LD	B,A
+    1347/    88C3 : 3E 28               	LD	A,40
+    1348/    88C5 : 90                  	SUB	B
+    1349/    88C6 : 93                  	SUB	E
+    1350/    88C7 : F5                  	PUSH	AF
+    1351/    88C8 : 47                  	LD	B,A
+    1352/    88C9 : 7E                  	LD	A,(HL)
+    1353/    88CA : 36 20               	LD	(HL),32
+ AS V1.42 Beta [Bld 55] - source file KC-CAOS.asm - page 24 - 4/9/2008 16:59:08
+
+
+    1354/    88CC : 23                  ST1A1:	INC	HL
+    1355/    88CD : 5E                  	LD	E,(HL)
+    1356/    88CE : 77                  	LD	(HL),A
+    1357/    88CF : 7B                  	LD	A,E
+    1358/    88D0 : 10 FA               	DJNZ	ST1A1
+    1359/    88D2 : CD 6F 86            	CALL	GETCU		; Ermitteln aktuelle Cursorposition BC
+    1360/    88D5 : F1                  	POP	AF
+    1361/    88D6 : 21 00 FC            	LD	HL,0FC00H
+    1362/    88D9 : 09                  	ADD	HL,BC
+    1363/    88DA : 47                  	LD	B,A
+    1364/    88DB : 4E                  	LD	C,(HL)
+    1365/    88DC : 3A 27 00            	LD	A,(COL)
+    1366/    88DF : CB DF               	SET	3,A
+    1367/    88E1 : 77                  	LD	(HL),A
+    1368/    88E2 : 79                  	LD	A,C
+    1369/    88E3 : 23                  ST1A2:	INC	HL
+    1370/    88E4 : 5E                  	LD	E,(HL)
+    1371/    88E5 : 77                  	LD	(HL),A
+    1372/    88E6 : 7B                  	LD	A,E
+    1373/    88E7 : 10 FA               	DJNZ	ST1A2
+    1374/    88E9 : AF                  	XOR	A
+    1375/    88EA : C3 2C 88            	JP	STE1		; Ende
+    1376/    88ED :                     
+    1377/    88ED :                     ; CONSO-Treiber: DEL
+    1378/    88ED : CD 6F 86            ST1F:	CALL	GETCU		; Ermitteln aktuelle Cursorposition BC
+    1379/    88F0 : 3A 3E 00            	LD	A,(0003EH)	; letzte zu rollende Spalte + 1
+    1380/    88F3 : 3D                  	DEC	A
+    1381/    88F4 : 67                  	LD	H,A
+    1382/    88F5 : 3E 28               	LD	A,40
+    1383/    88F7 : 94                  	SUB	H
+    1384/    88F8 : 67                  	LD	H,A
+    1385/    88F9 : 3E 28               	LD	A,40
+    1386/    88FB : 94                  	SUB	H
+    1387/    88FC : 93                  	SUB	E
+    1388/    88FD : F5                  	PUSH	AF
+    1389/    88FE : 5F                  	LD	E,A
+    1390/    88FF : D5                  	PUSH	DE
+    1391/    8900 : EB                  	EX	DE,HL
+    1392/    8901 : 26 00               	LD	H,0
+    1393/    8903 : 09                  	ADD	HL,BC
+    1394/    8904 : EB                  	EX	DE,HL
+    1395/    8905 : ED 53 13 7F         	LD	(MEMDE),DE
+    1396/    8909 : D1                  	POP	DE
+    1397/    890A : C5                  	PUSH	BC
+    1398/    890B : E1                  	POP	HL
+    1399/    890C : 16 00               	LD	D,0
+    1400/    890E : D5                  	PUSH	DE
+    1401/    890F : C1                  	POP	BC
+    1402/    8910 : E5                  	PUSH	HL
+    1403/    8911 : D1                  	POP	DE
+    1404/    8912 : 23                  	INC	HL
+    1405/    8913 : ED B0               	LDIR
+    1406/    8915 : 2A 13 7F            	LD	HL,(MEMDE)
+    1407/    8918 : 36 20               	LD	(HL),32
+    1408/    891A : CD 6F 86            	CALL	GETCU		; Ermitteln aktuelle Cursorposition BC
+    1409/    891D : 21 00 FC            	LD	HL,0FC00H
+    1410/    8920 : 09                  	ADD	HL,BC
+    1411/    8921 : E5                  	PUSH	HL
+    1412/    8922 : 23                  	INC	HL
+    1413/    8923 : 7E                  	LD	A,(HL)
+ AS V1.42 Beta [Bld 55] - source file KC-CAOS.asm - page 25 - 4/9/2008 16:59:08
+
+
+    1414/    8924 : 32 34 00            	LD	(CCOL),A	; aktuelles Farbattribut Zeichen unter Cursor
+    1415/    8927 : 2B                  	DEC	HL
+    1416/    8928 : C1                  	POP	BC
+    1417/    8929 : F1                  	POP	AF
+    1418/    892A : 5F                  	LD	E,A
+    1419/    892B : D5                  	PUSH	DE
+    1420/    892C : EB                  	EX	DE,HL
+    1421/    892D : 26 00               	LD	H,0
+    1422/    892F : 09                  	ADD	HL,BC
+    1423/    8930 : EB                  	EX	DE,HL
+    1424/    8931 : ED 53 13 7F         	LD	(MEMDE),DE
+    1425/    8935 : D1                  	POP	DE
+    1426/    8936 : C5                  	PUSH	BC
+    1427/    8937 : E1                  	POP	HL
+    1428/    8938 : 16 00               	LD	D,0
+    1429/    893A : D5                  	PUSH	DE
+    1430/    893B : C1                  	POP	BC
+    1431/    893C : E5                  	PUSH	HL
+    1432/    893D : D1                  	POP	DE
+    1433/    893E : 23                  	INC	HL
+    1434/    893F : ED B0               	LDIR
+    1435/    8941 : 2A 13 7F            	LD	HL,(MEMDE)
+    1436/    8944 : 3A 27 00            	LD	A,(COL)
+    1437/    8947 : CB 9F               	RES	3,A
+    1438/    8949 : 77                  	LD	(HL),A
+    1439/    894A : C3 2C 88            	JP	STE1		; Ende
+    1440/    894D :                     
+    1441/    894D :                     ;**********************************
+    1442/    894D :                     ; Lesen eines Portes des Rechners
+    1443/    894D :                     ; Format: in Portadresse
+    1444/    894D :                     ; Der gelesene Wert wird auf dem Bildschirm ausgegeben.
+    1445/    894D :                     ;**********************************
+    1446/    894D :                     
+    1447/    894D : 4D                  UPIN:	LD	C,L
+    1448/    894E : ED 78               	IN	A,(C)
+    1449/    8950 : CD 42 84            	CALL	AHEX		; A hexadezimal ausgeben
+    1450/    8953 : CD 7B 89            	CALL	CRNL
+    1451/    8956 : C9                  	RET
+    1452/    8957 :                     
+    1453/    8957 :                     ;**********************************
+    1454/    8957 :                     ; schreiben eines Portes des Rechners
+    1455/    8957 :                     ; Format: out Portadresse Wert
+    1456/    8957 :                     ; Der vorgegebene Wert wird auf den Port mit der Adresse ausgegeben.
+    1457/    8957 :                     ;**********************************
+    1458/    8957 :                     
+    1459/    8957 : 4D                  UPOUT:	LD	C,L
+    1460/    8958 : 7B                  	LD	A,E
+    1461/    8959 : ED 79               	OUT	(C),A
+    1462/    895B : C9                  	RET
+    1463/    895C :                     
+    1464/    895C :                     ;**********************************
+    1465/    895C :                     ;* Kdo time
+    1466/    895C :                     ;**********************************
+    1467/    895C :                     
+    1468/    895C : B7                  TIME0:	OR	A
+    1469/    895D : 20 4F               	JR	NZ,STIME	; Parameter folgen -> Zeit setzen
+    1470/    895F : 3A 1D 00            GTIME:	LD	A,(0001DH)	; Puffer für Stunden
+    1471/    8962 : CD CF 89            	CALL	DRDEZ
+    1472/    8965 : 1E 3A               	LD	E,':'
+    1473/    8967 : CD 30 82            	CALL	DRUCK		; Zeichenausgabe E
+ AS V1.42 Beta [Bld 55] - source file KC-CAOS.asm - page 26 - 4/9/2008 16:59:08
+
+
+    1474/    896A : 3A 1E 00            	LD	A,(0001EH)	; Puffer für Minuten
+    1475/    896D : CD CF 89            	CALL	DRDEZ
+    1476/    8970 : 1E 3A               	LD	E,':'
+    1477/    8972 : CD 30 82            	CALL	DRUCK		; Zeichenausgabe E
+    1478/    8975 : 3A 1F 00            	LD	A,(0001FH)	; Puffer für Sekunden
+    1479/    8978 : CD CF 89            	CALL	DRDEZ
+    1480/    897B : D5                  CRNL:	PUSH	DE
+    1481/    897C : 11 22 81            	LD	DE,CRL2
+    1482/    897F : CD 59 82            	CALL	PRNST
+    1483/    8982 : D1                  	POP	DE
+    1484/    8983 : C9                  	RET
+    1485/    8984 :                     
+    1486/    8984 : FE 60               DEHE:	CP	060H
+    1487/    8986 : 38 02               	JR	C,MSJ
+    1488/    8988 : AF                  MSN:	XOR	A
+    1489/    8989 : C9                  	RET
+    1490/    898A :                     
+    1491/    898A : 47                  MSJ:	LD	B,A
+    1492/    898B : CB 38               	SRL	B
+    1493/    898D : CB 38               	SRL	B
+    1494/    898F : CB 38               	SRL	B
+    1495/    8991 : CB 38               	SRL	B
+    1496/    8993 : 04                  	INC	B
+    1497/    8994 : 5F                  	LD	E,A
+    1498/    8995 : AF                  	XOR	A
+    1499/    8996 : C6 0A               ZAB:	ADD	A,10
+    1500/    8998 : 10 FC               	DJNZ	ZAB
+    1501/    899A : D6 0A               	SUB	10
+    1502/    899C : 4F                  	LD	C,A
+    1503/    899D : 21 11 7F            	LD	HL,MEMHL
+    1504/    89A0 : 73                  	LD	(HL),E
+    1505/    89A1 : AF                  	XOR	A
+    1506/    89A2 : ED 67               	RRD
+    1507/    89A4 : FE 0A               	CP	10
+    1508/    89A6 : 30 E0               	JR	NC,MSN
+    1509/    89A8 : 47                  	LD	B,A
+    1510/    89A9 : 0C                  ZBC:	INC	C
+    1511/    89AA : 10 FD               	DJNZ	ZBC
+    1512/    89AC : 79                  	LD	A,C
+    1513/    89AD : C9                  	RET
+    1514/    89AE :                     
+    1515/    89AE :                     ; Zeit setzen
+    1516/    89AE : 7D                  STIME:	LD	A,L
+    1517/    89AF : 53                  	LD	D,E
+    1518/    89B0 : 59                  	LD	E,C
+    1519/    89B1 : FE 18               	CP	24
+    1520/    89B3 : 38 01               	JR	C,ST1
+    1521/    89B5 : AF                  	XOR	A
+    1522/    89B6 : D5                  ST1:	PUSH	DE
+    1523/    89B7 : CD 84 89            	CALL	DEHE
+    1524/    89BA : 32 1D 00            	LD	(0001DH),A	; Puffer für Stunden
+    1525/    89BD : D1                  	POP	DE
+    1526/    89BE : 7A                  	LD	A,D
+    1527/    89BF : D5                  	PUSH	DE
+    1528/    89C0 : CD 84 89            	CALL	DEHE
+    1529/    89C3 : 32 1E 00            	LD	(0001EH),A	; Puffer für Minuten
+    1530/    89C6 : D1                  	POP	DE
+    1531/    89C7 : 7B                  	LD	A,E
+    1532/    89C8 : CD 84 89            	CALL	DEHE
+    1533/    89CB : 32 1F 00            	LD	(0001FH),A	; Puffer für Sekunden
+ AS V1.42 Beta [Bld 55] - source file KC-CAOS.asm - page 27 - 4/9/2008 16:59:08
+
+
+    1534/    89CE : C9                  	RET
+    1535/    89CF :                     
+    1536/    89CF :                     ; Anzeige A dezimal
+    1537/    89CF : 3C                  DRDEZ:	INC	A
+    1538/    89D0 : FE 3C               	CP	60
+    1539/    89D2 : 20 04               	JR	NZ,DRDW
+    1540/    89D4 : 3E 59               	LD	A,059H
+    1541/    89D6 : 18 19               	JR	DEZ2
+    1542/    89D8 : 26 00               DRDW:	LD	H,0
+    1543/    89DA : 6F                  	LD	L,A
+    1544/    89DB : 0E 00               	LD	C,0
+    1545/    89DD : 11 0A 00            	LD	DE,10
+    1546/    89E0 : 0C                  DEZ1:	INC	C
+    1547/    89E1 : ED 52               	SBC	HL,DE
+    1548/    89E3 : 30 FB               	JR	NC,DEZ1
+    1549/    89E5 : 19                  	ADD	HL,DE
+    1550/    89E6 : 0D                  	DEC	C
+    1551/    89E7 : CB 21               	SLA	C
+    1552/    89E9 : CB 21               	SLA	C
+    1553/    89EB : CB 21               	SLA	C
+    1554/    89ED : CB 21               	SLA	C
+    1555/    89EF : 79                  	LD	A,C
+    1556/    89F0 : B5                  	OR	L
+    1557/    89F1 : CD 42 84            DEZ2:	CALL	AHEX		; A hexadezimal ausgeben
+    1558/    89F4 : C9                  	RET
+    1559/    89F5 :                     
+    1560/    89F5 :                     ;**********************************
+    1561/    89F5 :                     ; Direkteingabe von ASCII-Zeichen in den Speicher
+    1562/    89F5 :                     ; Format: write Anfangsadresse
+    1563/    89F5 :                     ; Nach Betätigung der ENTER-Taste kann beliebiger Text in den Speicher
+    1564/    89F5 :                     ; geschrieben werden. Mit der STOP-Taste kann diese Funktion abge-
+    1565/    89F5 :                     ; brochen werden.
+    1566/    89F5 :                     ;**********************************
+    1567/    89F5 :                     
+    1568/    89F5 : 0E 01               WRITE:	LD	C,1		; CONSI
+    1569/    89F7 : CD 05 00            	CALL	5
+    1570/    89FA : FE 03               	CP	3		; <STOP>
+    1571/    89FC : 28 10               	JR	Z,WRE
+    1572/    89FE : FE 1D               	CP	01DH		; <RUN>: Backspace
+    1573/    8A00 : 28 10               	JR	Z,WCLR
+    1574/    8A02 : FE 20               	CP	020H
+    1575/    8A04 : 38 21               	JR	C,WSTC		; wenn Steuerzeichen
+    1576/    8A06 : 77                  	LD	(HL),A		; sonst Zeichen eintragen
+    1577/    8A07 : 5F                  WRIT2:	LD	E,A
+    1578/    8A08 : 23                  	INC	HL
+    1579/    8A09 : CD 30 82            	CALL	DRUCK		; Zeichenausgabe E
+    1580/    8A0C : 18 E7               	JR	WRITE
+    1581/    8A0E :                     ; STOP
+    1582/    8A0E : 36 00               WRE:	LD	(HL),0		; Abschluß: Nullbyte
+    1583/    8A10 : 18 1A               	JR	WRE2
+    1584/    8A12 :                     
+    1585/    8A12 :                     ; Backspace, Zeichen löschen
+    1586/    8A12 : ED 5B 01 7F         WCLR:	LD	DE,(HLM)
+    1587/    8A16 : E5                  	PUSH	HL
+    1588/    8A17 : ED 52               	SBC	HL,DE
+    1589/    8A19 : E1                  	POP	HL
+    1590/    8A1A : 28 D9               	JR	Z,WRITE
+    1591/    8A1C : 11 2F 88            	LD	DE,MST01
+    1592/    8A1F : CD 59 82            	CALL	PRNST
+    1593/    8A22 : 36 00               	LD	(HL),0
+ AS V1.42 Beta [Bld 55] - source file KC-CAOS.asm - page 28 - 4/9/2008 16:59:08
+
+
+    1594/    8A24 : 2B                  	DEC	HL
+    1595/    8A25 : 18 CE               	JR	WRITE
+    1596/    8A27 :                     ; Steuerzeichen: volles Kästchen ausgeben
+    1597/    8A27 : 77                  WSTC:	LD	(HL),A
+    1598/    8A28 : 3E FF               	LD	A,0FFH
+    1599/    8A2A : 18 DB               	JR	WRIT2
+    1600/    8A2C :                     
+    1601/    8A2C :                     ; Anzeige von Anfangsadresse und Endadresse des beschriebenen Bereichs
+    1602/    8A2C : E5                  WRE2:	PUSH	HL
+    1603/    8A2D : 2A 01 7F            	LD	HL,(HLM)	; Anfangsadresse
+    1604/    8A30 : CD 7B 89            	CALL	CRNL
+    1605/    8A33 : CD 62 84            	CALL	HLHEX		; HL hexadezimal + Leerzeichen ausgeben
+    1606/    8A36 : 11 D9 87            	LD	DE,KEYM2	; Doppelpunkt ausgeben
+    1607/    8A39 : CD 59 82            	CALL	PRNST
+    1608/    8A3C : E1                  	POP	HL		; aktuelle Adresse
+    1609/    8A3D : CD 62 84            	CALL	HLHEX		; HL hexadezimal + Leerzeichen ausgeben
+    1610/    8A40 : C3 7B 89            	JP	CRNL
+    1611/    8A43 :                     
+    1612/    8A43 :                     ;**********************************
+    1613/    8A43 :                     ; sofortige Umschaltung der Farbkombination des gesamten Bildschir-
+    1614/    8A43 :                     ; mes. Im Gegensatz zu COLOR wird bei diesem Kommando nicht zellenwel-
+    1615/    8A43 :                     ; se die neue Farbkombination ab aktueller Cursorposition erzeugt, son-
+    1616/    8A43 :                     ; dern der gesamte Bildschirm in der neuen Kombination eingefärbt.
+    1617/    8A43 :                     ;**********************************
+    1618/    8A43 :                     
+    1619/    8A43 : 21 00 E8            VCOL:	LD	HL,0E800H
+    1620/    8A46 : 11 01 E8            	LD	DE,0E801H
+    1621/    8A49 : 01 C0 03            	LD	BC,003C0H	; 40*24
+    1622/    8A4C : 3A 27 00            	LD	A,(COL)		; aktuelles Farbattribut
+    1623/    8A4F : 77                  	LD	(HL),A
+    1624/    8A50 : ED B0               	LDIR			; kompletten Farbpeicher füllen
+    1625/    8A52 : C9                  	RET
+    1626/    8A53 :                     
+    1627/    8A53 :                     
+    1628/    8A53 :                     ; erweiterter Unterprogrammverteiler für CALL 5
+    1629/    8A53 : FE 35               VERW:	CP	035H
+    1630/    8A55 : D2 80 85            	JP	NC,VMON		; ungültige Funktion
+    1631/    8A58 : D6 22               	SUB	022H
+    1632/    8A5A : 21 77 8A            	LD	HL,VERM
+    1633/    8A5D : 16 00               	LD	D,0
+    1634/    8A5F : 5F                  	LD	E,A
+    1635/    8A60 : 19                  	ADD	HL,DE
+    1636/    8A61 : 19                  	ADD	HL,DE
+    1637/    8A62 : 5E                  	LD	E,(HL)
+    1638/    8A63 : 23                  	INC	HL
+    1639/    8A64 : 56                  	LD	D,(HL)
+    1640/    8A65 : D5                  	PUSH	DE		; UP-Adresse auf Stack
+    1641/    8A66 : 08                  	EX	AF,AF'
+    1642/    8A67 : D9                  	EXX
+    1643/    8A68 : 22 01 7F            	LD	(HLM),HL
+    1644/    8A6B : ED 53 03 7F         	LD	(DEM),DE
+    1645/    8A6F : ED 43 05 7F         	LD	(BCM),BC
+    1646/    8A73 : 32 00 7F            	LD	(AME),A
+    1647/    8A76 : C9                  	RET			; UP aufrufen
+    1648/    8A77 :                     
+    1649/    8A77 :                     ; zusätzliche Unterprogramme
+    1650/    8A77 : A4 8A               VERM:	DW	SWIT		; C=22H
+    1651/    8A79 : 21 84               	DW	JUMP		; C=23H
+    1652/    8A7B : 7C 81               	DW	MENU		; C=24H
+    1653/    8A7D : 86 8B               	DW	SAVE		; C=25H
+ AS V1.42 Beta [Bld 55] - source file KC-CAOS.asm - page 29 - 4/9/2008 16:59:08
+
+
+    1654/    8A7F : 3B 8C               	DW	VERIF		; C=26H
+    1655/    8A81 : 3F 8C               	DW	LOAD		; C=27H
+    1656/    8A83 : 2F 84               	DW	COLOR		; C=28H
+    1657/    8A85 : 79 84               	DW	MODIF		; C=29H
+    1658/    8A87 : FE 84               	DW	DISP		; C=2AH
+    1659/    8A89 : F1 8A               	DW	KEY		; C=2BH
+    1660/    8A8B : A6 87               	DW	KEYLI		; C=2CH
+    1661/    8A8D : F5 89               	DW	WRITE		; C=2DH
+    1662/    8A8F : 43 8A               	DW	VCOL		; C=2EH
+    1663/    8A91 : A9 83               	DW	RET		; C=2FH
+    1664/    8A93 : 42 84               	DW	AHEX		; C=30H	A hexadezimal ausgeben
+    1665/    8A95 : 62 84               	DW	HLHEX		; C=31H	HL hexadezimal + Leerzeichen ausgeben
+    1666/    8A97 : 6E 82               	DW	INLIN		; C=32H Eingabe einer Zeile, Abschluß mit ENTER
+    1667/    8A99 : 9D 8A               	DW	RHEXH		; C=33H String ab (DE) als Hexzahl nach HL konvertieren
+    1668/    8A9B : 18 84               	DW	ERR1		; C=34H Ausgabe " FEHLER"
+    1669/    8A9D :                     
+    1670/    8A9D :                     ; String ab (DE) als Hexzahl nach HL konvertieren
+    1671/    8A9D : CD 5B 83            RHEXH:	CALL	RHEX		; (DE) ff. als Hexzahl konvertieren
+    1672/    8AA0 : 2A 11 7F            	LD	HL,(MEMHL)
+    1673/    8AA3 : C9                  	RET
+    1674/    8AA4 :                     
+    1675/    8AA4 :                     
+    1676/    8AA4 :                     
+    1677/    8AA4 :                     ;  **********************************
+    1678/    8AA4 :                     ;  ***  BETRIEBSSYSTEM F]R KC 87  ***
+    1679/    8AA4 :                     ;  ***  VERSION 3.0 ,  TEIL 2     ***
+    1680/    8AA4 :                     ;  ***  DIRK AMBRAS , 01.07.1988  ***
+    1681/    8AA4 :                     ;  **********************************
+    1682/    8AA4 :                     ;
+    1683/    8AA4 :                     ;CAOS:	EQU	07100H
+    1684/    8AA4 :                     ;BSST:	EQU	CAOS-00100H
+    1685/    8AA4 :                     ;	ORG	CAOS+00AA4H
+    1686/    8AA4 :                     ;ERR1:	EQU	CAOS+00418H
+    1687/    8AA4 :                     ;HLHEX:	EQU	CAOS+00462H
+    1688/    8AA4 :                     ;PRNST:	EQU	CAOS+00259H
+    1689/    8AA4 :                     ;RET:	EQU	CAOS+003A9H
+    1690/    8AA4 :                     ;INLIN:	EQU	CAOS+0026EH
+    1691/    8AA4 :                     ;DRUCK:	EQU	CAOS+00230H
+    1692/    8AA4 :                     ;PRKEY:	EQU	CAOS+007DDH
+    1693/    8AA4 :                     ;CRNL:	EQU	CAOS+0097BH
+    1694/    8AA4 :                     ;AHEX:	EQU	CAOS+00442H
+    1695/    8AA4 :                     ;KEYM1:	EQU	CAOS+007D4H
+    1696/    8AA4 :                     ;AME:	EQU	BSST
+    1697/    8AA4 :                     ;HLM:	EQU	BSST+00001H
+    1698/    8AA4 :                     ;MEMDE:	EQU	BSST+00013H
+    1699/    8AA4 :                     ;SCUR:	EQU	BSST+00018H
+    1700/    8AA4 :                     ;KEYTA:	EQU	BSST+00021H
+    1701/    8AA4 :                     ;EKEY:	EQU	BSST+000F8H
+    1702/    8AA4 :                     ;
+    1703/    8AA4 :                     
+    1704/    8AA4 :                     ;**********************************
+    1705/    8AA4 :                     ; Mit SWITCH S Z kann ein RAM-Bereich S
+    1706/    8AA4 :                     ; (4,8,C) als RAM oder ROM deklarieren.
+    1707/    8AA4 :                     ; Z=0 RAM Z=1 ROM
+    1708/    8AA4 :                     ;**********************************
+    1709/    8AA4 :                     
+    1710/    8AA4 : FE 02               SWIT:	CP	2
+    1711/    8AA6 : 28 3A               	JR	Z,SWSE
+    1712/    8AA8 : FE 01               SWGE:	CP	1
+    1713/    8AAA : 28 04               	JR	Z,OKSW
+ AS V1.42 Beta [Bld 55] - source file KC-CAOS.asm - page 30 - 4/9/2008 16:59:08
+
+
+    1714/    8AAC : CD 18 84            SWERR:	CALL	ERR1		; Ausgabe " FEHLER"
+    1715/    8AAF : C9                  	RET
+    1716/    8AB0 :                     
+    1717/    8AB0 : E5                  OKSW:	PUSH	HL
+    1718/    8AB1 : D1                  	POP	DE
+    1719/    8AB2 : E5                  	PUSH	HL
+    1720/    8AB3 : 0E 1B               SWPR:	LD	C,01BH		; GETM 	Abfrage der Speicherkonfiguration
+    1721/    8AB5 : CD 05 00            	CALL	5
+    1722/    8AB8 : 1E 02               	LD	E,2		; <CL LN>
+    1723/    8ABA : CD 30 82            	CALL	DRUCK		; Zeichenausgabe E
+    1724/    8ABD : 00                  	NOP
+    1725/    8ABE : E1                  	POP	HL
+    1726/    8ABF : F5                  	PUSH	AF
+    1727/    8AC0 : CD 62 84            	CALL	HLHEX		; HL hexadezimal + Leerzeichen ausgeben
+    1728/    8AC3 : F1                  	POP	AF
+    1729/    8AC4 : FE 01               	CP	1
+    1730/    8AC6 : 28 15               	JR	Z,SWRAM
+    1731/    8AC8 : 11 D1 8A            SWROM:	LD	DE,MROM
+    1732/    8ACB : CD 59 82            SWDR:	CALL	PRNST
+    1733/    8ACE : C3 7B 89            	JP	CRNL
+    1734/    8AD1 :                     
+    1735/    8AD1 : 2D 20 52 4F 4D      MROM:	DB	"- ROM"
+    1736/    8AD6 : 00                  	DB	0
+    1737/    8AD7 : 2D 20 52 41 4D      MRAM:	DB	"- RAM"
+    1738/    8ADC : 00                  	DB	0
+    1739/    8ADD :                     
+    1740/    8ADD : 11 D7 8A            SWRAM:	LD	DE,MRAM
+    1741/    8AE0 : 18 E9               	JR	SWDR
+    1742/    8AE2 :                     
+    1743/    8AE2 : 7B                  SWSE:	LD	A,E
+    1744/    8AE3 : FE 02               	CP	2
+    1745/    8AE5 : 30 C5               	JR	NC,SWERR
+    1746/    8AE7 : E5                  	PUSH	HL
+    1747/    8AE8 : D1                  	POP	DE
+    1748/    8AE9 : E5                  	PUSH	HL
+    1749/    8AEA : 0E 1C               	LD	C,01CH		; SETM 	Setzen der Speicherkonfiguration
+    1750/    8AEC : CD 05 00            	CALL	5
+    1751/    8AEF : 18 C2               	JR	SWPR
+    1752/    8AF1 :                     
+    1753/    8AF1 :                     ;**********************************
+    1754/    8AF1 :                     ; Aufruf der entsprechenden Funktionstastenbelegung zur Änderung.
+    1755/    8AF1 :                     ; Format: KEY Z      (Z = 0 ... 9)
+    1756/    8AF1 :                     ; Die Belegung kann byteweise von hinten durch Betätigung der RUN-Taste
+    1757/    8AF1 :                     ; gelöscht werden. Anschließend ist eine neue Belegung möglich, die
+    1758/    8AF1 :                     ; durch die Betätigung der STOP-Taste abgeschlossen wird.
+    1759/    8AF1 :                     ;**********************************
+    1760/    8AF1 :                     
+    1761/    8AF1 : 7D                  KEY:	LD	A,L
+    1762/    8AF2 : FE 0A               KEY1:	CP	10
+    1763/    8AF4 : D0                  	RET	NC
+    1764/    8AF5 : CD 58 8B            	CALL	SKEY
+    1765/    8AF8 : 11 F9 7F            	LD	DE,EKEY+1
+    1766/    8AFB : EB                  	EX	DE,HL
+    1767/    8AFC : A7                  	AND	A
+    1768/    8AFD : ED 52               	SBC	HL,DE
+    1769/    8AFF : DA 7B 89            	JP	C,CRNL
+    1770/    8B02 : EB                  	EX	DE,HL
+    1771/    8B03 : 4B                  	LD	C,E
+    1772/    8B04 : 42                  	LD	B,D
+    1773/    8B05 : C5                  TASTE:	PUSH	BC
+ AS V1.42 Beta [Bld 55] - source file KC-CAOS.asm - page 31 - 4/9/2008 16:59:08
+
+
+    1774/    8B06 : 0E 01               	LD	C,1
+    1775/    8B08 : CD 05 00            	CALL	5
+    1776/    8B0B : C1                  	POP	BC
+    1777/    8B0C : A7                  	AND	A
+    1778/    8B0D : 28 F6               	JR	Z,TASTE
+    1779/    8B0F : FE 03               	CP	3
+    1780/    8B11 : 20 03               	JR	NZ,DRKE
+    1781/    8B13 : C3 7B 89            KEND:	JP	CRNL
+    1782/    8B16 : FE 1D               DRKE:	CP	01DH		; <RUN>
+    1783/    8B18 : 28 25               	JR	Z,CLR
+    1784/    8B1A : E5                  	PUSH	HL
+    1785/    8B1B : 21 F8 7F            	LD	HL,EKEY
+    1786/    8B1E : 34                  	INC	(HL)
+    1787/    8B1F : 35                  	DEC	(HL)
+    1788/    8B20 : E1                  	POP	HL
+    1789/    8B21 : 20 E2               	JR	NZ,TASTE
+    1790/    8B23 : 21 F8 7F            DR1:	LD	HL,EKEY
+    1791/    8B26 : 54                  	LD	D,H
+    1792/    8B27 : 5D                  	LD	E,L
+    1793/    8B28 : 13                  	INC	DE
+    1794/    8B29 : C5                  	PUSH	BC
+    1795/    8B2A : ED B8               	LDDR
+    1796/    8B2C : C1                  	POP	BC
+    1797/    8B2D : 23                  	INC	HL
+    1798/    8B2E : 77                  	LD	(HL),A
+    1799/    8B2F : 23                  	INC	HL
+    1800/    8B30 : 5F                  	LD	E,A
+    1801/    8B31 : FE 20               	CP	32
+    1802/    8B33 : 30 02               	JR	NC,DR2
+    1803/    8B35 : 1E FF               	LD	E,0FFH
+    1804/    8B37 : C5                  DR2:	PUSH	BC
+    1805/    8B38 : CD 30 82            	CALL	DRUCK		; Zeichenausgabe E
+    1806/    8B3B : C1                  	POP	BC
+    1807/    8B3C : 0B                  	DEC	BC
+    1808/    8B3D : 18 C6               	JR	TASTE
+    1809/    8B3F :                     
+    1810/    8B3F : 2B                  CLR:	DEC	HL
+    1811/    8B40 : 7E                  	LD	A,(HL)
+    1812/    8B41 : 23                  	INC	HL
+    1813/    8B42 : A7                  	AND	A
+    1814/    8B43 : 28 C0               	JR	Z,TASTE
+    1815/    8B45 : 2B                  	DEC	HL
+    1816/    8B46 : E5                  	PUSH	HL
+    1817/    8B47 : 23                  	INC	HL
+    1818/    8B48 : 03                  	INC	BC
+    1819/    8B49 : C5                  	PUSH	BC
+    1820/    8B4A : 54                  	LD	D,H
+    1821/    8B4B : 5D                  	LD	E,L
+    1822/    8B4C : 1B                  	DEC	DE
+    1823/    8B4D : ED B0               	LDIR
+    1824/    8B4F : 1E 1D               	LD	E,01DH		; <RUN>
+    1825/    8B51 : CD 30 82            	CALL	DRUCK		; Zeichenausgabe E
+    1826/    8B54 : C1                  	POP	BC
+    1827/    8B55 : E1                  	POP	HL
+    1828/    8B56 : 18 AD               	JR	TASTE
+    1829/    8B58 :                     
+    1830/    8B58 : 21 21 7F            SKEY:	LD	HL,KEYTA
+    1831/    8B5B : 47                  	LD	B,A
+    1832/    8B5C : 04                  	INC	B
+    1833/    8B5D : 2B                  	DEC	HL
+ AS V1.42 Beta [Bld 55] - source file KC-CAOS.asm - page 32 - 4/9/2008 16:59:08
+
+
+    1834/    8B5E : 36 00               	LD	(HL),0
+    1835/    8B60 : 7E                  SKEY1:	LD	A,(HL)
+    1836/    8B61 : A7                  	AND	A
+    1837/    8B62 : 23                  	INC	HL
+    1838/    8B63 : 20 FB               	JR	NZ,SKEY1
+    1839/    8B65 : 10 F9               	DJNZ	SKEY1
+    1840/    8B67 : E5                  	PUSH	HL
+    1841/    8B68 : D1                  	POP	DE
+    1842/    8B69 : CD DD 87            SKEY2:	CALL	PRKEY
+    1843/    8B6C : 2A 13 7F            	LD	HL,(MEMDE)
+    1844/    8B6F : C9                  	RET
+    1845/    8B70 :                     
+    1846/    8B70 : 4E 41 4D 45 20 3A   KAS1:	DB	"NAME : "
+                    20 
+    1847/    8B77 : 00                  	DB	0
+    1848/    8B78 : 3E 20               KAS2:	DB	"> "
+    1849/    8B7A : 00                  	DB	0
+    1850/    8B7B : 3F 20               KAS3:	DB	"? "
+    1851/    8B7D : 07 00               	DW	7
+    1852/    8B7F : 2A 20               KAS4:	DB	"* "
+    1853/    8B81 : 07 00               	DW	7
+    1854/    8B83 : 43 4F 4D            KAS5:	DB	"COM"
+    1855/    8B86 :                     
+    1856/    8B86 :                     ;**********************************
+    1857/    8B86 :                     ; funktioniert analog dem KC 85/3
+    1858/    8B86 :                     ; Format: SAVE Anfangsadresse Endadresse (Startadresse)
+    1859/    8B86 :                     ; Es können beliebige COM-Files auf Magnetband gespeichert werden.
+    1860/    8B86 :                     ;**********************************
+    1861/    8B86 :                     
+    1862/    8B86 : FE 02               SAVE:	CP	2
+    1863/    8B88 : D2 8F 8B            	JP	NC,OKSA
+    1864/    8B8B : CD 18 84            ERRS:	CALL	ERR1		; Ausgabe " FEHLER"
+    1865/    8B8E : C9                  	RET
+    1866/    8B8F :                     
+    1867/    8B8F : 22 6D 00            OKSA:	LD	(0006DH),HL	; FCB: AADR Dateianfangsadresse
+    1868/    8B92 : 22 1B 00            	LD	(0001BH),HL	; DMA Zeiger auf Puffer für Kassetten-E/A
+    1869/    8B95 : ED 53 6F 00         	LD	(0006FH),DE	; FCB: EADR Dateiendeadresse
+    1870/    8B99 : 21 FF FF            	LD	HL,0FFFFH
+    1871/    8B9C : 22 71 00            	LD	(00071H),HL	; FCB: SADR Startadresse
+    1872/    8B9F : FE 02               	CP	2
+    1873/    8BA1 : 28 08               	JR	Z,SAV1
+    1874/    8BA3 : ED 43 71 00         	LD	(00071H),BC	; FCB: SADR Startadresse
+    1875/    8BA7 : FE 04               	CP	4
+    1876/    8BA9 : 30 E0               	JR	NC,ERRS
+    1877/    8BAB : 11 70 8B            SAV1:	LD	DE,KAS1
+    1878/    8BAE : CD 59 82            	CALL	PRNST
+    1879/    8BB1 : CD 6E 82            	CALL	INLIN
+    1880/    8BB4 : 21 07 00            	LD	HL,7
+    1881/    8BB7 : 19                  	ADD	HL,DE
+    1882/    8BB8 : 11 5C 00            	LD	DE,0005CH	; FCB: FNAME Dateiname
+    1883/    8BBB : 06 08               	LD	B,8
+    1884/    8BBD : CD 28 8C            	CALL	NAMCO
+    1885/    8BC0 : 21 83 8B            	LD	HL,KAS5
+    1886/    8BC3 : 01 03 00            	LD	BC,3		; Dateityp eintragen
+    1887/    8BC6 : ED B0               	LDIR
+    1888/    8BC8 : 2A 6F 00            	LD	HL,(0006FH)	; FCB: EADR Dateiendeadresse
+    1889/    8BCB : ED 5B 6D 00         	LD	DE,(0006DH)	; FCB: AADR Dateianfangsadresse
+    1890/    8BCF : ED 52               	SBC	HL,DE
+    1891/    8BD1 : ED 6A               	ADC	HL,HL
+    1892/    8BD3 : E5                  	PUSH	HL
+ AS V1.42 Beta [Bld 55] - source file KC-CAOS.asm - page 33 - 4/9/2008 16:59:08
+
+
+    1893/    8BD4 : AF                  	XOR	A		; A=0 -> kein Schutz
+    1894/    8BD5 : 32 73 00            	LD	(00073H),A	; FCB: SBY Schutzbyte
+    1895/    8BD8 : 15                  	DEC	D
+    1896/    8BD9 : 9C                  	SBC	A,H
+    1897/    8BDA : D5                  	PUSH	DE
+    1898/    8BDB : AF                  	XOR	A
+    1899/    8BDC : CD 42 84            	CALL	AHEX		; A hexadezimal ausgeben
+    1900/    8BDF : CD 4A F4            	CALL	0F44AH		; OPENW+5
+    1901/    8BE2 : 11 78 8B            	LD	DE,KAS2
+    1902/    8BE5 : CD 59 82            	CALL	PRNST
+    1903/    8BE8 : D1                  	POP	DE
+    1904/    8BE9 : C1                  	POP	BC
+    1905/    8BEA : AF                  	XOR	A
+    1906/    8BEB : B8                  	CP	B
+    1907/    8BEC : 28 1C               	JR	Z,SAV2
+    1908/    8BEE : 2A 01 7F            	LD	HL,(HLM)
+    1909/    8BF1 : 22 1B 00            	LD	(0001BH),HL	; DMA Zeiger auf Puffer für Kassetten-E/A
+    1910/    8BF4 : 22 6D 00            	LD	(0006DH),HL	; FCB: AADR Dateianfangsadresse
+    1911/    8BF7 : C5                  SAV3:	PUSH	BC
+    1912/    8BF8 : 3A 6B 00            	LD	A,(0006BH)	; FCB: BLNR Blocknummer
+    1913/    8BFB : CD 42 84            	CALL	AHEX		; A hexadezimal ausgeben
+    1914/    8BFE : CD 1E 8C            	CALL	BLRA
+    1915/    8C01 : 11 78 8B            	LD	DE,KAS2
+    1916/    8C04 : CD 59 82            	CALL	PRNST
+    1917/    8C07 : C1                  	POP	BC
+    1918/    8C08 : 10 ED               	DJNZ	SAV3
+    1919/    8C0A : 3E FF               SAV2:	LD	A,0FFH		; letzter Block
+    1920/    8C0C : 32 6B 00            	LD	(0006BH),A	; FCB: BLNR Blocknummer
+    1921/    8C0F : CD 42 84            	CALL	AHEX		; A hexadezimal ausgeben
+    1922/    8C12 : CD 1E 8C            	CALL	BLRA
+    1923/    8C15 : 11 78 8B            	LD	DE,KAS2
+    1924/    8C18 : CD 59 82            	CALL	PRNST
+    1925/    8C1B : C3 7B 89            	JP	CRNL
+    1926/    8C1E : 01 A0 00            BLRA:	LD	BC,160		; Länge Vorton
+    1927/    8C21 : ED 5B 1B 00         	LD	DE,(0001BH)	; DMA Zeiger auf Puffer für Kassetten-E/A
+    1928/    8C25 : C3 97 F4            	JP	0F497H		; WRIT2+17H (call KARAM, Ausgabe Block)
+    1929/    8C28 :                     
+    1930/    8C28 : 7E                  NAMCO:	LD	A,(HL)
+    1931/    8C29 : FE 20               	CP	020H
+    1932/    8C2B : 28 06               	JR	Z,NCO1
+    1933/    8C2D : 12                  	LD	(DE),A
+    1934/    8C2E : 23                  	INC	HL
+    1935/    8C2F : 13                  	INC	DE
+    1936/    8C30 : 10 F6               	DJNZ	NAMCO
+    1937/    8C32 : C9                  	RET
+    1938/    8C33 :                     
+    1939/    8C33 : 3E 00               NCO1:	LD	A,0
+    1940/    8C35 : 12                  NCO2:	LD	(DE),A
+    1941/    8C36 : 23                  	INC	HL
+    1942/    8C37 : 13                  	INC	DE
+    1943/    8C38 : 10 FB               	DJNZ	NCO2
+    1944/    8C3A : C9                  	RET
+    1945/    8C3B :                     
+    1946/    8C3B :                     ;**********************************
+    1947/    8C3B :                     ; führt einen Prüfsummenvergleich des gespeicherten Programmes aus
+    1948/    8C3B :                     ; und dient somit zur Kontrolle der Aufzeichnung auf Lesefehler.
+    1949/    8C3B :                     ;**********************************
+    1950/    8C3B :                     
+    1951/    8C3B : 3E 00               VERIF:	LD	A,0
+    1952/    8C3D : 18 0E               	JR	LO2
+ AS V1.42 Beta [Bld 55] - source file KC-CAOS.asm - page 34 - 4/9/2008 16:59:08
+
+
+    1953/    8C3F :                     
+    1954/    8C3F :                     ;**********************************
+    1955/    8C3F :                     ; - Laden von COM-Files in den Rechner
+    1956/    8C3F :                     ; Nach der Eingabe von LOAD und dem Lesen des Kopfblockes des Program-
+    1957/    8C3F :                     ; mes  wird der Name, Anfangsadresse, Endadresse und Startadresse an-
+    1958/    8C3F :                     ; gezeigt. Wird nach LOAD eine Adresse angegeben, so wird das Programm
+    1959/    8C3F :                     ; auf dieser Adresse als Anfangsadresse geladen. Gleichzeitig wird ein
+    1960/    8C3F :                     ; Autostart unterdrückt. Die neue LOAD-Routine ist auch in der Lage,
+    1961/    8C3F :                     ; KC 85/3 Files zu lesen. Dies ist für das Brennen von MC-Programmen
+    1962/    8C3F :                     ; für den KC mittels Eprommer-Modul interessant. Beim Laden von MC-
+    1963/    8C3F :                     ; Files des KC 85/3 ist zu beachten, daß der KC 87 auf der Adresse 200H
+    1964/    8C3F :                     ; die Interrupttabelle ablegt. Da viele KC 3 - Programme auf dieser
+    1965/    8C3F :                     ; Adresse beginnen, ist zum Kopieren eine höhere Adresse zu wählen.
+    1966/    8C3F :                     ;**********************************
+    1967/    8C3F :                     
+    1968/    8C3F : FE 00               LOAD:	CP	0
+    1969/    8C41 : 28 08               	JR	Z,LO1
+    1970/    8C43 : FE 01               	CP	1
+    1971/    8C45 : 28 06               	JR	Z,LO2
+    1972/    8C47 : CD 18 84            	CALL	ERR1		; Ausgabe " FEHLER"
+    1973/    8C4A : C9                  	RET
+    1974/    8C4B :                     
+    1975/    8C4B : 3E 02               LO1:	LD	A,2
+    1976/    8C4D : 32 13 7F            LO2:	LD	(MEMDE),A
+    1977/    8C50 : 3E 00               	LD	A,0
+    1978/    8C52 : 32 00 7F            	LD	(AME),A
+    1979/    8C55 : E1                  	POP	HL
+    1980/    8C56 : 22 11 7F            	LD	(MEMDE-2),HL
+    1981/    8C59 : E5                  	PUSH	HL
+    1982/    8C5A : ED 73 16 7F         	LD	(MEMDE+3),SP
+    1983/    8C5E : 32 09 7F            	LD	(HLM+8),A
+    1984/    8C61 : 01 00 01            	LD	BC,00100H
+    1985/    8C64 : 21 80 00            	LD	HL,00080H
+    1986/    8C67 : 1E EF               	LD	E,0EFH
+    1987/    8C69 : D9                  	EXX
+    1988/    8C6A : 21 80 00            	LD	HL,00080H
+    1989/    8C6D : 37                  	SCF
+    1990/    8C6E : 3F                  	CCF
+    1991/    8C6F : CD 24 8D            	CALL	LDM2
+    1992/    8C72 : EB                  	EX	DE,HL
+    1993/    8C73 : 21 80 00            	LD	HL,00080H
+    1994/    8C76 : 06 08               	LD	B,8
+    1995/    8C78 : D5                  	PUSH	DE
+    1996/    8C79 : 5E                  PNAM:	LD	E,(HL)
+    1997/    8C7A : CD 30 82            	CALL	DRUCK		; Zeichenausgabe E
+    1998/    8C7D : 23                  	INC	HL
+    1999/    8C7E : 10 F9               	DJNZ	PNAM
+    2000/    8C80 : 1E 20               	LD	E,32
+    2001/    8C82 : CD 30 82            	CALL	DRUCK		; Zeichenausgabe E
+    2002/    8C85 : 3A 13 7F            	LD	A,(MEMDE)
+    2003/    8C88 : FE 01               	CP	1
+    2004/    8C8A : ED 5B 01 7F         	LD	DE,(HLM)
+    2005/    8C8E : 2A 91 00            	LD	HL,(00091H)
+    2006/    8C91 : 20 02               	JR	NZ,PA1
+    2007/    8C93 : D5                  	PUSH	DE
+    2008/    8C94 : E1                  	POP	HL
+    2009/    8C95 : 22 01 7F            PA1:	LD	(HLM),HL
+    2010/    8C98 : 2A 93 00            	LD	HL,(00093H)
+    2011/    8C9B : 20 0D               	JR	NZ,PA2
+    2012/    8C9D : D5                  	PUSH	DE
+ AS V1.42 Beta [Bld 55] - source file KC-CAOS.asm - page 35 - 4/9/2008 16:59:08
+
+
+    2013/    8C9E : ED 5B 91 00         	LD	DE,(00091H)
+    2014/    8CA2 : ED 52               	SBC	HL,DE
+    2015/    8CA4 : ED 5B 01 7F         	LD	DE,(HLM)
+    2016/    8CA8 : 19                  	ADD	HL,DE
+    2017/    8CA9 : D1                  	POP	DE
+    2018/    8CAA : 22 03 7F            PA2:	LD	(HLM+2),HL
+    2019/    8CAD : 18 27               	JR	PKC3
+    2020/    8CAF : 3E FF               PEK3:	LD	A,0FFH
+    2021/    8CB1 : BC                  	CP	H
+    2022/    8CB2 : 20 03               	JR	NZ,PA21
+    2023/    8CB4 : BD                  	CP	L
+    2024/    8CB5 : 28 26               	JR	Z,PA31
+    2025/    8CB7 : 2A 95 00            PA21:	LD	HL,(00095H)
+    2026/    8CBA : F5                  	PUSH	AF
+    2027/    8CBB : 7C                  	LD	A,H
+    2028/    8CBC : FE FF               	CP	0FFH
+    2029/    8CBE : 20 05               	JR	NZ,PA2E
+    2030/    8CC0 : 7D                  	LD	A,L
+    2031/    8CC1 : FE FF               	CP	0FFH
+    2032/    8CC3 : 28 0E               	JR	Z,PA2VE
+    2033/    8CC5 : F1                  PA2E:	POP	AF
+    2034/    8CC6 : ED 5B 91 00         	LD	DE,(00091H)
+    2035/    8CCA : ED 52               	SBC	HL,DE
+    2036/    8CCC : ED 5B 01 7F         	LD	DE,(HLM)
+    2037/    8CD0 : 19                  	ADD	HL,DE
+    2038/    8CD1 : 18 0D               	JR	PA3
+    2039/    8CD3 :                     
+    2040/    8CD3 : F1                  PA2VE:	POP	AF
+    2041/    8CD4 : 18 0A               	JR	PA3
+    2042/    8CD6 :                     
+    2043/    8CD6 : 3A 09 7F            PKC3:	LD	A,(HLM+8)
+    2044/    8CD9 : FE 01               	CP	1
+    2045/    8CDB : 20 D2               	JR	NZ,PEK3
+    2046/    8CDD : 21 FF FF            PA31:	LD	HL,0FFFFH
+    2047/    8CE0 : 22 05 7F            PA3:	LD	(HLM+4),HL
+    2048/    8CE3 : 2A 01 7F            	LD	HL,(HLM)
+    2049/    8CE6 : CD 62 84            	CALL	HLHEX		; HL hexadezimal + Leerzeichen ausgeben
+    2050/    8CE9 : 2A 03 7F            	LD	HL,(HLM+2)
+    2051/    8CEC : CD 62 84            	CALL	HLHEX		; HL hexadezimal + Leerzeichen ausgeben
+    2052/    8CEF : 2A 05 7F            	LD	HL,(HLM+4)
+    2053/    8CF2 : CD 62 84            	CALL	HLHEX		; HL hexadezimal + Leerzeichen ausgeben
+    2054/    8CF5 : D1                  	POP	DE
+    2055/    8CF6 : CD 7B 89            	CALL	CRNL
+    2056/    8CF9 : EB                  	EX	DE,HL
+    2057/    8CFA : 2A 01 7F            	LD	HL,(HLM)
+    2058/    8CFD : 37                  BLEIN:	SCF
+    2059/    8CFE : CD 15 8D            	CALL	LDMA
+    2060/    8D01 : CD 10 F3            	CALL	0F310H		; OSPAC
+    2061/    8D04 : D9                  	EXX
+    2062/    8D05 : 04                  	INC	B
+    2063/    8D06 : D9                  	EXX
+    2064/    8D07 : C5                  	PUSH	BC
+    2065/    8D08 : 01 80 00            	LD	BC,00080H
+    2066/    8D0B : 2A 01 7F            	LD	HL,(HLM)
+    2067/    8D0E : 09                  	ADD	HL,BC
+    2068/    8D0F : 22 01 7F            	LD	(HLM),HL
+    2069/    8D12 : C1                  	POP	BC
+    2070/    8D13 : 18 E8               	JR	BLEIN
+    2071/    8D15 :                     
+    2072/    8D15 : F5                  LDMA:	PUSH	AF
+ AS V1.42 Beta [Bld 55] - source file KC-CAOS.asm - page 36 - 4/9/2008 16:59:08
+
+
+    2073/    8D16 : 3A 13 7F            	LD	A,(MEMDE)
+    2074/    8D19 : FE 00               	CP	0
+    2075/    8D1B : 20 03               	JR	NZ,LDM1
+    2076/    8D1D : 21 80 00            	LD	HL,128
+    2077/    8D20 : 22 01 7F            LDM1:	LD	(HLM),HL
+    2078/    8D23 : F1                  	POP	AF
+    2079/    8D24 : 22 1B 00            LDM2:	LD	(0001BH),HL	; DMA Zeiger auf Puffer für Kassetten-E/A
+    2080/    8D27 : 38 4E               	JR	C,BL1
+    2081/    8D29 : CD 59 FF            LDM3:	CALL	0FF59H		; MAREK, Lesen eines Blockes
+    2082/    8D2C : CD E3 FA            BE1:	CALL	0FAE3H		; INITA, Initialisierung Tastatur
+    2083/    8D2F : 08                  	EX	AF,AF'
+    2084/    8D30 : D9                  	EXX
+    2085/    8D31 : 7B                  	LD	A,E
+    2086/    8D32 : B7                  	OR	A
+    2087/    8D33 : 20 04               	JR	NZ,BLV
+    2088/    8D35 : 79                  	LD	A,C
+    2089/    8D36 : 32 6B 00            	LD	(0006BH),A	; FCB: BLNR Blocknummer
+    2090/    8D39 : 3A 6B 00            BLV:	LD	A,(0006BH)	; FCB: BLNR Blocknummer
+    2091/    8D3C : FE FF               	CP	0FFH
+    2092/    8D3E : CA 33 8E            	JP	Z,BLT
+    2093/    8D41 : B9                  	CP	C
+    2094/    8D42 : 20 04               	JR	NZ,FBL
+    2095/    8D44 : 0C                  KC31:	INC	C
+    2096/    8D45 : D9                  	EXX
+    2097/    8D46 : 08                  	EX	AF,AF'
+    2098/    8D47 : C9                  	RET
+    2099/    8D48 :                     
+    2100/    8D48 : FE 01               FBL:	CP	1
+    2101/    8D4A : 20 06               	JR	NZ,KC1
+    2102/    8D4C : 0C                  	INC	C
+    2103/    8D4D : B9                  	CP	C
+    2104/    8D4E : CA 0F 8E            	JP	Z,KC3
+    2105/    8D51 : 0D                  	DEC	C
+    2106/    8D52 : B9                  KC1:	CP	C
+    2107/    8D53 : D9                  	EXX
+    2108/    8D54 : 2A 01 7F            	LD	HL,(HLM)
+    2109/    8D57 : F5                  BERR:	PUSH	AF
+    2110/    8D58 : 3A 00 7F            	LD	A,(AME)
+    2111/    8D5B : FE 01               	CP	1
+    2112/    8D5D : CA 24 8E            	JP	Z,REP1
+    2113/    8D60 : 3E 01               	LD	A,1
+    2114/    8D62 : 32 00 7F            	LD	(AME),A
+    2115/    8D65 : 1E 20               	LD	E,32
+    2116/    8D67 : CD 30 82            	CALL	DRUCK		; Zeichenausgabe E
+    2117/    8D6A : F1                  	POP	AF
+    2118/    8D6B : CD 42 84            	CALL	AHEX		; A hexadezimal ausgeben
+    2119/    8D6E : 11 7B 8B            	LD	DE,KAS3
+    2120/    8D71 : CD 59 82            	CALL	PRNST
+    2121/    8D74 : C3 15 8D            	JP	LDMA
+    2122/    8D77 : 3A 6B 00            BL1:	LD	A,(0006BH)	; FCB: BLNR Blocknummer
+    2123/    8D7A : D5                  	PUSH	DE
+    2124/    8D7B : F5                  	PUSH	AF
+    2125/    8D7C : 3A FA 7F            	LD	A,(EKEY+2)
+    2126/    8D7F : 5F                  	LD	E,A
+    2127/    8D80 : F1                  	POP	AF
+    2128/    8D81 : BB                  	CP	E
+    2129/    8D82 : 28 0C               	JR	Z,B1E
+    2130/    8D84 : 32 FA 7F            	LD	(EKEY+2),A
+    2131/    8D87 : CD 42 84            	CALL	AHEX		; A hexadezimal ausgeben
+    2132/    8D8A : 11 78 8B            	LD	DE,KAS2
+ AS V1.42 Beta [Bld 55] - source file KC-CAOS.asm - page 37 - 4/9/2008 16:59:08
+
+
+    2133/    8D8D : CD 59 82            	CALL	PRNST
+    2134/    8D90 : 1E 08               B1E:	LD	E,8
+    2135/    8D92 : CD 30 82            	CALL	DRUCK		; Zeichenausgabe E
+    2136/    8D95 : 3E 00               	LD	A,0
+    2137/    8D97 : 32 00 7F            	LD	(AME),A
+    2138/    8D9A : D1                  	POP	DE
+    2139/    8D9B : 21 AE 8D            	LD	HL,LOU1
+    2140/    8D9E : F3                  	DI
+    2141/    8D9F : 22 02 02            	LD	(00202H),HL
+    2142/    8DA2 : FB                  	EI
+    2143/    8DA3 : 3E 87               	LD	A,087H
+    2144/    8DA5 : D3 81               	OUT	(081H),A
+    2145/    8DA7 : 3E 02               	LD	A,2
+    2146/    8DA9 : D3 81               	OUT	(081H),A
+    2147/    8DAB : C3 29 8D            	JP	LDM3
+    2148/    8DAE :                     
+    2149/    8DAE : 3E A7               LOU1:	LD	A,0A7H
+    2150/    8DB0 : D3 81               	OUT	(081H),A
+    2151/    8DB2 : 21 D8 8D            	LD	HL,LOU2		; Interruptroutine f. Anwender CTC Kanal 1
+    2152/    8DB5 : 22 02 02            	LD	(00202H),HL	; in Interrupttabelle eintragen
+    2153/    8DB8 : AF                  	XOR	A
+    2154/    8DB9 : D3 81               	OUT	(081H),A
+    2155/    8DBB : 16 0C               	LD	D,12
+    2156/    8DBD : 21 C4 8D            	LD	HL,LOU3
+    2157/    8DC0 : E3                  	EX	(SP),HL
+    2158/    8DC1 : FB                  	EI
+    2159/    8DC2 : ED 4D               	RETI
+    2160/    8DC4 :                     
+    2161/    8DC4 : 06 16               LOU3:	LD	B,016H
+    2162/    8DC6 : CD D1 FF            LOU4:	CALL	0FFD1H		; LSTOP, Lesen Eines Zeichens
+    2163/    8DC9 : 38 F9               	JR	C,LOU3
+    2164/    8DCB : FE 90               	CP	090H
+    2165/    8DCD : 38 F5               	JR	C,LOU3
+    2166/    8DCF : 10 F5               	DJNZ	LOU4
+    2167/    8DD1 : 3E 03               	LD	A,3
+    2168/    8DD3 : D3 81               	OUT	(081H),A
+    2169/    8DD5 : C3 83 FF            	JP	0FF83H		; MA3-2, Lesen Eines Blockes
+    2170/    8DD8 :                     
+    2171/    8DD8 :                     ; Interruptroutine f. Anwender CTC Kanal 1
+    2172/    8DD8 : 15                  LOU2:	DEC	D
+    2173/    8DD9 : 20 11               	JR	NZ,LOUE
+    2174/    8DDB : 3E 03               	LD	A,3
+    2175/    8DDD : D3 81               	OUT	(081H),A
+    2176/    8DDF : 21 2C 8D            	LD	HL,BE1
+    2177/    8DE2 : D1                  LOU5:	POP	DE
+    2178/    8DE3 : CD BC FC            	CALL	0FCBCH
+    2179/    8DE6 : 20 FA               	JR	NZ,LOU5
+    2180/    8DE8 : 11 E3 FA            	LD	DE,0FAE3H
+    2181/    8DEB : D5                  	PUSH	DE
+    2182/    8DEC : FB                  LOUE:	EI
+    2183/    8DED : ED 4D               	RETI
+    2184/    8DEF :                     
+    2185/    8DEF : CD 7B 89            LBL:	CALL	CRNL
+    2186/    8DF2 : 2A 16 7F            	LD	HL,(MEMDE+3)
+    2187/    8DF5 : F9                  	LD	SP,HL
+    2188/    8DF6 : 2A 11 7F            	LD	HL,(MEMDE-2)
+    2189/    8DF9 : E3                  	EX	(SP),HL
+    2190/    8DFA : 3A 13 7F            	LD	A,(MEMDE)
+    2191/    8DFD : B7                  	OR	A
+    2192/    8DFE : C8                  	RET	Z
+ AS V1.42 Beta [Bld 55] - source file KC-CAOS.asm - page 38 - 4/9/2008 16:59:08
+
+
+    2193/    8DFF : 2A 05 7F            	LD	HL,(HLM+4)
+    2194/    8E02 : E9                  	JP	(HL)
+    2195/    8E03 :                     
+    2196/    8E03 : 4B 43 38 35 2F 33   KASKC:	DB	"KC85/3"
+    2197/    8E09 : 2D 46 49 4C 45      	DB	"-FILE"
+    2198/    8E0E : 00                  	DB	0
+    2199/    8E0F :                     
+    2200/    8E0F : D5                  KC3:	PUSH	DE
+    2201/    8E10 : 11 03 8E            	LD	DE,KASKC
+    2202/    8E13 : CD 59 82            	CALL	PRNST
+    2203/    8E16 : CD 7B 89            	CALL	CRNL
+    2204/    8E19 : D1                  	POP	DE
+    2205/    8E1A : F5                  	PUSH	AF
+    2206/    8E1B : 3E 01               	LD	A,1
+    2207/    8E1D : 32 09 7F            	LD	(HLM+8),A
+    2208/    8E20 : F1                  	POP	AF
+    2209/    8E21 : C3 44 8D            	JP	KC31
+    2210/    8E24 : F1                  REP1:	POP	AF
+    2211/    8E25 : D5                  	PUSH	DE
+    2212/    8E26 : CD 42 84            	CALL	AHEX		; A hexadezimal ausgeben
+    2213/    8E29 : 11 7F 8B            	LD	DE,KAS4
+    2214/    8E2C : CD 59 82            	CALL	PRNST
+    2215/    8E2F : D1                  	POP	DE
+    2216/    8E30 : C3 15 8D            	JP	LDMA
+    2217/    8E33 :                     
+    2218/    8E33 : F5                  BLT:	PUSH	AF
+    2219/    8E34 : 3A 00 7F            	LD	A,(AME)
+    2220/    8E37 : FE 01               	CP	1
+    2221/    8E39 : CA 24 8E            	JP	Z,REP1
+    2222/    8E3C : F1                  	POP	AF
+    2223/    8E3D : 1E 20               	LD	E,32
+    2224/    8E3F : CD 30 82            	CALL	DRUCK		; Zeichenausgabe E
+    2225/    8E42 : 3E FF               	LD	A,0FFH
+    2226/    8E44 : CD 42 84            	CALL	AHEX		; A hexadezimal ausgeben
+    2227/    8E47 : 11 78 8B            	LD	DE,KAS2
+    2228/    8E4A : CD 59 82            	CALL	PRNST
+    2229/    8E4D : C3 EF 8D            	JP	LBL
+    2230/    8E50 :                     
+    2231/    8E50 :                     
+    2232/    8E50 :                     ; ? nicht verwendet ?
+    2233/    8E50 : 11 D4 87            BKEY:	LD	DE,KEYM1
+    2234/    8E53 : CD 59 82            	CALL	PRNST
+    2235/    8E56 : 0E 01               	LD	C,1
+    2236/    8E58 : CD 05 00            	CALL	5
+    2237/    8E5B : F5                  	PUSH	AF
+    2238/    8E5C : 5F                  	LD	E,A
+    2239/    8E5D : CD 30 82            	CALL	DRUCK		; Zeichenausgabe E
+    2240/    8E60 : CD 7B 89            	CALL	CRNL
+    2241/    8E63 : F1                  	POP	AF
+    2242/    8E64 : D6 30               	SUB	030H
+    2243/    8E66 : C3 F2 8A            	JP	KEY1
+    2244/    8E69 :                     
+    2245/    8E69 :                     	end
+ AS V1.42 Beta [Bld 55] - source file KC-CAOS.asm - page 39 - 4/9/2008 16:59:08
+
+
+  symbol table (* = unused):
+  ------------------------
+
+ ADR :                         845B C |  AHEX :                        8442 C |
+ AHEX2 :                       8451 C |  AME :                         7F00 - |
+*ARCHITECTURE :  i386-unknown-win32 - |  B1E :                         8D90 C |
+ BASET :                       8695 C |  BCM :                         7F05 - |
+ BE1 :                         8D2C C |  BEDZ :                        851C C |
+*BERR :                        8D57 C | *BIGENDIAN :                      0 - |
+*BJA :                         85DB C | *BKEY :                        8E50 C |
+ BL1 :                         8D77 C |  BLEIN :                       8CFD C |
+ BLRA :                        8C1E C |  BLT :                         8E33 C |
+ BLV :                         8D39 C |  BNO :                         85F7 C |
+*BRANCHEXT :                      0 - |  BSST :                        7F00 - |
+ CAOS :                        8000 C | *CAOSE :                       8420 C |
+*CASESENSITIVE :                  0 - |  CCOL :                          34 - |
+*CLL1 :                        8856 C |  CLL2 :                        8861 C |
+ CLLN :                        8845 C |  CLR :                         8B3F C |
+ CLS :                         81FC C |  CLS1 :                        8217 C |
+ CLS2 :                        8209 C | *CLS3 :                        8200 C |
+ COL :                           27 - |  COLOR :                       842F C |
+*CONSTPI :        3.141592653589793 - |  COPYR :                       8568 C |
+ CPIR :                        8739 C |  CRL :                         80F6 C |
+ CRL2 :                        8122 C |  CRNL :                        897B C |
+*DATE :                    4/9/2008 - |  DEHE :                        8984 C |
+ DEM :                         7F03 - |  DEZ1 :                        89E0 C |
+ DEZ2 :                        89F1 C |  DIEND :                       8560 C |
+ DIS2 :                        850B C |  DISP :                        84FE C |
+ DISP2 :                       8505 C | *DR1 :                         8B23 C |
+ DR2 :                         8B37 C |  DRBAS :                       8586 C |
+ DRBS :                        823F C |  DRDEZ :                       89CF C |
+ DRDW :                        89D8 C |  DRKE :                        8B16 C |
+ DRKEY :                       8596 C |  DRUCK :                       8230 C |
+ DZE1 :                        852B C |  DZE2 :                        8534 C |
+ EESC :                        8712 C |  EKEY :                        7FF8 - |
+ ENT :                         82D8 C |  ERR1 :                        8418 C |
+ ERRM :                        8409 C |  ERROR :                       8413 C |
+ ERRS :                        8B8B C | *ESC :                         8562 C |
+ ESCC :                        8718 C |  ESTC :                        888A C |
+ EZ1 :                         84C1 C |  EZ2 :                         84CF C |
+ EZ3 :                         84D4 C |  EZ4 :                         84DD C |
+ EZ5 :                         84EC C | *FALSE :                          0 - |
+ FBL :                         8D48 C |  FEND :                        86FD C |
+ FFLAG :                       7F1F - |  FKEY :                        8722 C |
+ FLAG :                        7F1E - |  FMHL :                        7F1A - |
+ FO02 :                        81EF C |  FOU :                         83FC C |
+ FTAST :                       85B0 C | *FULLPMMU :                       1 - |
+ GETCU :                       866F C |  GETHL :                       8677 C |
+ GETZ :                        8683 C | *GJP :                         83A8 C |
+ GOTO :                        81FB C |  GPARA :                       8394 C |
+*GTIME :                       895F C | *HAS64 :                          1 - |
+*HASDSP :                         0 - | *HASFPU :                         0 - |
+*HASPMMU :                        0 - |  HLHEX :                       8462 C |
+ HLM :                         7F01 - |  IN1 :                         82A7 C |
+*INEXTMODE :                      0 - |  INL2 :                        8284 C |
+ INLIN :                       826E C | *INLWORDMODE :                    0 - |
+*INMAXMODE :                      0 - |  INPUT :                       8265 C |
+*INSRCMODE :                      0 - | *INSUPMODE :                      0 - |
+ JPM :                         7FFF - |  JUMP :                        8421 C |
+ KAS1 :                        8B70 C |  KAS2 :                        8B78 C |
+ AS V1.42 Beta [Bld 55] - source file KC-CAOS.asm - page 40 - 4/9/2008 16:59:08
+
+
+ KAS3 :                        8B7B C |  KAS4 :                        8B7F C |
+ KAS5 :                        8B83 C |  KASKC :                       8E03 C |
+ KC1 :                         8D52 C |  KC3 :                         8E0F C |
+ KC31 :                        8D44 C | *KEND :                        8B13 C |
+ KEY :                         8AF1 C |  KEY1 :                        8AF2 C |
+ KEYF :                        8701 C |  KEYLI :                       87A6 C |
+ KEYM1 :                       87D4 C |  KEYM2 :                       87D9 C |
+ KEYTA :                       7F21 - |  KL2 :                         87AB C |
+ LBL :                         8DEF C |  LDB0 :                        86D6 C |
+ LDBAS :                       86AE C |  LDBE :                        86CB C |
+ LDIR :                        81F8 C |  LDM1 :                        8D20 C |
+ LDM2 :                        8D24 C |  LDM3 :                        8D29 C |
+ LDMA :                        8D15 C | *LISTON :                         1 - |
+ LO1 :                         8C4B C |  LO2 :                         8C4D C |
+ LOAD :                        8C3F C |  LOU1 :                        8DAE C |
+ LOU2 :                        8DD8 C |  LOU3 :                        8DC4 C |
+ LOU4 :                        8DC6 C |  LOU5 :                        8DE2 C |
+ LOUE :                        8DEC C | *MACEXP :                         1 - |
+ MCUR :                          3F - | *ME0 :                         872A C |
+ ME1 :                         872E C |  MEMA :                        7F10 - |
+ MEMDE :                       7F13 - |  MEMHL :                       7F11 - |
+ MENU :                        817C C |  MENU2 :                       8189 C |
+ MERR :                        8496 C |  MESC :                        7F15 - |
+ MKEY :                        874A C |  MODIF :                       8479 C |
+*MOMCPU :                        80 - | *MOMCPUNAME :                   Z80 - |
+ MRAM :                        8AD7 C |  MROM :                        8AD1 C |
+ MSET :                        84B8 C |  MSJ :                         898A C |
+ MSN :                         8988 C |  MST01 :                       882F C |
+ MSUCH :                       84AC C |  MTEXT :                       8474 C |
+ NAMCO :                       8C28 C |  NCO1 :                        8C33 C |
+ NCO2 :                        8C35 C | *NESTMAX :                      100 - |
+ NFOU :                        83DF C |  NKEY :                        860E C |
+ NKEY2 :                       8607 C |  NO13 :                        85ED C |
+ NO3 :                         82E4 C |  NO4 :                         829C C |
+ NOTC :                        836D C |  NPARA :                       8313 C |
+ NRKEY :                       8740 C |  OKSA :                        8B8F C |
+ OKSW :                        8AB0 C |  PA1 :                         8C95 C |
+ PA2 :                         8CAA C |  PA21 :                        8CB7 C |
+ PA2E :                        8CC5 C |  PA2VE :                       8CD3 C |
+ PA3 :                         8CE0 C |  PA31 :                        8CDD C |
+*PACKING :                        0 - | *PADDING :                        1 - |
+ PARA :                        831B C |  PARA1 :                       832A C |
+ PARA2 :                       8337 C |  PEK3 :                        8CAF C |
+ PKC3 :                        8CD6 C |  PNAM :                        8C79 C |
+ PRK1 :                        87DF C |  PRK2 :                        87EB C |
+ PRK3 :                        87F3 C |  PRKEY :                       87DD C |
+ PRNST :                       8259 C |  PROG :                        8309 C |
+*PS1 :                         83C3 C |  PS2 :                         83C4 C |
+ PS4 :                         83EE C |  PSF :                         83D3 C |
+ PSUCH :                       83BB C |  PSV :                         83C1 C |
+*RELAXED :                        0 - |  REP1 :                        8E24 C |
+ RESC :                        8278 C |  RESET :                       80FA C |
+ RET :                         83A9 C |  RH3 :                         8385 C |
+ RHEX :                        835B C |  RHEX1 :                       8366 C |
+ RHEX2 :                       8373 C |  RHEXH :                       8A9D C |
+ RIG1 :                        849E C |  SAV1 :                        8BAB C |
+ SAV2 :                        8C0A C |  SAV3 :                        8BF7 C |
+ SAVE :                        8B86 C |  SCUP :                        8647 C |
+ SCUPN :                       8664 C |  SCUPT :                       8620 C |
+ SCUR :                        7F18 - |  SETC :                        82BC C |
+ AS V1.42 Beta [Bld 55] - source file KC-CAOS.asm - page 41 - 4/9/2008 16:59:08
+
+
+ SKEY :                        8B58 C |  SKEY1 :                       8B60 C |
+*SKEY2 :                       8B69 C |  SPM :                         7F16 - |
+ ST01 :                        8833 C |  ST02 :                        8840 C |
+*ST0A :                        8875 C | *ST0B :                        888C C |
+ ST0C :                        883B C |  ST1 :                         89B6 C |
+ ST18 :                        88A3 C |  ST19 :                        88AD C |
+ ST1A :                        88B7 C |  ST1A1 :                       88CC C |
+ ST1A2 :                       88E3 C |  ST1F :                        88ED C |
+ START :                       8125 C |  STCOD :                       87FA C |
+ STDR :                        8612 C | *STE0 :                        8829 C |
+ STE1 :                        882C C |  STIME :                       89AE C |
+*SUCH :                        8194 C |  SUCH2 :                       81B9 C |
+*SUCH3 :                       81BB C |  SUCH4 :                       81BC C |
+ SUCH5 :                       81D9 C |  SUCH6 :                       81E8 C |
+ SWDR :                        8ACB C |  SWERR :                       8AAC C |
+*SWGE :                        8AA8 C |  SWIT :                        8AA4 C |
+ SWJ :                         8504 C |  SWPR :                        8AB3 C |
+ SWRAM :                       8ADD C | *SWROM :                       8AC8 C |
+ SWSE :                        8AE2 C |  TASTE :                       8B05 C |
+ TEXTM :                       80E5 C |  TFLAG :                       86EA C |
+*TIME :                    16:59:08 - |  TIME0 :                       895C C |
+*TRUE :                           1 - |  UPIN :                        894D C |
+ UPOUT :                       8957 C |  VCOL :                        8A43 C |
+ VERIF :                       8C3B C |  VERM :                        8A77 C |
+*VERSION :                     142F - |  VERW :                        8A53 C |
+ VKEY :                        856F C |  VMON :                        8580 C |
+ WCLR :                        8A12 C |  WRE :                         8A0E C |
+ WRE2 :                        8A2C C |  WRIT2 :                       8A07 C |
+ WRITE :                       89F5 C |  WST :                         8159 C |
+ WSTC :                        8A27 C |  ZAB :                         8996 C |
+ ZBC :                         89A9 C | *ZL0 :                         86E5 C |
+ ZL1 :                         86E7 C |  ZLEER :                       86DE C |
+
+    298 symbols
+     50 unused symbols
+
+ AS V1.42 Beta [Bld 55] - source file KC-CAOS.asm - page 42 - 4/9/2008 16:59:08
+
+
+  codepages:
+  ----------
+
+STANDARD (0 changed characters)
+
+
+0.11 seconds assembly time
+
+   2246 lines source file
+      2 passes
+      0 errors
+      0 warnings

@@ -1,0 +1,2757 @@
+ AS V1.42 Beta [Bld 158] - Source File zm20.asm - Page 1 - 4/4/2020 12:57:58
+
+
+       1/       0 :                     ; Zusatzmontitor Z9001 Version 2.0
+       2/       0 :                     ; 1985/1986 F.Schwarzenberg 8036,Gamigstr.5
+       3/       0 :                     ; reassembliert: V. Pohlers, 05.2008
+       4/       0 :                     ; letzte Änderung 03.04.2020
+       5/       0 :                     ;
+       6/       0 :                     ; Software-Historie
+       7/       0 :                     ; -----------------
+       8/       0 :                     ;
+       9/       0 :                     ; Version ZM30 Kassette R0112
+      10/       0 :                     ; 	in den Geräte-Treibern SIFA, TD40 Register C und E vertauscht:
+      11/       0 :                     ;
+      12/       0 :                     ; mp 10/87: Bei den ersten Varianten des ZM und Version 1.2 des OS-KC85/1 kann es
+      13/       0 :                     ; bei den Treibern SIFA und TD40 unter Umständen Probleme mit der CTRL/P-Funktion
+      14/       0 :                     ; (Hardcopy) geben. Deshalb sei an dieser Stelle auf die erforderlichen
+      15/       0 :                     ; Korrekturen für eine saubere Arbeitsweise der ZM-Treiber hingewiesen
+      16/       0 :                     ;
+      17/       0 :                     ; 	"ZM30_121"				  "ZM30_112"
+      18/       0 :                     ;
+      19/       0 :                     ; 	3060: D3 8B*7B 2F CB FF D3 89 | ..{/.... ¦ D3 8B*79 2F CB FF D3 89 ¦ ..y/....
+      20/       0 :                     ; 	30C0: E6 7F C9 CB*BB 3E CF D3 | .....>.. ¦ E6 7F C9 CB*B9 3E CF D3 ¦ .....>..
+      21/       0 :                     ; 	30E0:*93 20 03 77 18 16 3E 1F | . .w..>. ¦*91 20 03 77 18 16 3E 1F ¦ . .w..>.
+      22/       0 :                     ; 	30E8:*BB 30 11 34 3E 29 96 20 | .0.4>).  ¦*B9 30 11 34 3E 29 96 20 ¦ .0.4>).
+      23/       0 :                     ; 	30F8: 0A CD 02 31*7B CD 02 31 | ...1{..1 ¦ 0A CD 02 31*79 CD 02 31 ¦ ...1y..1
+      24/       0 :                     ; 	3100: B7 C9*0E 9A 06 09 E6 7F | ........ ¦ B7 C9*1E 9A 06 09 E6 7F ¦ ........
+      25/       0 :                     ; 	3110: 10 F8 2F D3 89 FB C5*41 | ../....A ¦ 10 F8 2F D3 89 FB C5*43 ¦ ../....C
+      26/       0 :                     ;
+      27/       0 :                     ; Version ZM30, ZM70, ZMA8 Kassette R0121 und R0121
+      28/       0 :                     ; 	Die Versionen der Kassetten R121 (Assembler) und R122 (IDAS) sind identisch
+      29/       0 :                     ; 	Basis für ROM=0-Version
+      30/       0 :                     ;
+      31/       0 :                     ; IDAS-Modul VP
+      32/       0 :                     ; 	IDAS ohne Meldung
+      33/       0 :                     ; 	ZM mit Meldung "Z9001 MONITOR V2.0 (ROM) 1985" und mit EPROM (idaszm2)
+      34/       0 :                     ; 	ZM hat Register C und E vertauscht wie in ZM30 der Kassette R0112
+      35/       0 :                     ;
+      36/       0 :                     ; IDAS-Modul von U. Zander und KC-Emu
+      37/       0 :                     ; 	IDAS mit Meldung "INTERPRETING DIALOG-ASSEMBLER"
+      38/       0 :                     ; 	ZM mit Meldung "Z9001 MONITOR CENT. 1986" und mit RENEW und QUICK, NORMAL, QLOAD (idaszm1)
+      39/       0 :                     ; 	ist Basis für ROM=1-Version
+      40/       0 :                     
+      41/       0 :                     
+      42/       0 :                     		cpu	Z80
+      43/       0 :                     		page	0
+      44/       0 :                     
+      45/       0 :                     ;------------------------------------------------------------------------------
+      46/       0 :                     ;
+      47/       0 :                     ;------------------------------------------------------------------------------
+      48/       0 :                     
+      49/       0 :                     
+      50/       0 :                     		include	z9001.inc
+(1)    1/       0 :                     ;-----------------------------------------------------------------------------
+(1)    2/       0 :                     ; Arbeitsspeicher 
+(1)    3/       0 :                     ;-----------------------------------------------------------------------------
+(1)    4/       0 :                     
+(1)    5/       0 : =4H                 IOBYT		equ	0004h		; IO-Byte (in SIO)
+(1)    6/       0 : =15H                LISW		equ	0015h		; Schalter für Hardcopy (in SIO)
+(1)    7/       0 : =1BH                DMA		equ	1Bh		; Zeiger auf Puffer f³r	Kassetten-E/A
+(1)    8/       0 :                     
+(1)    9/       0 :                     
+(1)   10/       0 : =5CH                fcb1		equ	005Ch
+(1)   11/       0 : =6CH                fcb2		equ	006Ch
+(1)   12/       0 :                     ; Aufbau FCB
+(1)   13/       0 :                     ; 00	FDRIVE	Laufwerkscode (keins - 0, A - 1, B - 2)
+(1)   14/       0 :                     ; 01-08	FNAME	Dateiname, mit Leerzeichen aufgefüllt
+(1)   15/       0 :                     ; 09-0B	FTYP	Dateityp, mit Leerzeichen aufgefüllt
+(1)   16/       0 :                     ; 0C	PSUM
+(1)   17/       0 :                     ; 0D	ARB (?)
+(1)   18/       0 :                     ; 0E	BLNR
+(1)   19/       0 :                     ; 0F	LBLNR
+(1)   20/       0 :                     ; 10
+(1)   21/       0 :                     ; 11
+(1)   22/       0 :                     ; 12-13	AADR
+(1)   23/       0 :                     ; 14-15	EADR
+(1)   24/       0 :                     ; 16-17	SADR
+(1)   25/       0 :                     ; 18	SBY
+(1)   26/       0 :                     
+(1)   27/       0 : =80H                CONBU		equ	0080h		; Eingabepuffer
+(1)   28/       0 :                     
+(1)   29/       0 :                     ;-----------------------------------------------------------------------------
+(1)   30/       0 :                     ; I/O
+(1)   31/       0 :                     ;-----------------------------------------------------------------------------
+(1)   32/       0 :                     
+(1)   33/       0 : =80H                CTC0		equ	80h		; System CTC0 Kassette, Beeper
+(1)   34/       0 : =81H                CTC1		equ	81h		; System CTC1 Anwenderport
+(1)   35/       0 : =82H                CTC2		equ	82h		; System CTC2 Systemuhr
+(1)   36/       0 : =83H                CTC3		equ	83h		; System CTC3 Systemuhr
+(1)   37/       0 :                     
+(1)   38/       0 : =88H                PIO1AD		EQU	88H		; PIO1 A Daten Beeper, Border, 20Z
+(1)   39/       0 : =89H                PIO1BD		EQU	89H		; PIO1 B Daten Anwenderport
+(1)   40/       0 : =8AH                PIO1AS		EQU	8AH		; PIO1 A Kommando
+(1)   41/       0 : =8BH                PIO1BS		EQU	8BH		; PIO1 B Kommando Anwenderport
+(1)   42/       0 :                     
+(1)   43/       0 : =90H                PIO2AD		EQU	90H		; Tastatur-PIO2 A Daten
+(1)   44/       0 : =91H                PIO2BD		EQU	91H		; Tastatur-PIO2 B Daten
+(1)   45/       0 : =92H                PIO2AS		EQU	92H		; Tastatur-PIO2 A Kommando
+(1)   46/       0 : =93H                PIO2BS		EQU	93H		; Tastatur-PIO2 B Kommando
+(1)   47/       0 :                     
+(1)   48/       0 :                     ;-----------------------------------------------------------------------------
+(1)   49/       0 :                     ; AS-Funktionen
+(1)   50/       0 :                     ;-----------------------------------------------------------------------------
+(1)   51/       0 :                     
+(1)   52/       0 :                     ; obere 8 Bit: hi(CONBU)
+(1)   53/       0 :                     hi              function x,(x>>8)&255
+(1)   54/       0 :                     
+(1)   55/       0 :                     ; untere 8 Bit: lo(CONBU)
+(1)   56/       0 :                     lo              function x, x&255
+(1)   57/       0 :                     
+(1)   58/       0 :                     ;nächste ..00h Grenze: org nextpage($)
+(1)   59/       0 :                     nextpage	function x, ((x+0ffh)/100h)*100h
+(1)   60/       0 :                     
+(1)   61/       0 :                     ;align-Ersatz: db zalign(80h) dup (?)
+(1)   62/       0 :                     zalign		function x, ((($+x-1)/x)*x - $)
+(1)   63/       0 :                     
+      51/       0 :                     
+      52/       0 :                     ; Systemspeicher
+      53/       0 : =25H                KEYBU		equ	0025h			; Tastaturpuffer
+      54/       0 : =2FH                PU		equ	002Fh			; Hilfszelle
+      55/       0 : =3BH                P1ROL		equ	003Bh			; 1. rollende Zeile - 1
+      56/       0 : =5CH                FCB		equ	005Ch			; Dateiname 8 Zeichen
+      57/       0 : =5CH                FNAME		equ	005Ch
+      58/       0 : =64H                FTYP		equ	0064h			; Dateityp 3 Zeichen
+      59/       0 : =69H                PSUM		equ	0069h			; Pruefsumme eines Datenblockes
+      60/       0 : =6CH                LBLNR		equ	006Ch			; gesuchte Blocknummer bei Lesen
+      61/       0 : =6DH                AADR		equ	006Dh			; Dateianfangsadresse
+      62/       0 : =6FH                EADR		equ	006Fh			; Dateiendeadresse
+      63/       0 : =71H                SADR		equ	0071h			; Startadresse,	wenn Datei ein Maschinencodeprogramm ist
+      64/       0 :                     
+      65/       0 :                     
+      66/       0 :                     ;Systemaufrufe
+      67/       0 :                     ; 0F003h		; JP WBOOT
+      68/       0 :                     ; 0F089h		; GOCPM
+      69/       0 :                     ; 0F1EAh		; GVAL:	PARAMETER AUS EINGABEZEILE HOLEN
+      70/       0 :                     ; 0F310h		; OSPAC
+      71/       0 :                     ; 0F35Ch		; GETMS: EINGABE ZEICHENKETTE IN MONITORPUFFER
+      72/       0 :                     ; 0F3F8h		; OPENR	OPEN FUER KASSETTE LESEN
+      73/       0 :                     ; 0F578h		; LOA55: LESEN BLOCK
+      74/       0 :                     ; 0F588h		; MOV
+      75/       0 :                     ; 0F5A3h		; REA: AUSGABE FEHLERMELDUNG, WARTEN AUF BEDIENERREAKTION
+      76/       0 :                     ; 0F5A6h		; REA1
+      77/       0 :                     ; 0F5B9h		; COEXT: VORVERARBEITEN	EINER ZEICHENKETTE
+      78/       0 :                     ; 0F5E2h		; ERINP
+      79/       0 :                     ; 0F5EAh		; ERDIS	AUSGEBEN FEHLERMELDUNG
+      80/       0 :                     ; 0F7B4h		; BAT: STEUERPROGRAMM FUER BATCH-MODE VON CONST
+      81/       0 :                     ; 0F8F1h		; CRT: STEUERPROGRAMM DES CRT - TREIBERS
+      82/       0 :                     ; 0FD33h		; DECO0, DECODIEREN DER	TASTATURMATRIX
+      83/       0 :                     
+      84/       0 :                     
+      85/       0 :                     ;------------------------------------------------------------------------------
+      86/       0 :                     ; zu erzeugende Version des ZM auswählen
+      87/       0 :                     ;------------------------------------------------------------------------------
+      88/       0 :                     
+      89/       0 : =ZM30               ZMVERSION	equ	"ZM30"	; "ZM30", "ZM70", "ZMA8", "ZMROM"
+      90/       0 : =1H                 R0112		equ	1	; 1 - korrigierte Version der R0112
+      91/       0 :                     
+      92/       0 :                     ;------------------------------------------------------------------------------
+      93/       0 :                     ;
+      94/       0 :                     ;------------------------------------------------------------------------------
+      95/       0 :                     
+      96/       0 : =>TRUE              		IF ZMVERSION="ZM30"
+      97/       0 :                     
+      98/       0 : =0H                 ROM: 		EQU 0     ; 0- RAM, 1 - ROM
+      99/    3000 :                     		org 3000h
+     100/    3000 :                     
+     101/    3000 : =>FALSE             		ELSEIF ZMVERSION="ZM70"
+     102/    3000 :                     
+     103/    3000 :                     ROM: 		EQU 0     ; 0- RAM, 1 - ROM
+     104/    3000 :                     		org 7000h
+     105/    3000 :                     
+     106/    3000 : =>FALSE             		ELSEIF ZMVERSION="ZMA8"
+     107/    3000 :                     
+     108/    3000 :                     ROM: 		EQU 0     ; 0- RAM, 1 - ROM
+     109/    3000 :                     		org 0A800h
+     110/    3000 :                     
+     111/    3000 : =>FALSE             		ELSEIF ZMVERSION="ZMROM"
+     112/    3000 :                     
+     113/    3000 :                     ROM: 		EQU 1     ; 0- RAM, 1 - ROM
+     114/    3000 :                     		org 0D800h
+     115/    3000 :                     
+     116/    3000 : [96]                		ENDIF
+     117/    3000 :                     
+     118/    3000 :                     ; Speichernutzung vor BEG
+     119/    3000 :                     ; ?? 16, 23h, 29h, 34h, 35h, 20h, 6Fh
+     120/    3000 :                     
+     121/    3000 :                     ; Register im Stack (offset aus reg_tab ausgewertet)
+     122/    3000 :                     ; (TOP)
+     123/    3000 :                     ; IR
+     124/    3000 :                     ; IY
+     125/    3000 :                     ; IX
+     126/    3000 :                     ; AF
+     127/    3000 :                     ; BC
+     128/    3000 :                     ; DE
+     129/    3000 :                     ; HL -> (M)
+     130/    3000 :                     ; DE
+     131/    3000 :                     ; BC
+     132/    3000 :                     ; AF
+     133/    3000 :                     ; SP
+     134/    3000 :                     ; .
+     135/    3000 :                     ; .
+     136/    3000 :                     ; HL -> (M)
+     137/    3000 :                     ; ..
+     138/    3000 :                     ; PC
+     139/    3000 :                     
+     140/    3000 :                     
+     141/    3000 :                     ; Sprungverteiler
+     142/    3000 :                     
+     143/    3000 : C3 6B 34            beg:		jp	init		; Monitor-Neustart
+     144/    3003 : C3 52 3A            exrst38:	jp	rst38		; Trap-Eingang (RST 38H)
+     145/    3006 : C3 36 39            		jp	error		; Error-Eingang
+     146/    3009 : C3 05 34            		jp	GIOBY		; ABFRAGE I/O-BYTE
+     147/    300C : C3 09 34            		jp	SIOBY		; SETZEN I/O-BYTE
+     148/    300F : C3 0E 34            		jp	eor0		; Test RAM-Größe
+     149/    3012 : C3 BD 35            		jp	getdez		; Eingabekonvertierung
+     150/    3015 : C3 F3 35            		jp	todez		; Ausgabekonvertierung
+     151/    3018 : C3 9F 39            		jp	params		; C Parameter holen
+     152/    301B : C3 EC 39            		jp	outa		; Ausgabe A hexadezimal	ASCII 2	Stellen
+     153/    301E : C3 F6 3A            		jp	bin_e		; Ausgabe E binär
+     154/    3021 : C3 67 31            		jp	cass		; Kassetten-I/O: Filename abfragen+laden/speichern
+     155/    3024 :                     
+     156/    3024 : 00 30               begdat:		dw	beg
+     157/    3026 : DB 3C               		dw 	end
+     158/    3028 : 00 00               		dw	0
+     159/    302A :                     
+     160/    302A :                     ;------------------------------------------------------------------------------
+     161/    302A :                     ; OS-Funktionen
+     162/    302A :                     ;------------------------------------------------------------------------------
+     163/    302A :                     
+     164/    302A : C5                  zm_consi:	push	bc
+     165/    302B : 0E 01               		ld	c, 1		; CONSI: Eingabe eines Zeichens von CONST
+     166/    302D : 18 1D               		jr	syscall1
+     167/    302F :                     
+     168/    302F :                     ;
+     169/    302F : C5                  zm_readi:	push	bc
+     170/    3030 : 0E 03               		ld	c, 3		; READI: Eingabe eines Zeichens von READ
+     171/    3032 : 18 18               		jr	syscall1
+     172/    3034 :                     
+     173/    3034 :                     
+     174/    3034 :                     ; Zeichenausgabe
+     175/    3034 : C5                  zm_conso:	push	bc
+     176/    3035 : D5                  		push	de
+     177/    3036 : 59                  		ld	e, c
+     178/    3037 : 0E 02               		ld	c, 2		; CONSO: Ausgabe eines Zeichens zu CONST
+     179/    3039 : 18 12               		jr	syscall2
+     180/    303B :                     
+     181/    303B :                     ;
+     182/    303B : C5                  zm_puno:	push	bc
+     183/    303C : D5                  		push	de
+     184/    303D : 59                  		ld	e, c
+     185/    303E : 0E 04               		ld	c, 4		; PUNO: Ausgabe eines Zeichens zu PUNCH
+     186/    3040 : 18 0B               		jr	syscall2
+     187/    3042 :                     
+     188/    3042 :                     ;wird nicht genutzt
+     189/    3042 : C5                  zm_listo:	push	bc
+     190/    3043 : D5                  		push	de
+     191/    3044 : 59                  		ld	e, c
+     192/    3045 : 0E 05               		ld	c, 5		; LISTO: Ausgabe eines Zeichens zu LIST
+     193/    3047 : 18 04               		jr	syscall2
+     194/    3049 :                     
+     195/    3049 :                     ;
+     196/    3049 : C5                  tm_csts:	push	bc
+     197/    304A : 0E 0B               		ld	c, 0Bh		; CSTS: Abfrage Status CONST
+     198/    304C :                     ;
+     199/    304C : D5                  syscall1:	push	de
+     200/    304D : E5                  syscall2:	push	hl
+     201/    304E : CD 05 00            		call	5
+     202/    3051 : E1                  		pop	hl
+     203/    3052 : D1                  		pop	de
+     204/    3053 : C1                  		pop	bc
+     205/    3054 : DA 36 39            		jp	c, error
+     206/    3057 : C9                  		ret
+     207/    3058 :                     
+     208/    3058 :                     ;------------------------------------------------------------------------------
+     209/    3058 :                     ; PUNCH-Treiber
+     210/    3058 :                     ; Lochband-Stanzer SIF-1000 (SIFA)
+     211/    3058 :                     ;
+     212/    3058 :                     ;  SIF-1000 Ein-/Ausgabe ueber User-Port                  |
+     213/    3058 :                     ;  -------------------------------------                  |
+     214/    3058 :                     ;  Voraussetzungen                                        |
+     215/    3058 :                     ;- RUF wird ueber PIO-Bit 7 gebildet ==> nur 7 Datenbits  |
+     216/    3058 :                     ;  und keine Paritaet moeglich!                           |
+     217/    3058 :                     ;- Die Flanken von END-A werden mit dem CTC-KANAL erfasst |
+     218/    3058 :                     ;- keine KOM-Ausgabe                                      |
+     219/    3058 :                     ;- keine STAT-Auswertung                                  |
+     220/    3058 :                     ;                                                         |
+     221/    3058 :                     ;==========================================================
+     222/    3058 :                     ;                                                         |
+     223/    3058 :                     ;  Ausgabe eines Zeichens an SIF-A                        |
+     224/    3058 :                     ;  -------------------------------                        |
+     225/    3058 :                     ;- Zeichen im C-Register                                  |
+     226/    3058 :                     ;- Return: Carry=1 ==> Stop-Taste	                  |
+     227/    3058 :                     ;                                                         |
+     228/    3058 :                     ;
+     229/    3058 :                     ;User-Port-Belegung fuer SIF-1000-Anschluss
+     230/    3058 :                     ;
+     231/    3058 :                     ;		A	B	C
+     232/    3058 :                     ;	---------------------------
+     233/    3058 :                     ;	1 	0 	0	/END
+     234/    3058 :                     ;	2	/DAT1	/DAT2	/DAT3
+     235/    3058 :                     ;	3	/DAT4 	/DAT5 	/DAT6
+     236/    3058 :                     ;	4	/DAT7 	/RUF	-
+     237/    3058 :                     ;	5	(+5V)--> +5V	-
+     238/    3058 :                     ;
+     239/    3058 :                     ;------------------------------------------------------------------------------
+     240/    3058 :                     
+     241/    3058 : 3E 47               SIFA:		ld	a, 47h		;DI,Zaehler,neg.Flanke,TC,RESET
+     242/    305A : D3 81               		out	(CTC1),	a	;INIT CTC-1
+     243/    305C : D3 81               		out	(CTC1),	a	;TC=47H (willkuerlich)
+     244/    305E : 3E 0F               		ld	a, 0Fh		;PIO1/B-BYTEAUSGABE
+     245/    3060 : D3 8B               		out	(PIO1BS), a
+     246/    3062 : =>FALSE             		if R0112=0
+     247/    3062 :                     		ld	a, e
+     248/    3062 : =>TRUE              		else
+     249/    3062 : 79                  		ld 	a, c		; zm30 der R0112
+     250/    3063 : [246]               		endif
+     251/    3063 : 2F                  		cpl			;Bei SIF-1000 Daten low active
+     252/    3064 : CB FF               		set	7, a		;ohne RUF-A
+     253/    3066 : D3 89               		out	(PIO1BD), a	;Zeichen ausgeben
+     254/    3068 : 00                  		nop
+     255/    3069 : 00                  		nop			;Einschwingen lassen
+     256/    306A : CB BF               		res	7, a		;RUF-A
+     257/    306C : D3 89               		out	(PIO1BD), a	;Zeichen gueltig
+     258/    306E : CD 94 30            SIFA1:		call	STPRQ		;STOP-Taste?
+     259/    3071 : 30 04               		jr	nc, SIFA3	;nein
+     260/    3073 : 2F                  SIFA2:		cpl
+     261/    3074 : D3 89               		out	(PIO1BD), a	;RUF-A zuruecknehmen
+     262/    3076 : C9                  		ret
+     263/    3077 :                     ;
+     264/    3077 : DB 81               SIFA3:		in	a, (CTC1)
+     265/    3079 : FE 47               		cp	47h		;END-A?
+     266/    307B : 28 F1               		jr	z, SIFA1	;nein,warten
+     267/    307D : 3E 57               		ld	a, 57h		;s.o.,aber pos. Flanke
+     268/    307F : D3 81               		out	(CTC1),	a
+     269/    3081 : D3 81               		out	(CTC1),	a	;TC=57H
+     270/    3083 : 3E FF               		ld	a, 0FFh		;/RUF-A
+     271/    3085 : D3 89               		out	(PIO1BD), a
+     272/    3087 : CD 94 30            SIFA4:		call	STPRQ		;STOP-Taste?
+     273/    308A : 38 E7               		jr	c, SIFA2	;ja
+     274/    308C : DB 81               		in	a, (CTC1)
+     275/    308E : FE 57               		cp	57h		;/END-A?
+     276/    3090 : 28 F5               		jr	z, SIFA4	;nein, warten
+     277/    3092 : B7                  		or	a
+     278/    3093 : C9                  		ret
+     279/    3094 :                     
+     280/    3094 :                     ;Test auf Stop-Taste
+     281/    3094 : 3A 25 00            STPRQ:		ld	a, (KEYBU)	; Tastaturpuffer
+     282/    3097 : D6 03               		sub	3		; STOP-Taste?
+     283/    3099 : B7                  		or	a		; wegen	CY
+     284/    309A : C0                  		ret	nz		; nein
+     285/    309B : 32 25 00            		ld	(KEYBU), a	; Tastaturpuffer loeschen
+     286/    309E : 37                  		scf
+     287/    309F : C9                  		ret
+     288/    30A0 :                     
+     289/    30A0 :                     ;------------------------------------------------------------------------------
+     290/    30A0 :                     ; READER-Treiber
+     291/    30A0 :                     ; Lochband-Leser SIF-1000 (SIFE)
+     292/    30A0 :                     ;
+     293/    30A0 :                     ;  Eingabe eines Zeichens von SIF-E                       |
+     294/    30A0 :                     ;  --------------------------------                       |
+     295/    30A0 :                     ;- Return: Zeichen in A                                   |
+     296/    30A0 :                     ;- Carry=1 ==> STOP-Taste	                          |
+     297/    30A0 :                     ;------------------------------------------------------------------------------
+     298/    30A0 :                     
+     299/    30A0 : 3E 47               SIFE:		ld	a, 47h		;Zaehler, neg.Flanke
+     300/    30A2 : D3 81               		out	(CTC1),	a
+     301/    30A4 : D3 81               		out	(CTC1),	a	;TC
+     302/    30A6 : 3E CF               		ld	a, 0CFh		;BIT-E/A
+     303/    30A8 : D3 8B               		out	(PIO1BS), a
+     304/    30AA : 3E 7F               		ld	a, 7Fh		;nur Bit7 Ausgabe (RUF-E)
+     305/    30AC : D3 8B               		out	(PIO1BS), a
+     306/    30AE : D3 89               		out	(PIO1BD), a	;RUF-E ausgeben
+     307/    30B0 : CD 94 30            SIFE1:		call	STPRQ		;STOP-Taste?
+     308/    30B3 : 38 BE               		jr	c, SIFA2	;ja
+     309/    30B5 : DB 81               		in	a, (CTC1)
+     310/    30B7 : FE 47               		cp	47h		;END-E?
+     311/    30B9 : 28 F5               		jr	z, SIFE1	;NEIN
+     312/    30BB : DB 89               		in	a, (PIO1BD)	;DATEN
+     313/    30BD : 2F                  		cpl
+     314/    30BE : D3 89               		out	(PIO1BD), a	;/RUF-E
+     315/    30C0 : E6 7F               		and	7Fh
+     316/    30C2 : C9                  		ret
+     317/    30C3 :                     
+     318/    30C3 :                     ;------------------------------------------------------------------------------
+     319/    30C3 :                     ; LIST-Treiber
+     320/    30C3 :                     ; V24-Drucker (TD40)
+     321/    30C3 :                     ;
+     322/    30C3 :                     ; 1200 Baud, 1 Startbit, 7 Bit, 1 Stop-Bit, XON/XOFF-Protokoll
+     323/    30C3 :                     ;
+     324/    30C3 :                     ;- Serielle Ausgabe ueber PIO-Bit 0                       |
+     325/    30C3 :                     ;- Bereitschaftsabfrage (DTR) ueber PIO-Bit 7             |
+     326/    30C3 :                     ;- Zeichen in C                                           |
+     327/    30C3 :                     ;
+     328/    30C3 :                     ;------------------------------------------------------------------------------
+     329/    30C3 :                     ;
+     330/    30C3 :                     ;	User-Port-Belegung V24-Ausgabe
+     331/    30C3 :                     ;
+     332/    30C3 :                     ;		A	B	C
+     333/    30C3 :                     ;	---------------------------
+     334/    30C3 :                     ;	1	0	0	-
+     335/    30C3 :                     ;	2	TxD	-	-
+     336/    30C3 :                     ;	3	-	-	-
+     337/    30C3 :                     ;	4	-	DTR*	-
+     338/    30C3 :                     ;	5	(+5V)	-	-
+     339/    30C3 :                     ;
+     340/    30C3 :                     ;	* DTR-Signal des Druckers
+     341/    30C3 :                     ;------------------------------------------------------------------------------
+     342/    30C3 :                     
+     343/    30C3 : =>FALSE             TD40:		if R0112=0
+     344/    30C3 :                     		res	7, e
+     345/    30C3 : =>TRUE              		else
+     346/    30C3 : CB B9               		res 	7, c		; zm30 der R0112
+     347/    30C5 : [343]               		endif
+     348/    30C5 : 3E CF               		ld	a, 0CFh		;BIT-E/A
+     349/    30C7 : D3 8B               		out	(PIO1BS), a
+     350/    30C9 : 3E FE               		ld	a, 11111110b	;Bit 0 Ausgabe
+     351/    30CB : D3 8B               		out	(PIO1BS), a
+     352/    30CD : CD 94 30            TD401:		call	STPRQ		;Stop-Taste
+     353/    30D0 : 30 04               		jr	nc, TD402	;nein
+     354/    30D2 : 32 15 00            		ld	(LISW), a	;LIST: abschalten
+     355/    30D5 : C9                  		ret
+     356/    30D6 :                     ;
+     357/    30D6 : DB 89               TD402:		in	a, (PIO1BD)
+     358/    30D8 : 87                  		add	a, a		;Drucker bereit?
+     359/    30D9 : 38 F2               		jr	c, TD401	;nein, warten
+     360/    30DB :                     ;
+     361/    30DB : 21 D7 3C            		ld	hl, varTD40
+     362/    30DE : 3E 0D               		ld	a, 0Dh
+     363/    30E0 : =>FALSE             		if R0112=0
+     364/    30E0 :                     		sub	e
+     365/    30E0 : =>TRUE              		else
+     366/    30E0 : 91                  		sub 	c		; zm30 der R0112
+     367/    30E1 : [363]               		endif
+     368/    30E1 : 20 03               		jr	nz, TD403
+     369/    30E3 : 77                  		ld	(hl), a		; CR merken
+     370/    30E4 : 18 16               		jr	TD404
+     371/    30E6 : 3E 1F               TD403:		ld	a, ' '-1	; Steuerzeichen?
+     372/    30E8 : =>FALSE             		if R0112=0
+     373/    30E8 :                     		cp	e
+     374/    30E8 : =>TRUE              		else
+     375/    30E8 : B9                  		cp 	c		; zm30 der R0112
+     376/    30E9 : [372]               		endif
+     377/    30E9 : 30 11               		jr	nc, TD404
+     378/    30EB : 34                  		inc	(hl)		; hl = var1, aktuelle Position
+     379/    30EC : 3E 29               		ld	a, 40+1		; Druckerbreite überschritten?
+     380/    30EE : 96                  		sub	(hl)
+     381/    30EF : 20 0B               		jr	nz, TD404
+     382/    30F1 : 77                  		ld	(hl), a		; neue Position merken
+     383/    30F2 : 3E 0D               		ld	a, 0Dh		; dann neue Zeile ausgeben
+     384/    30F4 : CD 02 31            		call	TD405
+     385/    30F7 : 3E 0A               		ld	a, 0Ah
+     386/    30F9 : CD 02 31            		call	TD405
+     387/    30FC :                     TD404:
+     388/    30FC : =>FALSE             		if R0112=0
+     389/    30FC :                     		ld	a, e
+     390/    30FC : =>TRUE              		else
+     391/    30FC : 79                  		ld 	a, c		; zm30 der R0112
+     392/    30FD : [388]               		endif
+     393/    30FD : CD 02 31            		call	TD405
+     394/    3100 : B7                  		or	a
+     395/    3101 : C9                  		ret
+     396/    3102 :                     
+     397/    3102 :                     ; V24-Ausgabe der Bits
+     398/    3102 : =>FALSE             TD405:		if R0112=0
+     399/    3102 :                     		ld	c, 154		; Zeitkonstante 1200 Baud
+     400/    3102 : =>TRUE              		else
+     401/    3102 : 1E 9A               		ld 	e, 154		; zm30 der R0112
+     402/    3104 : [398]               		endif
+     403/    3104 : 06 09               		ld	b, 9		;1 Startbit, 8-Datenbit
+     404/    3106 : E6 7F               		and	7Fh
+     405/    3108 : F3                  		di			;keine Unterbrechung zulassen
+     406/    3109 : 17                  		rla			;Start-Bit
+     407/    310A : D3 89               TD406:		out	(PIO1BD), a	;Bit ausgeben
+     408/    310C : CD 16 31            		call	TD407		;eine Bit-Zeit warten
+     409/    310F : 1F                  		rra			;naechstes Bit
+     410/    3110 : 10 F8               		djnz	TD406
+     411/    3112 : 2F                  		cpl			;Stopbit
+     412/    3113 : D3 89               		out	(PIO1BD), a
+     413/    3115 : FB                  		ei			;Unterbrechung. wieder zulassen
+     414/    3116 :                     ;Warteschleife, 1200 Baud
+     415/    3116 : C5                  TD407:		push	bc
+     416/    3117 : =>FALSE             		if R0112=0
+     417/    3117 :                     		ld	b, c
+     418/    3117 : =>TRUE              		else
+     419/    3117 : 43                  		ld  	b, e		; zm30 der R0112
+     420/    3118 : [416]               		endif
+     421/    3118 : 10 FE               TD408:		djnz	TD408
+     422/    311A : C1                  		pop	bc
+     423/    311B : C9                  		ret
+     424/    311C :                     
+     425/    311C :                     ;------------------------------------------------------------------------------
+     426/    311C :                     ; UR1-Treiber + UP1-Treiber
+     427/    311C :                     ; Treiber Für Kassette (AP=T, AR=T)
+     428/    311C :                     ;------------------------------------------------------------------------------
+     429/    311C :                     
+     430/    311C :                     ; UR1-Treiber für READER
+     431/    311C : 3E FF               TAPER:		ld	a, 0FFh
+     432/    311E : 32 69 00            		ld	(PSUM), a	; merken von Kassette laden
+     433/    3121 : D9                  		exx
+     434/    3122 : 22 D8 3C            		ld	(var1), hl
+     435/    3125 : D9                  		exx
+     436/    3126 : 18 04               		jr	TAPE2
+     437/    3128 :                     ;
+     438/    3128 :                     ; UP1-Treiber für PUNCH
+     439/    3128 : AF                  TAPEP:		xor	a
+     440/    3129 : 32 69 00            		ld	(PSUM), a	; merken auf Kassette schreiben
+     441/    312C :                     ;
+     442/    312C : ED 7B 0B 00         TAPE2:		ld	sp, (000Bh)	; SPSV
+     443/    3130 : E1                  		pop	hl		; Löschen der Rückkehradr.
+     444/    3131 : E1                  		pop	hl		; Parameter 1
+     445/    3132 : D1                  		pop	de		; Parameter 2
+     446/    3133 : 22 6D 00            		ld	(AADR), hl
+     447/    3136 : ED 53 6F 00         		ld	(EADR), de
+     448/    313A : CD 1B 34            		call	eor
+     449/    313D : 11 EA FF            		ld	de, -16h
+     450/    3140 : 19                  		add	hl, de
+     451/    3141 : F9                  		ld	sp, hl
+     452/    3142 : 21 D5 34            		ld	hl, prompt
+     453/    3145 : E5                  		push	hl
+     454/    3146 : 3A 69 00            		ld	a, (PSUM)
+     455/    3149 : B7                  		or	a		; auf Kassette schreiben?
+     456/    314A : 20 17               		jr	nz, TAPE4
+     457/    314C :                     		; auf Kassette schreiben vorbereiten
+     458/    314C : 01 0B 10            		ld	bc, 100Bh	; B=10h, C=0Bh
+     459/    314F : CD 34 30            		call	zm_conso	; Zeichenausgabe cu up
+     460/    3152 : 0E 09               		ld	c, 9		; cu right
+     461/    3154 : CD 34 30            TAPE3:		call	zm_conso	; Zeichenausgabe
+     462/    3157 : 10 FB               		djnz	TAPE3
+     463/    3159 : CD 9D 39            		call	param		; 1 Parameter holen
+     464/    315C : E1                  		pop	hl
+     465/    315D : 22 71 00            		ld	(SADR), hl
+     466/    3160 : CD 8A 39            		call	out_crlf
+     467/    3163 :                     TAPE4:		; Fehleradresse kellern
+     468/    3163 : 21 36 39            		ld	hl, error
+     469/    3166 : E5                  		push	hl
+     470/    3167 :                     ;
+     471/    3167 :                     ;------------------------------------------------------------------------------
+     472/    3167 :                     ;
+     473/    3167 : 11 A7 31            cass:		ld	de, aFilename	; Kassetten-I/O: Filename abfragen+laden/speichern
+     474/    316A : CD E0 33            		call	zm_prnst
+     475/    316D : CD 5C F3            		call	0F35Ch		; GETMS: EINGABE ZEICHENKETTE IN MONITORPUFFER
+     476/    3170 : D8                  		ret	c
+     477/    3171 : CD B9 F5            		call	0F5B9h		; COEXT: VORVERARBEITEN	EINER ZEICHENKETTE
+     478/    3174 : D8                  		ret	c
+     479/    3175 : CD EA F1            		call	0F1EAh		; GVAL:	PARAMETER AUS EINGABEZEILE HOLEN
+     480/    3178 : 11 5C 00            		ld	de, FNAME
+     481/    317B : 3E 08               		ld	a, 8
+     482/    317D : CD 88 F5            		call	0F588h		; MOV
+     483/    3180 : 08                  		ex	af, af'		; '
+     484/    3181 : 30 0D               		jr	nc, cass1
+     485/    3183 : 21 43 4F            		ld	hl, 4F43h	; "CO"
+     486/    3186 : 22 64 00            		ld	(FTYP), hl
+     487/    3189 : 3E 4D               		ld	a, 'M'
+     488/    318B : 32 66 00            		ld	(FTYP+2), a
+     489/    318E : 18 0B               		jr	cass2
+     490/    3190 : CD EA F1            cass1:		call	0F1EAh		; GVAL:	PARAMETER AUS EINGABEZEILE HOLEN
+     491/    3193 : 3E 03               		ld	a, 3
+     492/    3195 : 11 64 00            		ld	de, FTYP	; Dateityp 3 Zeichen
+     493/    3198 : CD 88 F5            		call	0F588h		; MOV
+     494/    319B : 3A 69 00            cass2:		ld	a, (PSUM)
+     495/    319E : B7                  		or	a		; auf Kassette schreiben?
+     496/    319F : 20 10               		jr	nz, cload	; nein, Laden
+     497/    31A1 : CD 1F 32            		call	csave		; sonst, Schreiben
+     498/    31A4 : D8                  		ret	c
+     499/    31A5 : E1                  		pop	hl
+     500/    31A6 : C9                  		ret
+     501/    31A7 :                     ;
+     502/    31A7 : 46 69 6C 65 6E 61   aFilename:	db "Filename:",0
+                    6D 65 3A 00       
+     503/    31B1 :                     
+     504/    31B1 :                     ; Laden
+     505/    31B1 : 21 80 00            cload:		ld	hl, CONBU	; CCP-Eingabepuffer und	Standardpuffer f³r Kassetten-E/A
+     506/    31B4 : 22 1B 00            		ld	(DMA), hl
+     507/    31B7 : CD F8 F3            cload1:		call	0F3F8h		; OPENR	OPEN FUER KASSETTE LESEN
+     508/    31BA : 30 2D               		jr	nc, cload4
+     509/    31BC : B7                  		or	a
+     510/    31BD : 37                  		scf
+     511/    31BE : C8                  		ret	z
+     512/    31BF : FE 0D               		cp	0Dh
+     513/    31C1 : 28 04               		jr	z, cload2
+     514/    31C3 : FE 0B               		cp	0Bh
+     515/    31C5 : 20 1D               		jr	nz, cload3
+     516/    31C7 : F5                  cload2:		push	af
+     517/    31C8 : 37                  		scf
+     518/    31C9 : CD EA F5            		call	0F5EAh		; ERDIS	AUSGEBEN FEHLERMELDUNG
+     519/    31CC : F1                  		pop	af
+     520/    31CD : 06 08               		ld	b, 8
+     521/    31CF : 21 80 00            		ld	hl, CONBU	; CCP-Eingabepuffer und	Standardpuffer f³r Kassetten-E/A
+     522/    31D2 : CD 1F 39            		call	prnstr		; Stringausgabe, HL=String, B=Länge
+     523/    31D5 : 0E 2E               		ld	c, '.'
+     524/    31D7 : CD 34 30            		call	zm_conso	; Zeichenausgabe
+     525/    31DA : 06 03               		ld	b, 3
+     526/    31DC : CD 1F 39            		call	prnstr		; Stringausgabe, HL=String, B=Länge
+     527/    31DF : CD 8A 39            		call	out_crlf
+     528/    31E2 : 18 83               		jr	cass		; Kassetten-I/O: Filename abfragen+laden/speichern
+     529/    31E4 : CD A3 F5            cload3:		call	0F5A3h		; REA: AUSGABE FEHLERMELDUNG, WARTEN AUF BEDIENERREAKTION
+     530/    31E7 : 18 CE               		jr	cload1
+     531/    31E9 : 2A 6D 00            cload4:		ld	hl, (AADR)
+     532/    31EC : ED 5B D8 3C         		ld	de, (var1)
+     533/    31F0 : 19                  		add	hl, de
+     534/    31F1 : 22 1B 00            		ld	(DMA), hl
+     535/    31F4 : CD 78 F5            		call	0F578h		; LOA55: LESEN BLOCK
+     536/    31F7 : D8                  		ret	c
+     537/    31F8 : E1                  		pop	hl
+     538/    31F9 : ED 5B D8 3C         		ld	de, (var1)
+     539/    31FD : 2A 6D 00            		ld	hl, (AADR)
+     540/    3200 : 19                  		add	hl, de
+     541/    3201 : CD 5A 39            		call	outhlsp		; Ausgabe HL + Space
+     542/    3204 : 2A 6F 00            		ld	hl, (EADR)
+     543/    3207 : 19                  		add	hl, de
+     544/    3208 : CD 5A 39            		call	outhlsp		; Ausgabe HL + Space
+     545/    320B : 2A 71 00            		ld	hl, (SADR)
+     546/    320E : CD 5A 39            		call	outhlsp		; Ausgabe HL + Space
+     547/    3211 : 11 17 32            		ld	de, aLoaded	; " loaded"
+     548/    3214 : C3 E0 33            		jp	zm_prnst
+     549/    3217 :                     ;
+     550/    3217 : 20 6C 6F 61 64 65   aLoaded:	db " loaded",0
+                    64 00             
+     551/    321F :                     
+     552/    321F :                     ; Speichern
+     553/    321F : 2A 6F 00            csave:		ld	hl, (EADR)
+     554/    3222 : ED 5B 6D 00         		ld	de, (AADR)
+     555/    3226 : B7                  		or	a
+     556/    3227 : ED 52               		sbc	hl, de
+     557/    3229 : DA E2 F5            		jp	c, 0F5E2h	; ERINP
+     558/    322C : 21 00 34            		ld	hl, nokey
+     559/    322F : E5                  		push	hl
+     560/    3230 : CD D4 33            		call	zm_openw
+     561/    3233 : D8                  		ret	c
+     562/    3234 : CD F1 33            		call	sp_stop		; Ausgabe Leerzeichen +	Test auf <STOP>
+     563/    3237 : DA EF 32            		jp	c, breaknw	; Break, "no records written"
+     564/    323A : EB                  		ex	de, hl
+     565/    323B : 22 1B 00            		ld	(DMA), hl
+     566/    323E : 2A 1B 00            csave1:		ld	hl, (DMA)
+     567/    3241 : 11 7F 00            		ld	de, 7Fh
+     568/    3244 : 19                  		add	hl, de
+     569/    3245 : ED 5B 6F 00         		ld	de, (EADR)
+     570/    3249 : ED 52               		sbc	hl, de
+     571/    324B : 30 0F               		jr	nc, csave2
+     572/    324D : CD D8 33            		call	zm_writs
+     573/    3250 : 32 DA 3C            		ld	(varsav), a
+     574/    3253 : D8                  		ret	c
+     575/    3254 : CD F1 33            		call	sp_stop		; Ausgabe Leerzeichen +	Test auf <STOP>
+     576/    3257 : DA 0D 33            		jp	c, break
+     577/    325A : 18 E2               		jr	csave1
+     578/    325C : CD DC 33            csave2:		call	zm_closw
+     579/    325F : D8                  		ret	c
+     580/    3260 : 21 DA 3C            		ld	hl, varsav
+     581/    3263 : 34                  		inc	(hl)
+     582/    3264 : 11 6E 33            		ld	de, aVerifyYN	; "\n\rVerify ((Y)/N)?:"
+     583/    3267 : CD E0 33            		call	zm_prnst
+     584/    326A : CD 5C F3            		call	0F35Ch		; GETMS: EINGABE ZEICHENKETTE IN MONITORPUFFER
+     585/    326D : DA 0D 33            		jp	c, break
+     586/    3270 : 3A 82 00            		ld	a, (CONBU+2)
+     587/    3273 : FE 4E               		cp	'N'
+     588/    3275 : CA 13 33            		jp	z, savemsg1
+     589/    3278 :                     
+     590/    3278 :                     ;Verify
+     591/    3278 : 11 81 33            		ld	de, aRewind	; "\n\rRewind \x14\x01<==\x14\x02 "
+     592/    327B : CD E0 33            		call	zm_prnst
+     593/    327E : CD 5C F3            		call	0F35Ch		; GETMS: EINGABE ZEICHENKETTE IN MONITORPUFFER
+     594/    3281 : DA 0D 33            		jp	c, break
+     595/    3284 : 21 80 00            csave3:		ld	hl, CONBU	; CCP-Eingabepuffer und	Standardpuffer f³r Kassetten-E/A
+     596/    3287 : 22 1B 00            		ld	(DMA), hl
+     597/    328A : CD E4 33            		call	zm_openr
+     598/    328D : 38 07               		jr	c, csave4
+     599/    328F : CD F4 33            		call	stop		; Test,	ob <STOP> gedrückt -> Cy=1
+     600/    3292 : 30 1F               		jr	nc, csave7
+     601/    3294 : 18 77               		jr	break
+     602/    3296 : B7                  csave4:		or	a
+     603/    3297 : 28 74               		jr	z, break
+     604/    3299 : CD A6 F5            		call	0F5A6h		; REA1
+     605/    329C : 38 6F               		jr	c, break
+     606/    329E : 18 E4               		jr	csave3
+     607/    32A0 : CD E8 33            csave5:		call	zm_reads
+     608/    32A3 : 30 07               		jr	nc, csave6
+     609/    32A5 : CD A6 F5            		call	0F5A6h		; REA1
+     610/    32A8 : 38 7B               		jr	c, break1
+     611/    32AA : 18 F4               		jr	csave5
+     612/    32AC : 6F                  csave6:		ld	l, a
+     613/    32AD : CD F4 33            		call	stop		; Test,	ob <STOP> gedrückt -> Cy=1
+     614/    32B0 : 38 73               		jr	c, break1
+     615/    32B2 : 7D                  		ld	a, l
+     616/    32B3 : 21 80 00            csave7:		ld	hl, CONBU	; CCP-Eingabepuffer und	Standardpuffer f³r Kassetten-E/A
+     617/    32B6 : 22 1B 00            		ld	(DMA), hl
+     618/    32B9 : B7                  		or	a
+     619/    32BA : 28 E4               		jr	z, csave5
+     620/    32BC : 11 2A 33            		ld	de, aSaveComplete ; "\n\r\x14\x01Save complete\n\r\n"
+     621/    32BF : CD E0 33            csave8:		call	zm_prnst
+     622/    32C2 : 3E 14               		ld	a, 14h
+     623/    32C4 : CD ED 33            		call	zo_consa	; Zeichenausgabe A
+     624/    32C7 : 3E 04               		ld	a, 4
+     625/    32C9 : CD ED 33            		call	zo_consa	; Zeichenausgabe A
+     626/    32CC : 3A DA 3C            		ld	a, (varsav)
+     627/    32CF : CD BD 33            		call	out_a		; Ausgabe A hexadezimal	ASCII 2	Stellen
+     628/    32D2 : 11 3F 33            		ld	de, aRecordSWritten ; "\x14\x02	Record(s) written\n\r"
+     629/    32D5 : CD E0 33            		call	zm_prnst
+     630/    32D8 : 3E 14               		ld	a, 14h
+     631/    32DA : CD ED 33            		call	zo_consa	; Zeichenausgabe A
+     632/    32DD : 3E 04               		ld	a, 4
+     633/    32DF : CD ED 33            		call	zo_consa	; Zeichenausgabe A
+     634/    32E2 : 3A 6C 00            		ld	a, (LBLNR)
+     635/    32E5 : 3D                  		dec	a
+     636/    32E6 : CD BD 33            		call	out_a		; Ausgabe A hexadezimal	ASCII 2	Stellen
+     637/    32E9 : 11 56 33            		ld	de, aRecordSChecked ; "\x14\x02	Record(s) checked\n\r\n"
+     638/    32EC : C3 E0 33            		jp	zm_prnst
+     639/    32EF :                     
+     640/    32EF :                     ;
+     641/    32EF : 11 93 33            breaknw:	ld	de, aBreakByStopKey ; Break, "no records written"
+     642/    32F2 : CD E0 33            		call	zm_prnst
+     643/    32F5 : 11 B6 33            		ld	de, aNo		; "\x14\x04No\x14\x02"
+     644/    32F8 : CD E0 33            		call	zm_prnst
+     645/    32FB :                     ;
+     646/    32FB : 11 3F 33            savemsg:	ld	de, aRecordSWritten ; "\x14\x02	Record(s) written\n\r"
+     647/    32FE : CD E0 33            		call	zm_prnst
+     648/    3301 : 11 B6 33            		ld	de, aNo		; "\x14\x04No\x14\x02"
+     649/    3304 : CD E0 33            		call	zm_prnst
+     650/    3307 : 11 56 33            		ld	de, aRecordSChecked ; "\x14\x02	Record(s) checked\n\r\n"
+     651/    330A : C3 E0 33            		jp	zm_prnst
+     652/    330D :                     ;
+     653/    330D : 11 93 33            break:		ld	de, aBreakByStopKey ; "\n\r\x14\x01Break by \x14\x04\"STOP\"\x14\x01-Key!\x14\x02\n\r\r\n"
+     654/    3310 : CD E0 33            		call	zm_prnst
+     655/    3313 :                     ;
+     656/    3313 : 3E 14               savemsg1:	ld	a, 14h
+     657/    3315 : CD ED 33            		call	zo_consa	; Zeichenausgabe A
+     658/    3318 : 3E 04               		ld	a, 4
+     659/    331A : CD ED 33            		call	zo_consa	; Zeichenausgabe A
+     660/    331D : 3A DA 3C            		ld	a, (varsav)
+     661/    3320 : CD BD 33            		call	out_a		; Ausgabe A hexadezimal	ASCII 2	Stellen
+     662/    3323 : 18 D6               		jr	savemsg
+     663/    3325 :                     ;
+     664/    3325 : 11 93 33            break1:		ld	de, aBreakByStopKey ; "\n\r\x14\x01Break by \x14\x04\"STOP\"\x14\x01-Key!\x14\x02\n\r\r\n"
+     665/    3328 : 18 95               		jr	csave8
+     666/    332A :                     
+     667/    332A : 0A                  aSaveComplete:	db 0Ah
+     668/    332B : 0D 14 01 53 61 76   		db 0Dh,14h,1,"Save complete",0Ah
+                    65 20 63 6F 6D 70 
+                    6C 65 74 65 0A    
+     669/    333C : 0D 0A 00            		db 0Dh,0Ah,0
+     670/    333F : 14 02 20 52 65 63   aRecordSWritten:db 14h,2," Record(s) written",0Ah
+                    6F 72 64 28 73 29 
+                    20 77 72 69 74 74 
+                    65 6E 0A          
+     671/    3354 : 0D 00               		db 0Dh,0
+     672/    3356 : 14 02 20 52 65 63   aRecordSChecked:db 14h,2," Record(s) checked",0Ah
+                    6F 72 64 28 73 29 
+                    20 63 68 65 63 6B 
+                    65 64 0A          
+     673/    336B : 0D 0A 00            		db 0Dh,0Ah,0
+     674/    336E : 0A                  aVerifyYN:	db 0Ah
+     675/    336F : 0D 56 65 72 69 66   		db 0Dh,"Verify ((Y)/N)?:",0
+                    79 20 28 28 59 29 
+                    2F 4E 29 3F 3A 00 
+     676/    3381 : 0A                  aRewind:	db 0Ah
+     677/    3382 : 0D 52 65 77 69 6E   		db 0Dh,"Rewind ",14h,1,"<==",14h,2,' ',0
+                    64 20 14 01 3C 3D 
+                    3D 14 02 20 00    
+     678/    3393 : 0A                  aBreakByStopKey:db 0Ah
+     679/    3394 : 0D 14 01 42 72 65   		db 0Dh,14h,1,"Break by ",14h,4,"\"STOP\"",14h,1,"-Key!",14h,2,0Ah
+                    61 6B 20 62 79 20 
+                    14 04 22 53 54 4F 
+                    50 22 14 01 2D 4B 
+                    65 79 21 14 02 0A 
+     680/    33B2 : 0D 0D 0A 00         		db 0Dh,0Dh,0Ah,0
+     681/    33B6 : 14 04 4E 6F 14 02   aNo:	db 14h,4,"No",14h,2,0
+                    00                
+     682/    33BD :                     
+     683/    33BD :                     
+     684/    33BD :                     ;------------------------------------------------------------------------------
+     685/    33BD :                     ; allg. Unterprogramme
+     686/    33BD :                     ;------------------------------------------------------------------------------
+     687/    33BD :                     
+     688/    33BD :                     ; Ausgabe A hexadezimal	ASCII 2	Stellen
+     689/    33BD : F5                  out_a:		push	af
+     690/    33BE : E6 F0               		and	0F0h
+     691/    33C0 : 07                  		rlca
+     692/    33C1 : 07                  		rlca
+     693/    33C2 : 07                  		rlca
+     694/    33C3 : 07                  		rlca
+     695/    33C4 : CD CA 33            		call	out_a1
+     696/    33C7 : F1                  		pop	af
+     697/    33C8 : E6 0F               		and	0Fh
+     698/    33CA : C6 30               out_a1:		add	a, '0'
+     699/    33CC : FE 3A               		cp	'9'+1
+     700/    33CE : 38 02               		jr	c, out_a2
+     701/    33D0 : C6 07               		add	a, 7
+     702/    33D2 : 18 19               out_a2:		jr	zo_consa	; Zeichenausgabe A
+     703/    33D4 :                     
+     704/    33D4 :                     
+     705/    33D4 :                     ;
+     706/    33D4 : 0E 0F               zm_openw:	ld	c, 0Fh		; OPENW: Eröffnen Kassette schreiben
+     707/    33D6 : 18 12               		jr	jmp_sys
+     708/    33D8 :                     
+     709/    33D8 :                     ;
+     710/    33D8 : 0E 15               zm_writs:	ld	c, 15h		; WRITS: Schreiben eines Blockes auf Kassette
+     711/    33DA : 18 0E               		jr	jmp_sys
+     712/    33DC :                     
+     713/    33DC :                     ;
+     714/    33DC : 0E 10               zm_closw:	ld	c, 10h		; CLOSW: Abschließen Kassette schreiben
+     715/    33DE : 18 0A               		jr	jmp_sys
+     716/    33E0 :                     
+     717/    33E0 :                     ;
+     718/    33E0 : 0E 09               zm_prnst:	ld	c, 9		; PRNST: Ausgabe einer Zeichenkette zu CONST
+     719/    33E2 : 18 06               		jr	jmp_sys
+     720/    33E4 :                     
+     721/    33E4 :                     ;
+     722/    33E4 : 0E 0D               zm_openr:	ld	c, 0Dh		; OPENR: Eröffnen Kassette lesen
+     723/    33E6 : 18 02               		jr	jmp_sys
+     724/    33E8 :                     ;
+     725/    33E8 : 0E 14               zm_reads:	ld	c, 14h		; READS: Lesen eines Blockes von Kassette
+     726/    33EA : C3 05 00            jmp_sys:	jp	5
+     727/    33ED :                     
+     728/    33ED :                     ; Zeichenausgabe A
+     729/    33ED : 4F                  zo_consa:	ld	c, a
+     730/    33EE : C3 34 30            		jp	zm_conso	; Zeichenausgabe
+     731/    33F1 :                     
+     732/    33F1 :                     ; Ausgabe Leerzeichen +	Test auf <STOP>
+     733/    33F1 : CD 10 F3            sp_stop:	call	0F310h		; OSPAC
+     734/    33F4 :                     
+     735/    33F4 :                     
+     736/    33F4 :                     ; Test,	ob <STOP> gedrückt -> Cy=1
+     737/    33F4 : CD 33 FD            stop:		call	0FD33h		; DECO0, DECODIEREN DER	TASTATURMATRIX
+     738/    33F7 : FB                  		ei
+     739/    33F8 : B7                  		or	a
+     740/    33F9 : C8                  		ret	z
+     741/    33FA : FE 03               		cp	3		; <STOP> ?
+     742/    33FC : 37                  		scf
+     743/    33FD : C8                  		ret	z
+     744/    33FE : 3F                  		ccf
+     745/    33FF : C9                  		ret
+     746/    3400 :                     
+     747/    3400 : AF                  nokey:		xor	a
+     748/    3401 : 32 25 00            		ld	(25h), a	; KEYBU
+     749/    3404 : C9                  		ret
+     750/    3405 :                     
+     751/    3405 :                     ; ABFRAGE I/O-BYTE
+     752/    3405 : 3A 04 00            GIOBY:		ld	a, (IOBYT)
+     753/    3408 : C9                  		ret
+     754/    3409 :                     
+     755/    3409 :                     ; SETZEN I/O-BYTE
+     756/    3409 : 79                  SIOBY:		ld	a, c
+     757/    340A : 32 04 00            		ld	(IOBYT), a
+     758/    340D : C9                  		ret
+     759/    340E :                     
+     760/    340E :                     ;------------------------------------------------------------------------------
+     761/    340E :                     ; Test RAM-Größe
+     762/    340E :                     ;------------------------------------------------------------------------------
+     763/    340E :                     
+     764/    340E :                     ;
+     765/    340E : E5                  eor0:		push	hl
+     766/    340F : CD 1B 34            		call	eor		; EOR ermitteln
+     767/    3412 : 7D                  		ld	a, l
+     768/    3413 : D6 3C               		sub	3Ch 		; ???
+     769/    3415 : 30 01               		jr	nc, eor01
+     770/    3417 : 25                  		dec	h
+     771/    3418 : 44                  eor01:		ld	b, h
+     772/    3419 : E1                  		pop	hl
+     773/    341A : C9                  		ret
+     774/    341B :                     
+     775/    341B :                     ; EOR ermitteln
+     776/    341B : C5                  eor:		push	bc
+     777/    341C : 21 FF FF            eor1:		ld	hl, 0FFFFh
+     778/    341F : 24                  eor2:		inc	h		; nächste xxFFh-Adresse
+     779/    3420 : 7E                  		ld	a, (hl)
+     780/    3421 : 2F                  		cpl
+     781/    3422 : 77                  		ld	(hl), a
+     782/    3423 : BE                  		cp	(hl)
+     783/    3424 : 2F                  		cpl
+     784/    3425 : 77                  		ld	(hl), a
+     785/    3426 : 20 F7               		jr	nz, eor2	; solange RAM-Speicher
+     786/    3428 : 24                  eor3:		inc	h		; nächste xxFFh-Adresse
+     787/    3429 : 3A 25 30            		ld	a, (begdat+1)	; = HI(Programmanfang)
+     788/    342C : BC                  		cp	h
+     789/    342D : 28 08               		jr	z, eor4		; max bis Programmstandort
+     790/    342F : 7E                  		ld	a, (hl)
+     791/    3430 : 2F                  		cpl
+     792/    3431 : 77                  		ld	(hl), a
+     793/    3432 : BE                  		cp	(hl)
+     794/    3433 : 2F                  		cpl
+     795/    3434 : 77                  		ld	(hl), a
+     796/    3435 : 28 F1               		jr	z, eor3		; solange ROM-Speicher
+     797/    3437 : 25                  eor4:		dec	h
+     798/    3438 : 01 DD FF            		ld	bc, -(tab_reg-regrstor)
+     799/    343B : 09                  		add	hl, bc
+     800/    343C : C1                  		pop	bc
+     801/    343D : C9                  		ret
+     802/    343E :                     
+     803/    343E :                     ;------------------------------------------------------------------------------
+     804/    343E :                     ;
+     805/    343E :                     ;------------------------------------------------------------------------------
+     806/    343E :                     
+     807/    343E : =>TRUE              		IF ROM=0
+     808/    343E :                     
+     809/    343E : 0D 0A               aZ9001MonitorV2:db 0Dh,0Ah
+     810/    3440 : 0C                  		db 0Ch
+     811/    3441 : 07 14 02 20 5A 39   		db 7,14h,2," Z9001 MONITOR V2.0 (RAM)",14h,4,"  1985 ",14h,2
+                    30 30 31 20 4D 4F 
+                    4E 49 54 4F 52 20 
+                    56 32 2E 30 20 28 
+                    52 41 4D 29 14 04 
+                    20 20 31 39 38 35 
+                    20 14 02          
+     812/    3468 : 0D 0A 00            		db 0Dh,0Ah,0
+     813/    346B :                     
+     814/    346B : =>FALSE             		ELSE
+     815/    346B :                     
+     816/    346B :                     aZ9001MonitorV2:db 0Dh,0Ah
+     817/    346B :                     		db 0Ch
+     818/    346B :                     		db 7,14h,2," Z9001 MONITOR CENT. ",14h,1,"1986       ",14h,2
+     819/    346B :                     		db 0Dh,0Ah,0
+     820/    346B :                     
+     821/    346B : [807]               		ENDIF
+     822/    346B :                     
+     823/    346B :                     
+     824/    346B : 11 20 02            init:		ld	de, 220h	; von 220 bis 22f (Startadressen der 5 User-Routinen) "jp error" schreiben
+     825/    346E : 3E 2F               		ld	a, lo(220h+5*3)
+     826/    3470 : 01 03 00            init1:		ld	bc, 3
+     827/    3473 : 21 38 35            		ld	hl, exerr	; Adresse "jp error"
+     828/    3476 : ED B0               		ldir
+     829/    3478 : BB                  		cp	e
+     830/    3479 : 20 F5               		jr	nz, init1
+     831/    347B :                     ;
+     832/    347B : 3E C3               		ld	a, 0C3h		; "JP", RST 38 initialisieren
+     833/    347D : 32 38 00            		ld	(0038h), a
+     834/    3480 : 21 03 30            		ld	hl, exrst38
+     835/    3483 : 22 39 00            		ld	(0039h), hl
+     836/    3486 :                     ;
+     837/    3486 : 3E 01               		ld	a, 1		; IO-Byte zurücksetzen
+     838/    3488 : 32 04 00            		ld  	(IOBYT), A
+     839/    348B : 31 8F 34            		ld 	sp,init2+1
+     840/    348E : C3 1C 34            init2		jp	eor1
+     841/    3491 : 93 34               		dw	init2a
+     842/    3493 :                     ;
+     843/    3493 : F9                  init2a:		ld	sp, hl
+     844/    3494 : EB                  		ex	de, hl
+     845/    3495 : 01 23 00            		ld	bc, tab_reg-regrstor
+     846/    3498 : 21 35 3B            		ld	hl, regrstor	; Register restaurieren
+     847/    349B : ED B0               		ldir
+     848/    349D : EB                  		ex	de, hl
+     849/    349E : 01 91 FF            		ld	bc, -6Fh
+     850/    34A1 : 09                  		add	hl, bc
+     851/    34A2 : E5                  		push	hl
+     852/    34A3 : 01 E0 FF            		ld	bc, -20h
+     853/    34A6 : 09                  		add	hl, bc
+     854/    34A7 : 22 36 00            		ld	(0036h), hl	; EOR
+     855/    34AA : 21 00 00            		ld	hl, 0
+     856/    34AD : 06 09               		ld	b, 9
+     857/    34AF : E5                  init3:		push	hl
+     858/    34B0 : 10 FD               		djnz	init3
+     859/    34B2 : ED 5F               		ld	a, r
+     860/    34B4 : 6F                  		ld	l, a
+     861/    34B5 : ED 57               		ld	a, i
+     862/    34B7 : 67                  		ld	h, a
+     863/    34B8 : E5                  		push	hl
+     864/    34B9 :                     ;
+     865/    34B9 : 06 2D               		ld	b, init-aZ9001MonitorV2	; Länge der Systemmeldung aZ9001MonitorV2
+     866/    34BB : CD 1C 39            		call	zmmsg		; Ausgabe der Systemmeldung
+     867/    34BE :                     ;
+     868/    34BE : DB 88               		in	a, (PIO1AD)	; PIO1 A Daten Beeper, Border, 20Z
+     869/    34C0 : CB D7               		set	2, a
+     870/    34C2 : D3 88               		out	(PIO1AD), a	; PIO1 A Daten Beeper, Border, 20Z
+     871/    34C4 :                     ;
+     872/    34C4 : 21 00 15            		ld	hl, 1500h
+     873/    34C7 : 22 3B 00            		ld	(P1ROL), hl	; 1. rollende Zeile - 1
+     874/    34CA : 2A E1 EF            		ld	hl, (0EFE1h)	; Adresse TTY-Treiber für LIST
+     875/    34CD : E5                  		push	hl
+     876/    34CE : CD 31 3C            		call	inittreiber
+     877/    34D1 : E1                  		pop	hl
+     878/    34D2 : 22 E1 EF            		ld	(0EFE1h), hl	; Adresse TTY-Treiber für LIST
+     879/    34D5 :                     
+     880/    34D5 :                     ;------------------------------------------------------------------------------
+     881/    34D5 :                     ; Hauptschleife
+     882/    34D5 :                     ;------------------------------------------------------------------------------
+     883/    34D5 :                     
+     884/    34D5 : 11 D5 34            prompt:		ld	de, prompt
+     885/    34D8 : D5                  		push	de
+     886/    34D9 : CD 8A 39            		call	out_crlf
+     887/    34DC : 0E 3D               		ld	c, '='
+     888/    34DE : CD 34 30            		call	zm_conso	; Zeichenausgabe
+     889/    34E1 : 0E 3E               		ld	c, '>'
+     890/    34E3 : CD 34 30            		call	zm_conso	; Zeichenausgabe
+     891/    34E6 : CD CA 3A            prompt1:	call	zm_char		; Eingabe Buchstabe oder ENTER
+     892/    34E9 : E6 7F               		and	7Fh
+     893/    34EB : 28 F9               		jr	z, prompt1
+     894/    34ED : D6 41               		sub	'A'             ; A = 0..19h
+     895/    34EF : F8                  		ret	m
+     896/    34F0 : FE 1A               		cp	1Ah
+     897/    34F2 : D0                  		ret	nc
+     898/    34F3 : 87                  		add	a, a
+     899/    34F4 : 21 04 35            		ld	hl, kdo_tab
+     900/    34F7 : 85                  		add	a, l
+     901/    34F8 : 6F                  		ld	l, a
+     902/    34F9 : 7C                  		ld	a, h
+     903/    34FA : CE 00               		adc	a, 0
+     904/    34FC : 67                  		ld	h, a
+     905/    34FD : 7E                  		ld	a, (hl)
+     906/    34FE : 23                  		inc	hl
+     907/    34FF : 66                  		ld	h, (hl)
+     908/    3500 : 6F                  		ld	l, a		; HL=Adr. Kommando
+     909/    3501 : 0E 02               		ld	c, 2		; Std. 2 Parameter
+     910/    3503 : E9                  		jp	(hl)		; Kommando starten
+     911/    3504 :                     
+     912/    3504 :                     ; Sprungverteiler ZM-Kommandos
+     913/    3504 : 3B 35               kdo_tab:	dw kdo_a		; Geraetezuweisung
+     914/    3506 : 86 35               		dw bye			; Rueckgabe an das OS
+     915/    3508 : B2 35               		dw convert		; Umrechnung Dezimalzahl in Hexadezimalzahl und	umgekehrt
+     916/    350A : 3A 36               		dw display		; Ausgabe von Speicherbereichen	auf Konsole (Hexdump)
+     917/    350C : 51 36               		dw endblock		; Ausgabe eines	Endeblockes
+     918/    350E : 72 36               		dw fill			; Beschreiben eines Speicherbereiches mit konst. Wert
+     919/    3510 : 7F 36               		dw go			; Start	eines Anwenderprogramms
+     920/    3512 : DB 39               		dw kdo_h		; Bildung der Summe und	Differenz zweier Hexzahlen
+     921/    3514 : 20 02               		dw 220h
+     922/    3516 : CD 36               		dw kdo_j		; Nichtzerstoerender Speichertest
+     923/    3518 : 23 02               		dw 223h
+     924/    351A : 26 02               		dw 226h
+     925/    351C : EB 36               		dw move			; Transport eines Speicherbereiches auf	einen anderen Speicherbereich
+     926/    351E : 6C 39               		dw null
+     927/    3520 : 29 02               		dw 229h
+     928/    3522 : 40 38               		dw punch		; Ausgabe im INTEL-Hex-Format auf den Punch-Kanal
+     929/    3524 : E4 3A               		dw kdo_q		; Lesen	und Schreiben auf I/O-Ports
+     930/    3526 : F6 36               		dw read			; Einlesen eines INTEL-Hex-Files ueber den Reader-Kanal
+     931/    3528 : AF 37               		dw Substitute		; Modifizieren von Speicherzellen
+     932/    352A : D8 37               		dw Type			; Ausgabe in ASCII-Darstellung
+     933/    352C : 2C 02               		dw 22Ch
+     934/    352E : 0F 3B               		dw kdo_v		; Vergleich eines Speicherbereiches mit	einem anderen
+     935/    3530 : 93 35               		dw write		; Schreiben von	ASCII-Zeichen in den Speicher
+     936/    3532 : 7D 38               		dw kdo_x		; Ausgabe des Z80-Registersatzes
+     937/    3534 : F8 37               		dw kdo_y		; Suchen einer Zeichenfolge von	max. 255 byte
+     938/    3536 : 50 39               		dw kdo_z		; Ausgabe der höchsten RAM-Adresse (RAM-TOP)
+     939/    3538 :                     
+     940/    3538 : C3 36 39            exerr:		jp	error
+     941/    353B :                     
+     942/    353B :                     ;------------------------------------------------------------------------------
+     943/    353B :                     ; A   Geraetezuweisung
+     944/    353B :                     ;       C fuer CONSOL
+     945/    353B :                     ;       R fuer READER
+     946/    353B :                     ;       P fuer PUNCH
+     947/    353B :                     ;     Folgende Zuordnungen sind moeglich
+     948/    353B :                     ;       AC=C f.Konsole (m. BEEP)
+     949/    353B :                     ;	 =V f.Konsole (o. BEEP)
+     950/    353B :                     ;       AR=C f.Konsole
+     951/    353B :                     ;	 =T f.Kassette
+     952/    353B :                     ;       AP=C f.Konsole
+     953/    353B :                     ;	 =T f.Kassette
+     954/    353B :                     ;     Nach Anlauf des Monitors gilt
+     955/    353B :                     ;       AC=V, AR=C, AP=C
+     956/    353B :                     ;------------------------------------------------------------------------------
+     957/    353B :                     
+     958/    353B : CD CA 3A            kdo_a:		call	zm_char		; Geraetezuweisung
+     959/    353E : 21 21 3B            		ld	hl, tab_asgn
+     960/    3541 : 01 00 04            		ld	bc, 400h	; B := 4, C := 0
+     961/    3544 : 11 05 00            		ld	de, 5
+     962/    3547 : BE                  kdo_a1:		cp	(hl)		; Suche	Dest-Gerät
+     963/    3548 : 28 06               		jr	z, kdo_a2
+     964/    354A : 19                  		add	hl, de
+     965/    354B : 0C                  		inc	c
+     966/    354C : 10 F9               		djnz	kdo_a1		; Suche	Dest-Gerät
+     967/    354E : 18 15               		jr	kdo_a5
+     968/    3550 : 59                  kdo_a2:		ld	e, c
+     969/    3551 : CD CA 3A            kdo_a3:		call	zm_char		; Eingabe Buchstabe oder ENTER
+     970/    3554 : FE 3D               		cp	'='
+     971/    3556 : 20 F9               		jr	nz, kdo_a3
+     972/    3558 : CD CA 3A            		call	zm_char		; Eingabe Buchstabe oder ENTER
+     973/    355B : 01 00 04            		ld	bc, 400h	; B := 4, C := 0
+     974/    355E : 23                  kdo_a4:		inc	hl
+     975/    355F : BE                  		cp	(hl)
+     976/    3560 : 28 06               		jr	z, kdo_a6
+     977/    3562 : 0C                  		inc	c
+     978/    3563 : 10 F9               		djnz	kdo_a4
+     979/    3565 : C3 36 39            kdo_a5:		jp	error
+     980/    3568 :                     ;
+     981/    3568 : 3E 03               kdo_a6:		ld	a, 3
+     982/    356A : 1C                  		inc	e
+     983/    356B : 1D                  kdo_a7:		dec	e
+     984/    356C : 28 08               		jr	z, kdo_a8
+     985/    356E : CB 21               		sla	c
+     986/    3570 : CB 21               		sla	c
+     987/    3572 : 17                  		rla
+     988/    3573 : 17                  		rla
+     989/    3574 : 18 F5               		jr	kdo_a7
+     990/    3576 : 2F                  kdo_a8:		cpl
+     991/    3577 : 57                  		ld	d, a
+     992/    3578 : CD 3D 3A            kdo_a9:		call	getch		; nächstes Zeichen lesen; Test auf Leerzeichen oder Enter
+     993/    357B : 30 FB               		jr	nc, kdo_a9
+     994/    357D : 3A 04 00            		ld	a, (4)
+     995/    3580 : A2                  		and	d
+     996/    3581 : B1                  		or	c
+     997/    3582 : 4F                  		ld	c, a
+     998/    3583 : C3 09 34            		jp	SIOBY		; SETZEN I/O-BYTE
+     999/    3586 :                     
+    1000/    3586 :                     ;------------------------------------------------------------------------------
+    1001/    3586 :                     ;  B   Rueckgabe an das OS
+    1002/    3586 :                     ;------------------------------------------------------------------------------
+    1003/    3586 :                     
+    1004/    3586 : CD 1B 34            bye:		call	eor		; Rueckgabe an das OS
+    1005/    3589 : 01 23 00            		ld	bc, tab_reg-regrstor
+    1006/    358C : 09                  		add	hl, bc
+    1007/    358D : 22 36 00            		ld	(0036h), hl	; Speicher vor EOR wieder freigeben
+    1008/    3590 : C3 03 F0            		jp	0F003h		; JP WBOOT
+    1009/    3593 :                     
+    1010/    3593 :                     ;------------------------------------------------------------------------------
+    1011/    3593 :                     ; Schreiben von ASCII-Zeichen in den
+    1012/    3593 :                     ;      Speicher
+    1013/    3593 :                     ;        W anfadr
+    1014/    3593 :                     ;------------------------------------------------------------------------------
+    1015/    3593 :                     
+    1016/    3593 : CD 9D 39            write:		call	param		; Schreiben von	ASCII-Zeichen in den Speicher
+    1017/    3596 : CD 8A 39            		call	out_crlf
+    1018/    3599 : E1                  		pop	hl
+    1019/    359A : CD C4 3A            write1:		call	zm_consi7	; Zeicheneingabe, 7 Bit
+    1020/    359D : FE 03               		cp	3		; <STOP> ?
+    1021/    359F : CA 57 39            		jp	z, outnlhlsp	; Ausgabe CR,LF, HL hexa 4 Stellen, SP
+    1022/    35A2 : FE 08               		cp	8		; <Backspace> ?
+    1023/    35A4 : 28 08               		jr	z, write3
+    1024/    35A6 : 77                  		ld	(hl), a		; Zeichen in Speicher schreiben
+    1025/    35A7 : 4F                  		ld	c, a
+    1026/    35A8 : 23                  		inc	hl		; nächste Adresse
+    1027/    35A9 : CD 34 30            write2:		call	zm_conso	; Zeichenausgabe
+    1028/    35AC : 18 EC               		jr	write1
+    1029/    35AE : 2B                  write3:		dec	hl
+    1030/    35AF : 4F                  		ld	c, a
+    1031/    35B0 : 18 F7               		jr	write2
+    1032/    35B2 :                     
+    1033/    35B2 :                     ;------------------------------------------------------------------------------
+    1034/    35B2 :                     ; C   Umrechnung Dezimalzahl in Hexa-
+    1035/    35B2 :                     ;     dezimalzahl und umgekehrt
+    1036/    35B2 :                     ;       CD (dez. z.) Dez. = > Hex.
+    1037/    35B2 :                     ;       CH (hex. z.) Hex. = > Dez.
+    1038/    35B2 :                     ;------------------------------------------------------------------------------
+    1039/    35B2 :                     
+    1040/    35B2 : CD CA 3A            convert:	call	zm_char		; Umrechnung Dezimalzahl in Hexadezimalzahl und	umgekehrt
+    1041/    35B5 : FE 44               		cp	'D'
+    1042/    35B7 : 20 33               		jr	nz, convert1
+    1043/    35B9 : 21 36 39            		ld	hl, error
+    1044/    35BC : E5                  		push	hl
+    1045/    35BD :                     ;
+    1046/    35BD : 21 00 00            getdez:		ld	hl, 0
+    1047/    35C0 : CD CA 3A            getdez1:	call	zm_char		; Eingabe Buchstabe oder ENTER
+    1048/    35C3 : FE 30               		cp	30h ; '0'
+    1049/    35C5 : 38 17               		jr	c, getdez2
+    1050/    35C7 : FE 3A               		cp	3Ah ; ':'
+    1051/    35C9 : 30 13               		jr	nc, getdez2
+    1052/    35CB : D6 30               		sub	30h ; '0'
+    1053/    35CD : 54                  		ld	d, h
+    1054/    35CE : 5D                  		ld	e, l
+    1055/    35CF : 29                  		add	hl, hl
+    1056/    35D0 : D8                  		ret	c
+    1057/    35D1 : 29                  		add	hl, hl
+    1058/    35D2 : D8                  		ret	c
+    1059/    35D3 : 19                  		add	hl, de
+    1060/    35D4 : D8                  		ret	c
+    1061/    35D5 : 29                  		add	hl, hl
+    1062/    35D6 : D8                  		ret	c
+    1063/    35D7 : 16 00               		ld	d, 0
+    1064/    35D9 : 5F                  		ld	e, a
+    1065/    35DA : 19                  		add	hl, de
+    1066/    35DB : D8                  		ret	c
+    1067/    35DC : 18 E2               		jr	getdez1
+    1068/    35DE :                     ;
+    1069/    35DE : D1                  getdez2:	pop	de
+    1070/    35DF : CD 5D 39            		call	outsp		; Leerzeichen ausgeben
+    1071/    35E2 : CD E7 39            		call	outhl		; Ausgabe HL hexadezimal ASCII 4 Stellen
+    1072/    35E5 : 0E 48               		ld	c, 'H'
+    1073/    35E7 : CD 34 30            		call	zm_conso	; Zeichenausgabe
+    1074/    35EA : 18 2F               		jr	bin_hl		; Ausgabe HL binär
+    1075/    35EC :                     ;
+    1076/    35EC : CD 9D 39            convert1:	call	param		; 1 Parameter holen
+    1077/    35EF : E1                  		pop	hl
+    1078/    35F0 : CD 1B 36            		call	bin_hl		; Ausgabe HL binär
+    1079/    35F3 :                     ;
+    1080/    35F3 : 06 10               todez:		ld	b, 10h
+    1081/    35F5 : 11 00 00            		ld	de, 0
+    1082/    35F8 : 4B                  		ld	c, e
+    1083/    35F9 : 29                  todez1:		add	hl, hl
+    1084/    35FA : 7B                  		ld	a, e
+    1085/    35FB : 8B                  		adc	a, e
+    1086/    35FC : 27                  		daa
+    1087/    35FD : 5F                  		ld	e, a
+    1088/    35FE : 7A                  		ld	a, d
+    1089/    35FF : 8A                  		adc	a, d
+    1090/    3600 : 27                  		daa
+    1091/    3601 : 57                  		ld	d, a
+    1092/    3602 : 79                  		ld	a, c
+    1093/    3603 : 89                  		adc	a, c
+    1094/    3604 : 4F                  		ld	c, a
+    1095/    3605 : 10 F2               		djnz	todez1
+    1096/    3607 : 41                  		ld	b, c
+    1097/    3608 : CD 5D 39            		call	outsp		; Leerzeichen ausgeben
+    1098/    360B : 78                  		ld	a, b
+    1099/    360C : B7                  		or	a
+    1100/    360D : 28 03               		jr	z, todez2
+    1101/    360F : CD EC 39            		call	outa		; Ausgabe A hexadezimal	ASCII 2	Stellen
+    1102/    3612 : EB                  todez2:		ex	de, hl
+    1103/    3613 : CD E7 39            		call	outhl		; Ausgabe HL hexadezimal ASCII 4 Stellen
+    1104/    3616 : 0E 44               		ld	c, 'D'
+    1105/    3618 : C3 34 30            		jp	zm_conso	; Zeichenausgabe
+    1106/    361B :                     
+    1107/    361B :                     ; Ausgabe HL binär
+    1108/    361B : 5C                  bin_hl:		ld	e, h
+    1109/    361C : CD F6 3A            		call	bin_e		; Ausgabe E binär
+    1110/    361F : 5D                  		ld	e, l
+    1111/    3620 : CD F6 3A            		call	bin_e		; Ausgabe E binär
+    1112/    3623 : 0E 42               		ld	c, 'B'
+    1113/    3625 : C3 34 30            		jp	zm_conso	; Zeichenausgabe
+    1114/    3628 :                     
+    1115/    3628 :                     ; Anzeige HL, (HL), A
+    1116/    3628 :                     
+    1117/    3628 : 47                  outmem:		ld	b, a
+    1118/    3629 : CD 5A 39            		call	outhlsp		; Ausgabe HL + Space
+    1119/    362C : 7E                  		ld	a, (hl)
+    1120/    362D : CD EC 39            		call	outa		; Ausgabe A hexadezimal	ASCII 2	Stellen
+    1121/    3630 : CD 5D 39            		call	outsp		; Leerzeichen ausgeben
+    1122/    3633 : 78                  		ld	a, b
+    1123/    3634 : CD EC 39            		call	outa		; Ausgabe A hexadezimal	ASCII 2	Stellen
+    1124/    3637 : C3 8A 39            		jp	out_crlf
+    1125/    363A :                     
+    1126/    363A :                     ;------------------------------------------------------------------------------
+    1127/    363A :                     ; D   Ausgabe von Speicherbereichen
+    1128/    363A :                     ;     auf Konsole  (Hexdump)
+    1129/    363A :                     ;       D anfadr_endadr
+    1130/    363A :                     ;------------------------------------------------------------------------------
+    1131/    363A :                     
+    1132/    363A : CD 7A 39            display:	call	twoparams	; Ausgabe von Speicherbereichen	auf Konsole (Hexdump)
+    1133/    363D : CD 57 39            display1:	call	outnlhlsp	; Ausgabe CR,LF, HL hexa 4 Stellen, SP
+    1134/    3640 : CD 5D 39            display2:	call	outsp		; Leerzeichen ausgeben
+    1135/    3643 : 7E                  		ld	a, (hl)
+    1136/    3644 : CD EC 39            		call	outa		; Ausgabe A hexadezimal	ASCII 2	Stellen
+    1137/    3647 : CD CB 39            		call	nextadr1
+    1138/    364A : 7D                  		ld	a, l
+    1139/    364B : E6 07               		and	7
+    1140/    364D : 20 F1               		jr	nz, display2
+    1141/    364F : 18 EC               		jr	display1
+    1142/    3651 :                     
+    1143/    3651 :                     ;------------------------------------------------------------------------------
+    1144/    3651 :                     ;  E   Ausgabe eines Endeblockes
+    1145/    3651 :                     ;------------------------------------------------------------------------------
+    1146/    3651 :                     
+    1147/    3651 : CD 9D 39            endblock:	call	param		; Ausgabe eines	Endeblockes
+    1148/    3654 : CD 62 39            		call	pun_crlf
+    1149/    3657 : 0E 3A               		ld	c, ':'
+    1150/    3659 : CD 3B 30            		call	zm_puno
+    1151/    365C : AF                  		xor	a
+    1152/    365D : CD 21 3A            		call	punch_a		; Ausgabe A auf	PUNCH
+    1153/    3660 : E1                  		pop	hl
+    1154/    3661 : CD 1C 3A            		call	punch_hl
+    1155/    3664 : 21 00 00            		ld	hl, 0
+    1156/    3667 : CD 1C 3A            		call	punch_hl
+    1157/    366A : 3E 1A               		ld	a, 1Ah
+    1158/    366C : CD 21 3A            		call	punch_a		; Ausgabe A auf	PUNCH
+    1159/    366F : C3 6C 39            		jp	null
+    1160/    3672 :                     ;------------------------------------------------------------------------------
+    1161/    3672 :                     ; F   Beschreiben eines Speicherbe-
+    1162/    3672 :                     ;     reiches mit konst. Wert
+    1163/    3672 :                     ;       F anfadr_endadr_wert
+    1164/    3672 :                     ;------------------------------------------------------------------------------
+    1165/    3672 :                     
+    1166/    3672 : CD 92 39            fill:		call	threeparams	; Beschreiben eines Speicherbereiches mit konst. Wert
+    1167/    3675 : 71                  fill1:		ld	(hl), c
+    1168/    3676 : CD D1 39            		call	nextadr		; incl HL, HL=0	oder HL=DE?
+    1169/    3679 : 30 FA               		jr	nc, fill1
+    1170/    367B : D1                  		pop	de
+    1171/    367C : C3 D5 34            		jp	prompt
+    1172/    367F :                     
+    1173/    367F :                     ;------------------------------------------------------------------------------
+    1174/    367F :                     ; G   Start eines Anwenderprogramms
+    1175/    367F :                     ;       G anfadr
+    1176/    367F :                     ;------------------------------------------------------------------------------
+    1177/    367F :                     
+    1178/    367F : CD 3D 3A            go:		call	getch		; Start	eines Anwenderprogramms
+    1179/    3682 : 38 40               		jr	c, go5
+    1180/    3684 : 28 10               		jr	z, go1
+    1181/    3686 : CD C4 39            		call	param1		; 1 Parameter holen; das aktuelle Zeichen gehört schon zum Parameter
+    1182/    3689 : D1                  		pop	de
+    1183/    368A : 21 34 00            		ld	hl, 34h	; ???
+    1184/    368D : 39                  		add	hl, sp
+    1185/    368E : 72                  		ld	(hl), d
+    1186/    368F : 2B                  		dec	hl
+    1187/    3690 : 73                  		ld	(hl), e
+    1188/    3691 : 78                  		ld	a, b
+    1189/    3692 : FE 0D               		cp	0Dh
+    1190/    3694 : 28 2E               		jr	z, go5
+    1191/    3696 : 16 02               go1:		ld	d, 2
+    1192/    3698 : 21 35 00            		ld	hl, 35h	; ???
+    1193/    369B : 39                  		add	hl, sp
+    1194/    369C : E5                  go2:		push	hl
+    1195/    369D : CD 9D 39            		call	param		; 1 Parameter holen
+    1196/    36A0 : 58                  		ld	e, b
+    1197/    36A1 : C1                  		pop	bc
+    1198/    36A2 : E1                  		pop	hl
+    1199/    36A3 : 78                  		ld	a, b
+    1200/    36A4 : B1                  		or	c
+    1201/    36A5 : 28 0A               		jr	z, go3
+    1202/    36A7 : 71                  		ld	(hl), c
+    1203/    36A8 : 23                  		inc	hl
+    1204/    36A9 : 70                  		ld	(hl), b
+    1205/    36AA : 23                  		inc	hl
+    1206/    36AB : 0A                  		ld	a, (bc)
+    1207/    36AC : 77                  		ld	(hl), a
+    1208/    36AD : 23                  		inc	hl
+    1209/    36AE : 3E FF               		ld	a, 0FFh
+    1210/    36B0 : 02                  		ld	(bc), a
+    1211/    36B1 : 7B                  go3:		ld	a, e
+    1212/    36B2 : FE 0D               		cp	0Dh
+    1213/    36B4 : 28 03               		jr	z, go4
+    1214/    36B6 : 15                  		dec	d
+    1215/    36B7 : 20 E3               		jr	nz, go2
+    1216/    36B9 : 3E C3               go4:		ld	a, 0C3h		; JP
+    1217/    36BB : 32 38 00            		ld	(38h), a
+    1218/    36BE : 21 03 30            		ld	hl, exrst38
+    1219/    36C1 : 22 39 00            		ld	(39h), hl
+    1220/    36C4 : CD 8A 39            go5:		call	out_crlf
+    1221/    36C7 : D1                  		pop	de
+    1222/    36C8 : 21 16 00            		ld	hl, 16h		; ???
+    1223/    36CB : 39                  		add	hl, sp
+    1224/    36CC : E9                  		jp	(hl)
+    1225/    36CD :                     
+    1226/    36CD :                     ;------------------------------------------------------------------------------
+    1227/    36CD :                     ; J   Nichtzerstoerender Speichertest
+    1228/    36CD :                     ;       J anfadr_endadr
+    1229/    36CD :                     ;------------------------------------------------------------------------------
+    1230/    36CD :                     
+    1231/    36CD : CD 7A 39            kdo_j:		call	twoparams
+    1232/    36D0 : 7E                  kdo_j1:		ld	a, (hl)
+    1233/    36D1 : 47                  		ld	b, a
+    1234/    36D2 : 2F                  		cpl
+    1235/    36D3 : 77                  		ld	(hl), a
+    1236/    36D4 : AE                  		xor	(hl)
+    1237/    36D5 : 28 0E               		jr	z, kdo_j2
+    1238/    36D7 : D5                  		push	de
+    1239/    36D8 : 50                  		ld	d, b
+    1240/    36D9 : 5F                  		ld	e, a
+    1241/    36DA : CD 5A 39            		call	outhlsp		; Ausgabe HL + Space
+    1242/    36DD : CD F6 3A            		call	bin_e		; Ausgabe E binär
+    1243/    36E0 : CD 8A 39            		call	out_crlf
+    1244/    36E3 : 42                  		ld	b, d
+    1245/    36E4 : D1                  		pop	de
+    1246/    36E5 : 70                  kdo_j2:		ld	(hl), b
+    1247/    36E6 : CD CB 39            		call	nextadr1
+    1248/    36E9 : 18 E5               		jr	kdo_j1
+    1249/    36EB :                     
+    1250/    36EB :                     ;------------------------------------------------------------------------------
+    1251/    36EB :                     ; M   Transport eines Speicherbereiches
+    1252/    36EB :                     ;     auf einen anderen Speicherbereich
+    1253/    36EB :                     ;       M anfadr_endadr_zieladr
+    1254/    36EB :                     ;------------------------------------------------------------------------------
+    1255/    36EB :                     
+    1256/    36EB : CD 92 39            move:		call	threeparams	; Transport eines Speicherbereiches auf	einen anderen Speicherbereich
+    1257/    36EE : 7E                  move1:		ld	a, (hl)
+    1258/    36EF : 02                  		ld	(bc), a
+    1259/    36F0 : 03                  		inc	bc
+    1260/    36F1 : CD CB 39            		call	nextadr1
+    1261/    36F4 : 18 F8               		jr	move1
+    1262/    36F6 :                     
+    1263/    36F6 :                     ;------------------------------------------------------------------------------
+    1264/    36F6 :                     ; R   Einlesen eines INTEL-Hex-Files
+    1265/    36F6 :                     ;     ueber den Reader-Kanal
+    1266/    36F6 :                     ;       R
+    1267/    36F6 :                     ;------------------------------------------------------------------------------
+    1268/    36F6 :                     
+    1269/    36F6 : CD 9D 39            read:		call	param		; Einlesen eines INTEL-Hex-Files ueber den Reader-Kanal
+    1270/    36F9 : 78                  		ld	a, b
+    1271/    36FA : D6 0D               		sub	0Dh
+    1272/    36FC : 47                  		ld	b, a
+    1273/    36FD : 4F                  		ld	c, a
+    1274/    36FE : D1                  		pop	de
+    1275/    36FF : 28 04               		jr	z, read1
+    1276/    3701 : CD 9D 39            		call	param		; 1 Parameter holen
+    1277/    3704 : C1                  		pop	bc
+    1278/    3705 : EB                  read1:		ex	de, hl
+    1279/    3706 : D9                  		exx
+    1280/    3707 : CD 8A 39            		call	out_crlf
+    1281/    370A : CD 4C 3A            read2:		call	readd7		; Zeicheneingabe 7 Bit
+    1282/    370D : D6 3A               		sub	3Ah ; ':'
+    1283/    370F : 47                  		ld	b, a
+    1284/    3710 : E6 FE               		and	0FEh ; '¦'
+    1285/    3712 : 20 F6               		jr	nz, read2
+    1286/    3714 : 57                  		ld	d, a
+    1287/    3715 : CD 90 37            		call	read_2ziff	; Eingabe 2 Hexziffern -> A, aufsummieren auf D
+    1288/    3718 : 5F                  		ld	e, a
+    1289/    3719 : CD 90 37            		call	read_2ziff	; Eingabe 2 Hexziffern -> A, aufsummieren auf D
+    1290/    371C : F5                  		push	af
+    1291/    371D : CD 90 37            		call	read_2ziff	; Eingabe 2 Hexziffern -> A, aufsummieren auf D
+    1292/    3720 : D9                  		exx
+    1293/    3721 : D1                  		pop	de
+    1294/    3722 : 5F                  		ld	e, a
+    1295/    3723 : C5                  		push	bc
+    1296/    3724 : D5                  		push	de
+    1297/    3725 : E5                  		push	hl
+    1298/    3726 : 19                  		add	hl, de
+    1299/    3727 : E3                  		ex	(sp), hl
+    1300/    3728 : DD E1               		pop	ix
+    1301/    372A : D9                  		exx
+    1302/    372B : E1                  		pop	hl
+    1303/    372C : CD 90 37            		call	read_2ziff	; Eingabe 2 Hexziffern -> A, aufsummieren auf D
+    1304/    372F : 3D                  		dec	a
+    1305/    3730 : 78                  		ld	a, b
+    1306/    3731 : C1                  		pop	bc
+    1307/    3732 : 20 03               		jr	nz, read3
+    1308/    3734 : 09                  		add	hl, bc
+    1309/    3735 : DD 09               		add	ix, bc
+    1310/    3737 : 1C                  read3:		inc	e
+    1311/    3738 : 1D                  		dec	e
+    1312/    3739 : 28 19               		jr	z, read7
+    1313/    373B : 3D                  		dec	a
+    1314/    373C : 28 22               		jr	z, read8
+    1315/    373E : CD 90 37            read4:		call	read_2ziff	; Eingabe 2 Hexziffern -> A, aufsummieren auf D
+    1316/    3741 : CD A3 37            		call	sub_77A3
+    1317/    3744 : 20 F8               		jr	nz, read4
+    1318/    3746 : CD 90 37            read5:		call	read_2ziff	; Eingabe 2 Hexziffern -> A, aufsummieren auf D
+    1319/    3749 : 28 BF               		jr	z, read2
+    1320/    374B : DD E5               read6:		push	ix
+    1321/    374D : E1                  		pop	hl
+    1322/    374E : CD E7 39            		call	outhl		; Ausgabe HL hexadezimal ASCII 4 Stellen
+    1323/    3751 : C3 36 39            		jp	error
+    1324/    3754 :                     ;
+    1325/    3754 : 7C                  read7:		ld	a, h
+    1326/    3755 : B5                  		or	l
+    1327/    3756 : C8                  		ret	z
+    1328/    3757 : EB                  		ex	de, hl
+    1329/    3758 : 21 34 00            		ld	hl, 34h	; '4'
+    1330/    375B : 39                  		add	hl, sp
+    1331/    375C : 72                  		ld	(hl), d
+    1332/    375D : 2B                  		dec	hl
+    1333/    375E : 73                  		ld	(hl), e
+    1334/    375F : C9                  		ret
+    1335/    3760 :                     ;
+    1336/    3760 : 2E 01               read8:		ld	l, 1
+    1337/    3762 : CD 80 37            read9:		call	sub_7780
+    1338/    3765 : 38 07               		jr	c, read11
+    1339/    3767 :                     
+    1340/    3767 : CD A3 37            read10:		call	sub_77A3
+    1341/    376A : 20 F6               		jr	nz, read9
+    1342/    376C : 18 D8               		jr	read5
+    1343/    376E :                     ;
+    1344/    376E : 4F                  read11:		ld	c, a
+    1345/    376F : CD 80 37            		call	sub_7780
+    1346/    3772 : 47                  		ld	b, a
+    1347/    3773 : D9                  		exx
+    1348/    3774 : C5                  		push	bc
+    1349/    3775 : D9                  		exx
+    1350/    3776 : E3                  		ex	(sp), hl
+    1351/    3777 : 09                  		add	hl, bc
+    1352/    3778 : 7D                  		ld	a, l
+    1353/    3779 : CD A3 37            		call	sub_77A3
+    1354/    377C : 7C                  		ld	a, h
+    1355/    377D : E1                  		pop	hl
+    1356/    377E : 18 E7               		jr	read10
+    1357/    3780 :                     
+    1358/    3780 :                     ;
+    1359/    3780 : 2D                  sub_7780:	dec	l
+    1360/    3781 : 20 07               		jr	nz, loc_778A
+    1361/    3783 : CD 90 37            		call	read_2ziff	; Eingabe 2 Hexziffern -> A, aufsummieren auf D
+    1362/    3786 : 1D                  		dec	e
+    1363/    3787 : 67                  		ld	h, a
+    1364/    3788 : 2E 08               		ld	l, 8
+    1365/    378A : CD 90 37            loc_778A:	call	read_2ziff	; Eingabe 2 Hexziffern -> A, aufsummieren auf D
+    1366/    378D : CB 24               		sla	h
+    1367/    378F : C9                  		ret
+    1368/    3790 :                     
+    1369/    3790 :                     ; Eingabe 2 Hexziffern -> A, aufsummieren auf D
+    1370/    3790 : C5                  read_2ziff:	push	bc
+    1371/    3791 : CD 09 3A            		call	read_ziff
+    1372/    3794 : 07                  		rlca
+    1373/    3795 : 07                  		rlca
+    1374/    3796 : 07                  		rlca
+    1375/    3797 : 07                  		rlca
+    1376/    3798 : 4F                  		ld	c, a
+    1377/    3799 : CD 09 3A            		call	read_ziff
+    1378/    379C : B1                  		or	c
+    1379/    379D : 4F                  		ld	c, a
+    1380/    379E : 82                  		add	a, d
+    1381/    379F : 57                  		ld	d, a
+    1382/    37A0 : 79                  		ld	a, c
+    1383/    37A1 : C1                  		pop	bc
+    1384/    37A2 : C9                  		ret
+    1385/    37A3 :                     
+    1386/    37A3 :                     ;
+    1387/    37A3 : DD 77 00            sub_77A3:	ld	(ix+0),	a
+    1388/    37A6 : DD BE 00            		cp	(ix+0)
+    1389/    37A9 : 20 A0               		jr	nz, read6
+    1390/    37AB : DD 23               		inc	ix
+    1391/    37AD : 1D                  		dec	e
+    1392/    37AE : C9                  		ret
+    1393/    37AF :                     
+    1394/    37AF :                     ;------------------------------------------------------------------------------
+    1395/    37AF :                     ; S   Modifizieren von Speicherzellen
+    1396/    37AF :                     ;       S anfadr
+    1397/    37AF :                     ;------------------------------------------------------------------------------
+    1398/    37AF :                     
+    1399/    37AF : CD 9D 39            Substitute:	call	param		; Modifizieren von Speicherzellen
+    1400/    37B2 : E1                  		pop	hl		; anfadr
+    1401/    37B3 : 7E                  Substitute1:	ld	a, (hl)
+    1402/    37B4 : CD EC 39            		call	outa		; Ausgabe A hexadezimal	ASCII 2	Stellen
+    1403/    37B7 : CD 38 3A            		call	outminus	; Ausgabe '-'-Zeichen, nächstes Zeichen lesen
+    1404/    37BA : D8                  		ret	c		; bei <ENTER>
+    1405/    37BB : 28 0F               		jr	z, Substitute2
+    1406/    37BD : FE 5F               		cp	5Fh ; '_'
+    1407/    37BF : 28 14               		jr	z, Substitute4
+    1408/    37C1 : E5                  		push	hl
+    1409/    37C2 : CD C4 39            		call	param1		; 1 Parameter holen; das aktuelle Zeichen gehört schon zum Parameter
+    1410/    37C5 : D1                  		pop	de
+    1411/    37C6 : E1                  		pop	hl
+    1412/    37C7 : 73                  		ld	(hl), e
+    1413/    37C8 : 78                  		ld	a, b
+    1414/    37C9 : FE 0D               		cp	0Dh
+    1415/    37CB : C8                  		ret	z
+    1416/    37CC :                     ;
+    1417/    37CC : 23                  Substitute2:	inc	hl
+    1418/    37CD : 7D                  Substitute3:	ld	a, l
+    1419/    37CE : E6 03               		and	3
+    1420/    37D0 : CC 57 39            		call	z, outnlhlsp	; Ausgabe CR,LF, HL hexa 4 Stellen, SP
+    1421/    37D3 : 18 DE               		jr	Substitute1
+    1422/    37D5 : 2B                  Substitute4:	dec	hl
+    1423/    37D6 : 18 F5               		jr	Substitute3
+    1424/    37D8 :                     
+    1425/    37D8 :                     ;------------------------------------------------------------------------------
+    1426/    37D8 :                     ; T   Ausgabe in ASCII-Darstellung
+    1427/    37D8 :                     ;       T anfadr_endadr
+    1428/    37D8 :                     ;------------------------------------------------------------------------------
+    1429/    37D8 :                     
+    1430/    37D8 : CD 7A 39            Type:		call	twoparams	; Ausgabe in ASCII-Darstellung
+    1431/    37DB : CD 57 39            Type1:		call	outnlhlsp	; Ausgabe CR,LF, HL hexa 4 Stellen, SP
+    1432/    37DE : 06 20               		ld	b, 20h
+    1433/    37E0 : 7E                  Type2:		ld	a, (hl)
+    1434/    37E1 : E6 7F               		and	7Fh
+    1435/    37E3 : FE 20               		cp	' '
+    1436/    37E5 : 30 02               		jr	nc, Type4
+    1437/    37E7 : 3E 2E               Type3:		ld	a, '.'
+    1438/    37E9 : FE 7C               Type4:		cp	7Ch ; '|'
+    1439/    37EB : 30 FA               		jr	nc, Type3
+    1440/    37ED : 4F                  		ld	c, a
+    1441/    37EE : CD 34 30            		call	zm_conso	; Zeichenausgabe
+    1442/    37F1 : CD CB 39            		call	nextadr1
+    1443/    37F4 : 10 EA               		djnz	Type2
+    1444/    37F6 : 18 E3               		jr	Type1
+    1445/    37F8 :                     
+    1446/    37F8 :                     ;------------------------------------------------------------------------------
+    1447/    37F8 :                     ; Y   Suchen einer Zeichenfolge von max.
+    1448/    37F8 :                     ;     255 byte
+    1449/    37F8 :                     ;       Y byte_byte   u.s.w.
+    1450/    37F8 :                     ;------------------------------------------------------------------------------
+    1451/    37F8 :                     
+    1452/    37F8 : 16 00               kdo_y:		ld	d, 0		; Suchen einer Zeichenfolge von	max. 255 byte
+    1453/    37FA : CD 9D 39            kdo_y1:		call	param		; 1 Parameter holen
+    1454/    37FD : E1                  		pop	hl
+    1455/    37FE : 65                  		ld	h, l
+    1456/    37FF : E5                  		push	hl
+    1457/    3800 : 33                  		inc	sp
+    1458/    3801 : 14                  		inc	d
+    1459/    3802 : 78                  		ld	a, b
+    1460/    3803 : D6 0D               		sub	0Dh
+    1461/    3805 : 20 F3               		jr	nz, kdo_y1
+    1462/    3807 : 47                  		ld	b, a
+    1463/    3808 : 4F                  		ld	c, a
+    1464/    3809 : 67                  		ld	h, a
+    1465/    380A : 6A                  		ld	l, d
+    1466/    380B : 2D                  		dec	l
+    1467/    380C : 39                  		add	hl, sp
+    1468/    380D : E5                  		push	hl
+    1469/    380E : C5                  		push	bc
+    1470/    380F : C5                  kdo_y2:		push	bc
+    1471/    3810 : CD 8A 39            		call	out_crlf
+    1472/    3813 : C1                  		pop	bc
+    1473/    3814 : E1                  kdo_y3:		pop	hl
+    1474/    3815 : DD E1               		pop	ix
+    1475/    3817 : 5A                  		ld	e, d
+    1476/    3818 : DD 7E 00            		ld	a, (ix+0)
+    1477/    381B : ED B1               		cpir
+    1478/    381D : E2 3B 38            		jp	po, kdo_y6
+    1479/    3820 : DD E5               		push	ix
+    1480/    3822 : E5                  		push	hl
+    1481/    3823 : 1D                  kdo_y4:		dec	e
+    1482/    3824 : 28 0B               		jr	z, kdo_y5
+    1483/    3826 : DD 7E FF            		ld	a, (ix-1)
+    1484/    3829 : BE                  		cp	(hl)
+    1485/    382A : 20 E8               		jr	nz, kdo_y3
+    1486/    382C : 23                  		inc	hl
+    1487/    382D : DD 2B               		dec	ix
+    1488/    382F : 18 F2               		jr	kdo_y4
+    1489/    3831 : E1                  kdo_y5:		pop	hl
+    1490/    3832 : E5                  		push	hl
+    1491/    3833 : 2B                  		dec	hl
+    1492/    3834 : C5                  		push	bc
+    1493/    3835 : CD E7 39            		call	outhl		; Ausgabe HL hexadezimal ASCII 4 Stellen
+    1494/    3838 : C1                  		pop	bc
+    1495/    3839 : 18 D4               		jr	kdo_y2
+    1496/    383B : 33                  kdo_y6:		inc	sp
+    1497/    383C : 1D                  		dec	e
+    1498/    383D : 20 FC               		jr	nz, kdo_y6
+    1499/    383F : C9                  		ret
+    1500/    3840 :                     
+    1501/    3840 :                     ;------------------------------------------------------------------------------
+    1502/    3840 :                     ; P   Ausgabe im INTEL-Hex-Format auf den
+    1503/    3840 :                     ;     Punch-Kanal
+    1504/    3840 :                     ;       P anfadr_endadr (_stadr bei AP=T)
+    1505/    3840 :                     ;------------------------------------------------------------------------------
+    1506/    3840 :                     
+    1507/    3840 : CD 7A 39            punch:		call	twoparams	; Ausgabe im INTEL-Hex-Format auf den Punch-Kanal
+    1508/    3843 : CD 62 39            punch1:		call	pun_crlf
+    1509/    3846 : 01 3A 00            		ld	bc, 3Ah	; ':'
+    1510/    3849 : CD 3B 30            		call	zm_puno
+    1511/    384C : D5                  		push	de
+    1512/    384D : E5                  		push	hl
+    1513/    384E : 04                  punch2:		inc	b
+    1514/    384F : CD D1 39            		call	nextadr		; incl HL, HL=0	oder HL=DE?
+    1515/    3852 : 38 24               		jr	c, punch5
+    1516/    3854 : 3E 18               		ld	a, 18h
+    1517/    3856 : 90                  		sub	b
+    1518/    3857 : 20 F5               		jr	nz, punch2
+    1519/    3859 : E1                  		pop	hl
+    1520/    385A : CD 60 38            		call	punch3
+    1521/    385D : D1                  		pop	de
+    1522/    385E : 18 E3               		jr	punch1
+    1523/    3860 :                     ;
+    1524/    3860 : 57                  punch3:		ld	d, a
+    1525/    3861 : 78                  		ld	a, b
+    1526/    3862 : CD 21 3A            		call	punch_a		; Ausgabe A auf	PUNCH
+    1527/    3865 : CD 1C 3A            		call	punch_hl
+    1528/    3868 : AF                  		xor	a
+    1529/    3869 : CD 21 3A            		call	punch_a		; Ausgabe A auf	PUNCH
+    1530/    386C : 7E                  punch4:		ld	a, (hl)
+    1531/    386D : CD 21 3A            		call	punch_a		; Ausgabe A auf	PUNCH
+    1532/    3870 : 23                  		inc	hl
+    1533/    3871 : 10 F9               		djnz	punch4
+    1534/    3873 : AF                  		xor	a
+    1535/    3874 : 92                  		sub	d
+    1536/    3875 : C3 21 3A            		jp	punch_a		; Ausgabe A auf	PUNCH
+    1537/    3878 :                     ;
+    1538/    3878 : E1                  punch5:		pop	hl
+    1539/    3879 : D1                  		pop	de
+    1540/    387A : AF                  		xor	a
+    1541/    387B : 18 E3               		jr	punch3
+    1542/    387D :                     
+    1543/    387D :                     ;------------------------------------------------------------------------------
+    1544/    387D :                     ; X   Ausgabe des Z80-Registersatzes
+    1545/    387D :                     ;       X  1.Registersatz
+    1546/    387D :                     ;       X' 2.Registersatz
+    1547/    387D :                     ;------------------------------------------------------------------------------
+    1548/    387D :                     
+    1549/    387D : CD CA 3A            kdo_x:		call	zm_char		; Eingabe Buchstabe oder ENTER
+    1550/    3880 : 21 58 3B            		ld	hl, tab_reg
+    1551/    3883 : FE 0D               		cp	0Dh		; <Enter>?
+    1552/    3885 : 28 5A               		jr	z, kdo_x7
+    1553/    3887 : FE 27               		cp	27h ; '''       ; zweiter Registersatz?
+    1554/    3889 : 20 0A               		jr	nz, kdo_x1
+    1555/    388B : 21 71 3B            		ld	hl, tab_reg2
+    1556/    388E : CD CA 3A            		call	zm_char		; Eingabe Buchstabe oder ENTER
+    1557/    3891 : FE 0D               		cp	0Dh		; <Enter>?
+    1558/    3893 : 28 4C               		jr	z, kdo_x7
+    1559/    3895 :                     
+    1560/    3895 :                     ; Register ändern
+    1561/    3895 : BE                  kdo_x1:		cp	(hl)		; Registernamen vergleichen
+    1562/    3896 : 28 09               		jr	z, kdo_x2	; wenn gefunden
+    1563/    3898 : CB 7E               		bit	7, (hl)		; Tabellenende?
+    1564/    389A : C2 36 39            		jp	nz, error	; dann, Fehler
+    1565/    389D : 23                  		inc	hl		; zum nächsten Registernamen
+    1566/    389E : 23                  		inc	hl
+    1567/    389F : 18 F4               		jr	kdo_x1
+    1568/    38A1 :                     ;
+    1569/    38A1 : CD 5D 39            kdo_x2:		call	outsp		; Leerzeichen ausgeben
+    1570/    38A4 : 23                  kdo_x3:		inc	hl		; in Registertabelle
+    1571/    38A5 : 7E                  		ld	a, (hl)		; Offset für Registerwert
+    1572/    38A6 : 47                  		ld	b, a
+    1573/    38A7 : E6 3F               		and	3Fh ; '?'	; obere Bits ausblenden
+    1574/    38A9 : EB                  		ex	de, hl
+    1575/    38AA : 6F                  		ld	l, a
+    1576/    38AB : 26 00               		ld	h, 0
+    1577/    38AD : 39                  		add	hl, sp
+    1578/    38AE : EB                  		ex	de, hl
+    1579/    38AF : 23                  		inc	hl
+    1580/    38B0 : 1A                  		ld	a, (de)		; Wert holen
+    1581/    38B1 : CD EC 39            		call	outa		; Ausgabe A hexadezimal	ASCII 2	Stellen
+    1582/    38B4 : CB 78               		bit	7, b
+    1583/    38B6 : 28 05               		jr	z, kdo_x4
+    1584/    38B8 : 1B                  		dec	de
+    1585/    38B9 : 1A                  		ld	a, (de)
+    1586/    38BA : CD EC 39            		call	outa		; Ausgabe A hexadezimal	ASCII 2	Stellen
+    1587/    38BD : CD 38 3A            kdo_x4:		call	outminus	; Ausgabe '-'-Zeichen, nächstes Zeichen lesen
+    1588/    38C0 : D8                  		ret	c
+    1589/    38C1 : 28 19               		jr	z, kdo_x6
+    1590/    38C3 : E5                  		push	hl
+    1591/    38C4 : C5                  		push	bc
+    1592/    38C5 : CD C4 39            		call	param1		; 1 Parameter holen; das aktuelle Zeichen gehört schon zum Parameter
+    1593/    38C8 : E1                  		pop	hl
+    1594/    38C9 : F1                  		pop	af
+    1595/    38CA : C5                  		push	bc
+    1596/    38CB : F5                  		push	af
+    1597/    38CC : 7D                  		ld	a, l
+    1598/    38CD : 12                  		ld	(de), a
+    1599/    38CE : C1                  		pop	bc
+    1600/    38CF : CB 78               		bit	7, b
+    1601/    38D1 : 28 03               		jr	z, kdo_x5
+    1602/    38D3 : 13                  		inc	de
+    1603/    38D4 : 7C                  		ld	a, h
+    1604/    38D5 : 12                  		ld	(de), a
+    1605/    38D6 : C1                  kdo_x5:		pop	bc
+    1606/    38D7 : E1                  		pop	hl
+    1607/    38D8 : 78                  		ld	a, b
+    1608/    38D9 : FE 0D               		cp	0Dh
+    1609/    38DB : C8                  		ret	z
+    1610/    38DC : CB 7E               kdo_x6:		bit	7, (hl)
+    1611/    38DE : C0                  		ret	nz
+    1612/    38DF : 18 C3               		jr	kdo_x3
+    1613/    38E1 :                     
+    1614/    38E1 :                     ; Register anzeigen
+    1615/    38E1 : CD 8A 39            kdo_x7:		call	out_crlf
+    1616/    38E4 : CD 5D 39            kdo_x8:		call	outsp		; Leerzeichen ausgeben
+    1617/    38E7 : 7E                  		ld	a, (hl)
+    1618/    38E8 : 23                  		inc	hl
+    1619/    38E9 : B7                  		or	a
+    1620/    38EA : F8                  		ret	m
+    1621/    38EB : 4F                  		ld	c, a
+    1622/    38EC : CD 34 30            		call	zm_conso	; Zeichenausgabe
+    1623/    38EF : 0E 3D               		ld	c, '='
+    1624/    38F1 : CD 34 30            		call	zm_conso	; Zeichenausgabe
+    1625/    38F4 : 7E                  		ld	a, (hl)
+    1626/    38F5 : 47                  		ld	b, a
+    1627/    38F6 : E6 3F               		and	3Fh ; '?'
+    1628/    38F8 : 23                  		inc	hl
+    1629/    38F9 : EB                  		ex	de, hl
+    1630/    38FA : 6F                  		ld	l, a
+    1631/    38FB : 26 00               		ld	h, 0
+    1632/    38FD : 39                  		add	hl, sp
+    1633/    38FE : EB                  		ex	de, hl
+    1634/    38FF : CB 70               		bit	6, b
+    1635/    3901 : 20 0F               		jr	nz, kdo_x10
+    1636/    3903 : 1A                  		ld	a, (de)
+    1637/    3904 : CD EC 39            		call	outa		; Ausgabe A hexadezimal	ASCII 2	Stellen
+    1638/    3907 : CB 78               		bit	7, b
+    1639/    3909 : 28 D9               		jr	z, kdo_x8
+    1640/    390B : 1B                  		dec	de
+    1641/    390C : 1A                  		ld	a, (de)
+    1642/    390D : CD EC 39            kdo_x9:		call	outa		; Ausgabe A hexadezimal	ASCII 2	Stellen
+    1643/    3910 : 18 D2               		jr	kdo_x8
+    1644/    3912 : E5                  kdo_x10:	push	hl
+    1645/    3913 : 1A                  		ld	a, (de)
+    1646/    3914 : 67                  		ld	h, a
+    1647/    3915 : 1B                  		dec	de
+    1648/    3916 : 1A                  		ld	a, (de)
+    1649/    3917 : 6F                  		ld	l, a
+    1650/    3918 : 7E                  		ld	a, (hl)
+    1651/    3919 : E1                  		pop	hl
+    1652/    391A : 18 F1               		jr	kdo_x9
+    1653/    391C :                     
+    1654/    391C :                     ;------------------------------------------------------------------------------
+    1655/    391C :                     ; Hilfsroutinen
+    1656/    391C :                     ;------------------------------------------------------------------------------
+    1657/    391C :                     
+    1658/    391C :                     ;
+    1659/    391C : 21 3E 34            zmmsg:		ld	hl, aZ9001MonitorV2 ; "Z9001 MONITOR V2.0..."
+    1660/    391F :                     
+    1661/    391F :                     ;Stringausgabe, HL=String, B=Länge
+    1662/    391F : 4E                  prnstr:		ld	c, (hl)
+    1663/    3920 : 23                  		inc	hl
+    1664/    3921 : CD 34 30            		call	zm_conso	; Zeichenausgabe
+    1665/    3924 : 10 F9               		djnz	prnstr
+    1666/    3926 : CD 49 30            		call	tm_csts
+    1667/    3929 : B7                  		or	a
+    1668/    392A : C8                  		ret	z
+    1669/    392B : CD C4 3A            		call	zm_consi7	; Zeicheneingabe, 7 Bit
+    1670/    392E : FE 03               		cp	3		; <STOP> ?
+    1671/    3930 : 28 04               		jr	z, error	; dann Abbruch
+    1672/    3932 : CD C4 3A            		call	zm_consi7	; Zeicheneingabe, 7 Bit
+    1673/    3935 : C9                  		ret
+    1674/    3936 :                     
+    1675/    3936 :                     ;
+    1676/    3936 : CD 1B 34            error:		call	eor
+    1677/    3939 : 11 EA FF            		ld	de, -16h
+    1678/    393C : 19                  		add	hl, de
+    1679/    393D : F9                  		ld	sp, hl
+    1680/    393E : 0E 07               		ld	c, 7
+    1681/    3940 : CD 34 30            		call	zm_conso	; Zeichenausgabe
+    1682/    3943 : 0E 2A               		ld	c, '*'
+    1683/    3945 : CD 34 30            		call	zm_conso	; Zeichenausgabe
+    1684/    3948 : C3 D5 34            		jp	prompt
+    1685/    394B :                     
+    1686/    394B :                     ; Zeicheneingabe und Vergleich mit D
+    1687/    394B : CD 2F 30            zm_readd:	call	zm_readi
+    1688/    394E : BA                  		cp	d
+    1689/    394F : C9                  		ret
+    1690/    3950 :                     
+    1691/    3950 :                     ;------------------------------------------------------------------------------
+    1692/    3950 :                     ; Ausgabe der höchsten RAM-Adresse (RAM-TOP)
+    1693/    3950 :                     ;------------------------------------------------------------------------------
+    1694/    3950 :                     
+    1695/    3950 : CD 1B 34            kdo_z:		call	eor
+    1696/    3953 : 01 23 00            		ld	bc, tab_reg-regrstor
+    1697/    3956 : 09                  		add	hl, bc
+    1698/    3957 :                     
+    1699/    3957 :                     ; Ausgabe CR,LF, HL hexa 4 Stellen, SP
+    1700/    3957 : CD 8A 39            outnlhlsp:	call	out_crlf
+    1701/    395A :                     
+    1702/    395A :                     ; Ausgabe HL + Space
+    1703/    395A : CD E7 39            outhlsp:	call	outhl		; Ausgabe HL hexadezimal ASCII 4 Stellen
+    1704/    395D :                     
+    1705/    395D :                     ; Leerzeichen ausgeben
+    1706/    395D : 0E 20               outsp:		ld	c, ' '
+    1707/    395F : C3 34 30            		jp	zm_conso	; Zeichenausgabe
+    1708/    3962 :                     
+    1709/    3962 :                     ;
+    1710/    3962 : 0E 0D               pun_crlf:	ld	c, 0Dh
+    1711/    3964 : CD 3B 30            		call	zm_puno
+    1712/    3967 : 0E 0A               		ld	c, 0Ah
+    1713/    3969 : C3 3B 30            		jp	zm_puno
+    1714/    396C :                     
+    1715/    396C :                     
+    1716/    396C :                     ;------------------------------------------------------------------------------
+    1717/    396C :                     ; N (Null): Ausgabe von binären Nullen auf den Punch-Kanal.
+    1718/    396C :                     ; (Lochbandvorschub, sinnlos bei AP=T)
+    1719/    396C :                     ;------------------------------------------------------------------------------
+    1720/    396C :                     
+    1721/    396C : CD 00 3A            null:		call	punch_init	; Ausgabe 72 Nullen auf	Punch
+    1722/    396F : C9                  		ret
+    1723/    3970 :                     
+    1724/    3970 :                     ;------------------------------------------------------------------------------
+    1725/    3970 :                     ; Hilfsroutinen
+    1726/    3970 :                     ;------------------------------------------------------------------------------
+    1727/    3970 :                     
+    1728/    3970 :                     ; Konvertierung	low Nibble A in	Hex Ascii
+    1729/    3970 : E6 0F               hexa:		and	0Fh
+    1730/    3972 : C6 90               		add	a, 90h ; 'É'
+    1731/    3974 : 27                  		daa			; DAA-Trick
+    1732/    3975 : CE 40               		adc	a, 40h ; '@'
+    1733/    3977 : 27                  		daa
+    1734/    3978 : 4F                  		ld	c, a
+    1735/    3979 : C9                  		ret
+    1736/    397A :                     
+    1737/    397A :                     ; zwei Parameter holen (HL, DE := DE|HL+003F)
+    1738/    397A : CD 9F 39            twoparams:	call	params		; C Parameter holen
+    1739/    397D : D1                  		pop	de		; parameter 2
+    1740/    397E : E1                  		pop	hl		; parameter 1
+    1741/    397F : E5                  		push	hl
+    1742/    3980 : 7A                  		ld	a, d		; paramter 2 = 0?
+    1743/    3981 : B3                  		or	e
+    1744/    3982 : 20 05               		jr	nz, twoparams1	; nein
+    1745/    3984 : 11 3F 00            		ld	de, 3Fh	; '?'   ; ja: 003F zum 1. Parameter addieren
+    1746/    3987 : 19                  		add	hl, de
+    1747/    3988 : EB                  		ex	de, hl
+    1748/    3989 : E1                  twoparams1:	pop	hl
+    1749/    398A :                     
+    1750/    398A :                     ; CR+LF ausgeben
+    1751/    398A : E5                  out_crlf:	push	hl
+    1752/    398B : 06 02               		ld	b, 2		; Ausgabe der ersten zwei Zeichen der Systemmeldung (CR+LF)
+    1753/    398D : CD 1C 39            		call	zmmsg
+    1754/    3990 : E1                  		pop	hl
+    1755/    3991 : C9                  		ret
+    1756/    3992 :                     
+    1757/    3992 :                     ; 3 Parameter holen -> HL, DE, BC
+    1758/    3992 : 0C                  threeparams:	inc	c
+    1759/    3993 : CD 9F 39            		call	params		; C Parameter holen
+    1760/    3996 : CD 8A 39            		call	out_crlf
+    1761/    3999 : C1                  		pop	bc
+    1762/    399A : D1                  		pop	de
+    1763/    399B : E1                  		pop	hl
+    1764/    399C : C9                  		ret
+    1765/    399D :                     
+    1766/    399D :                     ; 1 Parameter holen
+    1767/    399D : 0E 01               param:		ld	c, 1
+    1768/    399F :                     
+    1769/    399F :                     ; C Parameter holen
+    1770/    399F : 21 00 00            params:		ld	hl, 0
+    1771/    39A2 : CD CA 3A            params1:	call	zm_char		; Eingabe Buchstabe oder ENTER
+    1772/    39A5 : 47                  params2:	ld	b, a		; Zeichen sichern
+    1773/    39A6 : CD 0C 3A            		call	tst_ziff	; Test auf Ziffer
+    1774/    39A9 : 38 08               		jr	c, params3	; Parameter auf	Stack legen
+    1775/    39AB : 29                  		add	hl, hl		; HL :=	HL*10h
+    1776/    39AC : 29                  		add	hl, hl
+    1777/    39AD : 29                  		add	hl, hl
+    1778/    39AE : 29                  		add	hl, hl
+    1779/    39AF : B5                  		or	l
+    1780/    39B0 : 6F                  		ld	l, a		; neue Ziffer dazuaddieren
+    1781/    39B1 : 18 EF               		jr	params1
+    1782/    39B3 : E3                  params3:	ex	(sp), hl	; Parameter auf	Stack legen
+    1783/    39B4 : E5                  		push	hl
+    1784/    39B5 : 78                  		ld	a, b		; Zeichen restaurieren
+    1785/    39B6 : CD 40 3A            		call	tst_next	; folgt	Leerzeichen, Komma (Z=1) oder Enter (Cy=1)?
+    1786/    39B9 : 30 02               		jr	nc, params4
+    1787/    39BB : 0D                  		dec	c
+    1788/    39BC : C8                  		ret	z
+    1789/    39BD : C2 36 39            params4:	jp	nz, error
+    1790/    39C0 : 0D                  		dec	c
+    1791/    39C1 : 20 DC               		jr	nz, params	; C Parameter holen
+    1792/    39C3 : C9                  		ret
+    1793/    39C4 :                     
+    1794/    39C4 :                     ; 1 Parameter holen; das aktuelle Zeichen gehört schon zum Parameter
+    1795/    39C4 : 0E 01               param1:		ld	c, 1
+    1796/    39C6 : 21 00 00            		ld	hl, 0
+    1797/    39C9 : 18 DA               		jr	params2		; Zeichen sichern
+    1798/    39CB :                     
+    1799/    39CB :                     
+    1800/    39CB :                     ;
+    1801/    39CB : CD D1 39            nextadr1:	call	nextadr		; incl HL, HL=0	oder HL=DE?
+    1802/    39CE : D0                  		ret	nc
+    1803/    39CF : D1                  		pop	de
+    1804/    39D0 : C9                  		ret
+    1805/    39D1 :                     
+    1806/    39D1 :                     ; incl HL, HL=0	oder HL=DE?
+    1807/    39D1 : 23                  nextadr:	inc	hl
+    1808/    39D2 : 7C                  		ld	a, h
+    1809/    39D3 : B5                  		or	l
+    1810/    39D4 : 37                  		scf
+    1811/    39D5 : C8                  		ret	z		; wenn HL=0 -> Cy=1
+    1812/    39D6 : 7B                  		ld	a, e
+    1813/    39D7 : 95                  		sub	l
+    1814/    39D8 : 7A                  		ld	a, d
+    1815/    39D9 : 9C                  		sbc	a, h		; vgl DE-HL
+    1816/    39DA : C9                  		ret
+    1817/    39DB :                     
+    1818/    39DB :                     ;------------------------------------------------------------------------------
+    1819/    39DB :                     ; H   Bildung der Summe und Differenz
+    1820/    39DB :                     ;     zweier Hexzahlen
+    1821/    39DB :                     ;       H zahl1_zahl2
+    1822/    39DB :                     ;------------------------------------------------------------------------------
+    1823/    39DB :                     
+    1824/    39DB : CD 7A 39            kdo_h:		call	twoparams	; Bildung der Summe und	Differenz zweier Hexzahlen
+    1825/    39DE : E5                  		push	hl
+    1826/    39DF : 19                  		add	hl, de
+    1827/    39E0 : CD 5A 39            		call	outhlsp		; Ausgabe HL + Space
+    1828/    39E3 : E1                  		pop	hl
+    1829/    39E4 : B7                  		or	a
+    1830/    39E5 : ED 52               		sbc	hl, de
+    1831/    39E7 :                     
+    1832/    39E7 :                     ; Ausgabe HL hexadezimal ASCII 4 Stellen
+    1833/    39E7 : 7C                  outhl:		ld	a, h
+    1834/    39E8 : CD EC 39            		call	outa		; Ausgabe A hexadezimal	ASCII 2	Stellen
+    1835/    39EB : 7D                  		ld	a, l
+    1836/    39EC :                     
+    1837/    39EC :                     ; Ausgabe A hexadezimal	ASCII 2	Stellen
+    1838/    39EC : F5                  outa:		push	af
+    1839/    39ED : 0F                  		rrca
+    1840/    39EE : 0F                  		rrca
+    1841/    39EF : 0F                  		rrca
+    1842/    39F0 : 0F                  		rrca
+    1843/    39F1 : CD F5 39            		call	outa1
+    1844/    39F4 : F1                  		pop	af
+    1845/    39F5 : CD 70 39            outa1:		call	hexa		; Konvertierung	low Nibble A in	Hex Ascii
+    1846/    39F8 : C3 34 30            		jp	zm_conso	; Zeichenausgabe
+    1847/    39FB :                     
+    1848/    39FB :                     ;------------------------------------------------------------------------------
+    1849/    39FB :                     ;
+    1850/    39FB :                     ;------------------------------------------------------------------------------
+    1851/    39FB :                     
+    1852/    39FB : 01 FF 08            punch_init0:	ld	bc, 8FFh
+    1853/    39FE : 18 03               		jr	punch_init1
+    1854/    3A00 :                     
+    1855/    3A00 :                     ; Ausgabe 72 Nullen auf	Punch
+    1856/    3A00 : 01 00 48            punch_init:	ld	bc, 4800h	; B=48H, C=0
+    1857/    3A03 : CD 3B 30            punch_init1:	call	zm_puno
+    1858/    3A06 : 10 FB               		djnz	punch_init1
+    1859/    3A08 : C9                  		ret
+    1860/    3A09 :                     
+    1861/    3A09 :                     ;------------------------------------------------------------------------------
+    1862/    3A09 :                     ;
+    1863/    3A09 :                     ;------------------------------------------------------------------------------
+    1864/    3A09 :                     
+    1865/    3A09 : CD 4C 3A            read_ziff:	call	readd7		; Zeicheneingabe 7 Bit
+    1866/    3A0C :                     
+    1867/    3A0C :                     ; Test auf Hex-Ziffer
+    1868/    3A0C : D6 30               tst_ziff:	sub	30h ; '0'
+    1869/    3A0E : D8                  		ret	c
+    1870/    3A0F : FE 17               		cp	17h
+    1871/    3A11 : 3F                  		ccf
+    1872/    3A12 : D8                  		ret	c
+    1873/    3A13 : FE 0A               		cp	0Ah
+    1874/    3A15 : 3F                  		ccf
+    1875/    3A16 : D0                  		ret	nc
+    1876/    3A17 : D6 07               		sub	7
+    1877/    3A19 : FE 0A               		cp	0Ah
+    1878/    3A1B : C9                  		ret
+    1879/    3A1C :                     
+    1880/    3A1C :                     ; Ausgabe HL auf PUNCH
+    1881/    3A1C : 7C                  punch_hl:	ld	a, h
+    1882/    3A1D : CD 21 3A            		call	punch_a		; Ausgabe A auf	PUNCH
+    1883/    3A20 : 7D                  		ld	a, l
+    1884/    3A21 :                     
+    1885/    3A21 :                     ; Ausgabe A auf PUNCH
+    1886/    3A21 : F5                  punch_a:	push	af
+    1887/    3A22 : 0F                  		rrca
+    1888/    3A23 : 0F                  		rrca
+    1889/    3A24 : 0F                  		rrca
+    1890/    3A25 : 0F                  		rrca
+    1891/    3A26 : CD 70 39            		call	hexa		; Konvertierung	low Nibble A in	Hex Ascii
+    1892/    3A29 : CD 3B 30            		call	zm_puno
+    1893/    3A2C : F1                  		pop	af
+    1894/    3A2D : F5                  		push	af
+    1895/    3A2E : CD 70 39            		call	hexa		; Konvertierung	low Nibble A in	Hex Ascii
+    1896/    3A31 : CD 3B 30            		call	zm_puno
+    1897/    3A34 : F1                  		pop	af
+    1898/    3A35 : 82                  		add	a, d
+    1899/    3A36 : 57                  		ld	d, a
+    1900/    3A37 : C9                  		ret
+    1901/    3A38 :                     
+    1902/    3A38 :                     ; Ausgabe '-'-Zeichen, nächstes Zeichen lesen
+    1903/    3A38 : 0E 2D               outminus:	ld	c, '-'
+    1904/    3A3A : CD 34 30            		call	zm_conso	; Zeichenausgabe
+    1905/    3A3D :                     
+    1906/    3A3D :                     ; nächstes Zeichen lesen; Test auf Leerzeichen oder Enter
+    1907/    3A3D : CD CA 3A            getch:	call	zm_char		; Eingabe Buchstabe oder ENTER
+    1908/    3A40 :                     
+    1909/    3A40 :                     ; folgt	Leerzeichen, Komma (Z=1) oder Enter (Cy=1)?
+    1910/    3A40 : FE 20               tst_next:	cp	' '
+    1911/    3A42 : C8                  		ret	z
+    1912/    3A43 : FE 2C               		cp	','
+    1913/    3A45 : C8                  		ret	z
+    1914/    3A46 : FE 0D               		cp	0Dh
+    1915/    3A48 : 37                  		scf
+    1916/    3A49 : C8                  		ret	z
+    1917/    3A4A : 3F                  		ccf
+    1918/    3A4B : C9                  		ret
+    1919/    3A4C :                     
+    1920/    3A4C :                     ; Zeicheneingabe 7 Bit
+    1921/    3A4C : CD 4B 39            readd7:		call	zm_readd	; Zeicheneingabe und Vergleich mit D
+    1922/    3A4F : E6 7F               		and	7Fh
+    1923/    3A51 : C9                  		ret
+    1924/    3A52 :                     
+    1925/    3A52 :                     ;------------------------------------------------------------------------------
+    1926/    3A52 :                     ; wird bei RST 38 ausgeführt
+    1927/    3A52 :                     ; Trap-Eingang. Prozessorzustand wird für GO-Routine gerettet
+    1928/    3A52 :                     ;------------------------------------------------------------------------------
+    1929/    3A52 :                     
+    1930/    3A52 : E5                  rst38:		push	hl
+    1931/    3A53 : D5                  		push	de
+    1932/    3A54 : C5                  		push	bc
+    1933/    3A55 : F5                  		push	af
+    1934/    3A56 : CD 1B 34            		call	eor
+    1935/    3A59 : EB                  		ex	de, hl
+    1936/    3A5A : 21 0A 00            		ld	hl, 0Ah
+    1937/    3A5D : 39                  		add	hl, sp
+    1938/    3A5E : 06 04               		ld	b, 4
+    1939/    3A60 : EB                  		ex	de, hl
+    1940/    3A61 : 2B                  rst38_1:	dec	hl
+    1941/    3A62 : 72                  		ld	(hl), d
+    1942/    3A63 : 2B                  		dec	hl
+    1943/    3A64 : 73                  		ld	(hl), e
+    1944/    3A65 : D1                  		pop	de
+    1945/    3A66 : 10 F9               		djnz	rst38_1
+    1946/    3A68 : C1                  		pop	bc
+    1947/    3A69 : 0B                  		dec	bc
+    1948/    3A6A : F9                  		ld	sp, hl
+    1949/    3A6B : 21 25 00            		ld	hl, 25h
+    1950/    3A6E : 39                  		add	hl, sp
+    1951/    3A6F : 7E                  		ld	a, (hl)
+    1952/    3A70 : 91                  		sub	c
+    1953/    3A71 : 23                  		inc	hl
+    1954/    3A72 : 20 04               		jr	nz, rst38_2
+    1955/    3A74 : 7E                  		ld	a, (hl)
+    1956/    3A75 : 90                  		sub	b
+    1957/    3A76 : 28 0C               		jr	z, rst38_4
+    1958/    3A78 : 23                  rst38_2:	inc	hl
+    1959/    3A79 : 23                  		inc	hl
+    1960/    3A7A : 7E                  		ld	a, (hl)
+    1961/    3A7B : 91                  		sub	c
+    1962/    3A7C : 20 05               		jr	nz, rst38_3
+    1963/    3A7E : 23                  		inc	hl
+    1964/    3A7F : 7E                  		ld	a, (hl)
+    1965/    3A80 : 90                  		sub	b
+    1966/    3A81 : 28 01               		jr	z, rst38_4
+    1967/    3A83 : 03                  rst38_3:	inc	bc
+    1968/    3A84 : 21 20 00            rst38_4:	ld	hl, 20h
+    1969/    3A87 : 39                  		add	hl, sp
+    1970/    3A88 : 73                  		ld	(hl), e
+    1971/    3A89 : 23                  		inc	hl
+    1972/    3A8A : 72                  		ld	(hl), d
+    1973/    3A8B : 23                  		inc	hl
+    1974/    3A8C : 23                  		inc	hl
+    1975/    3A8D : 71                  		ld	(hl), c
+    1976/    3A8E : 23                  		inc	hl
+    1977/    3A8F : 70                  		ld	(hl), b
+    1978/    3A90 : C5                  		push	bc
+    1979/    3A91 : 0E 24               		ld	c, '$'
+    1980/    3A93 : CD 34 30            		call	zm_conso	; Zeichenausgabe
+    1981/    3A96 : E1                  		pop	hl
+    1982/    3A97 : CD E7 39            		call	outhl		; Ausgabe HL hexadezimal ASCII 4 Stellen
+    1983/    3A9A : 21 25 00            		ld	hl, 25h
+    1984/    3A9D : 39                  		add	hl, sp
+    1985/    3A9E : 01 00 02            		ld	bc, 200h
+    1986/    3AA1 : 5E                  rst38_5:	ld	e, (hl)
+    1987/    3AA2 : 71                  		ld	(hl), c
+    1988/    3AA3 : 23                  		inc	hl
+    1989/    3AA4 : 56                  		ld	d, (hl)
+    1990/    3AA5 : 71                  		ld	(hl), c
+    1991/    3AA6 : 23                  		inc	hl
+    1992/    3AA7 : 7B                  		ld	a, e
+    1993/    3AA8 : B2                  		or	d
+    1994/    3AA9 : 28 02               		jr	z, rst38_6
+    1995/    3AAB : 7E                  		ld	a, (hl)
+    1996/    3AAC : 12                  		ld	(de), a
+    1997/    3AAD : 23                  rst38_6:	inc	hl
+    1998/    3AAE : 10 F1               		djnz	rst38_5
+    1999/    3AB0 : 08                  		ex	af, af'		; '
+    2000/    3AB1 : D9                  		exx
+    2001/    3AB2 : E5                  		push	hl
+    2002/    3AB3 : D5                  		push	de
+    2003/    3AB4 : C5                  		push	bc
+    2004/    3AB5 : F5                  		push	af
+    2005/    3AB6 : DD E5               		push	ix
+    2006/    3AB8 : FD E5               		push	iy
+    2007/    3ABA : ED 57               		ld	a, i
+    2008/    3ABC : 47                  		ld	b, a
+    2009/    3ABD : ED 5F               		ld	a, r
+    2010/    3ABF : 4F                  		ld	c, a
+    2011/    3AC0 : C5                  		push	bc
+    2012/    3AC1 : C3 D5 34            		jp	prompt
+    2013/    3AC4 :                     
+    2014/    3AC4 :                     
+    2015/    3AC4 :                     ;------------------------------------------------------------------------------
+    2016/    3AC4 :                     ;
+    2017/    3AC4 :                     ;------------------------------------------------------------------------------
+    2018/    3AC4 :                     
+    2019/    3AC4 :                     ; Zeicheneingabe, 7 Bit
+    2020/    3AC4 : CD 2A 30            zm_consi7:	call	zm_consi
+    2021/    3AC7 : E6 7F               		and	7Fh
+    2022/    3AC9 : C9                  		ret
+    2023/    3ACA :                     
+    2024/    3ACA :                     
+    2025/    3ACA :                     ; Eingabe Buchstabe oder ENTER
+    2026/    3ACA : CD C4 3A            zm_char:	call	zm_consi7	; Zeicheneingabe, 7 Bit
+    2027/    3ACD : C8                  		ret	z
+    2028/    3ACE : 3C                  		inc	a
+    2029/    3ACF : F8                  		ret	m
+    2030/    3AD0 : 3D                  		dec	a
+    2031/    3AD1 : FE 0D               		cp	0Dh
+    2032/    3AD3 : C8                  		ret	z
+    2033/    3AD4 : C5                  		push	bc
+    2034/    3AD5 : 4F                  		ld	c, a
+    2035/    3AD6 : CD 34 30            		call	zm_conso	; Zeichenausgabe
+    2036/    3AD9 : 79                  		ld	a, c
+    2037/    3ADA : C1                  		pop	bc
+    2038/    3ADB : FE 40               		cp	40h ; '@'
+    2039/    3ADD : D8                  		ret	c
+    2040/    3ADE : FE 7B               		cp	7Bh ; '{'
+    2041/    3AE0 : D0                  		ret	nc
+    2042/    3AE1 : E6 5F               		and	5Fh
+    2043/    3AE3 : C9                  		ret
+    2044/    3AE4 :                     
+    2045/    3AE4 :                     ;------------------------------------------------------------------------------
+    2046/    3AE4 :                     ;  Q   Lesen und Schreiben auf I/O-Ports
+    2047/    3AE4 :                     ;------------------------------------------------------------------------------
+    2048/    3AE4 :                     
+    2049/    3AE4 : CD CA 3A            kdo_q:		call	zm_char		; Lesen	und Schreiben auf I/O-Ports
+    2050/    3AE7 : FE 4F               		cp	'O'
+    2051/    3AE9 : 28 1C               		jr	z, kdo_q_out
+    2052/    3AEB : FE 49               		cp	'I'
+    2053/    3AED : C2 36 39            		jp	nz, error
+    2054/    3AF0 :                     
+    2055/    3AF0 :                     ; Porteingabe
+    2056/    3AF0 : CD 9D 39            		call	param		; 1 Parameter holen
+    2057/    3AF3 : C1                  		pop	bc
+    2058/    3AF4 : ED 58               		in	e, (c)
+    2059/    3AF6 :                     
+    2060/    3AF6 :                     ; Ausgabe E binär
+    2061/    3AF6 : 06 08               bin_e:		ld	b, 8
+    2062/    3AF8 : CD 5D 39            		call	outsp		; Leerzeichen ausgeben
+    2063/    3AFB : CB 23               bin_e1:		sla	e
+    2064/    3AFD : 3E 18               		ld	a, 18h
+    2065/    3AFF : 8F                  		adc	a, a		; 2*18h	(="0') oder 2*18h+1 (="1')
+    2066/    3B00 : 4F                  		ld	c, a
+    2067/    3B01 : CD 34 30            		call	zm_conso	; Zeichenausgabe
+    2068/    3B04 : 10 F5               		djnz	bin_e1
+    2069/    3B06 : C9                  		ret
+    2070/    3B07 :                     
+    2071/    3B07 :                     ; Portausgabe
+    2072/    3B07 : CD 9F 39            kdo_q_out:	call	params		; C Parameter holen
+    2073/    3B0A : D1                  		pop	de
+    2074/    3B0B : C1                  		pop	bc
+    2075/    3B0C : ED 59               		out	(c), e
+    2076/    3B0E : C9                  		ret
+    2077/    3B0F :                     
+    2078/    3B0F :                     ;------------------------------------------------------------------------------
+    2079/    3B0F :                     ; V   Vergleich eines Speicherbereiches
+    2080/    3B0F :                     ;     mit einem anderen
+    2081/    3B0F :                     ;       V anfadr_endadr_zieladr
+    2082/    3B0F :                     ;------------------------------------------------------------------------------
+    2083/    3B0F :                     
+    2084/    3B0F : CD 92 39            kdo_v:		call	threeparams	; Vergleich eines Speicherbereiches mit	einem anderen
+    2085/    3B12 : 0A                  kdo_v1:		ld	a, (bc)		; Zieladr
+    2086/    3B13 : BE                  		cp	(hl)		; Anfangsadr
+    2087/    3B14 : 28 05               		jr	z, kdo_v2	; wenn gleich
+    2088/    3B16 : C5                  		push	bc
+    2089/    3B17 :                     ;sonst Anzeige der Unterschiede
+    2090/    3B17 : CD 28 36            		call	outmem		; Anzeige HL, (HL), A
+    2091/    3B1A : C1                  		pop	bc
+    2092/    3B1B : 03                  kdo_v2:		inc	bc
+    2093/    3B1C : CD CB 39            		call	nextadr1
+    2094/    3B1F : 18 F1               		jr	kdo_v1		; Zieladr
+    2095/    3B21 :                     
+    2096/    3B21 :                     ;------------------------------------------------------------------------------
+    2097/    3B21 :                     ; Liste der Zuweisungsmöglichkeiten für Assign
+    2098/    3B21 :                     ;------------------------------------------------------------------------------
+    2099/    3B21 :                     
+    2100/    3B21 : 43                  tab_asgn:	db 'C'		; CONSOLE				ZM-Treiber
+    2101/    3B22 :                     ;
+    2102/    3B22 : 43                  		db 'C'		; AC=C für Konsole (mit Tastatur-Beep) 	BEEP
+    2103/    3B23 : 56                  		db 'V'		; AC=V für Konsole (ohne Tastatur-Beep)
+    2104/    3B24 : 42                  		db 'B'		; AC=B für BATCH
+    2105/    3B25 : 55                  		db 'U'		; AC=U für User-Konsole
+    2106/    3B26 :                     ;
+    2107/    3B26 : 52                  		db 'R'		; READER
+    2108/    3B27 :                     ;
+    2109/    3B27 : 43                  		db 'C'		; AR=C für Konsole
+    2110/    3B28 : 50                  		db 'P'          ; AR=P für LB-Leser (SIF-1000)  	SIFE
+    2111/    3B29 : 54                  		db 'T'          ; AR=T für Kassette (Tape)  		TAPER
+    2112/    3B2A : 55                  		db 'U'          ; AR=U für User-Read-Gerät
+    2113/    3B2B :                     ;
+    2114/    3B2B : 50                  		db 'P'		; PUNCH
+    2115/    3B2C :                     ;
+    2116/    3B2C : 43                  		db 'C'         	; AP=C für Konsole
+    2117/    3B2D : 50                  		db 'P'          ; AP=P für LB-Stanzer (SIF-1000)  	SIFA
+    2118/    3B2E : 54                  		db 'T'          ; AP=T für Kassette  			TAPEP
+    2119/    3B2F : 55                  		db 'U'          ; AP=U für V24-Ausgabegerät (TD40)  	TD40
+    2120/    3B30 :                     ;
+    2121/    3B30 : 4C                  		db 'L'		; LIST
+    2122/    3B31 :                     ;
+    2123/    3B31 : 43                  		db 'C'		; AL=C für Konsole
+    2124/    3B32 : 56                  		db 'V'          ; AL=V für Konsole              	(CENTR)
+    2125/    3B33 : 4C                  		db 'L'          ; AL=L für V24-Drucker (TD40)   	TD40
+    2126/    3B34 : 55                  		db 'U'          ; AL=U für SIF-1000-Ausgabegerät	SIFA
+    2127/    3B35 :                     
+    2128/    3B35 :                     
+    2129/    3B35 :                     ;------------------------------------------------------------------------------
+    2130/    3B35 :                     ; Register restaurieren
+    2131/    3B35 :                     ; s. init2
+    2132/    3B35 :                     ; Register sichern s. rst38
+    2133/    3B35 :                     ;------------------------------------------------------------------------------
+    2134/    3B35 :                     
+    2135/    3B35 : C1                  regrstor:	pop	bc
+    2136/    3B36 : 79                  		ld	a, c
+    2137/    3B37 : ED 4F               		ld	r, a
+    2138/    3B39 : 78                  		ld	a, b
+    2139/    3B3A : ED 47               		ld	i, a
+    2140/    3B3C : FD E1               		pop	iy
+    2141/    3B3E : DD E1               		pop	ix
+    2142/    3B40 : F1                  		pop	af
+    2143/    3B41 : C1                  		pop	bc
+    2144/    3B42 : D1                  		pop	de
+    2145/    3B43 : E1                  		pop	hl
+    2146/    3B44 : 08                  		ex	af, af'		; '
+    2147/    3B45 : D9                  		exx
+    2148/    3B46 : D1                  		pop	de
+    2149/    3B47 : C1                  		pop	bc
+    2150/    3B48 : F1                  		pop	af
+    2151/    3B49 : E1                  		pop	hl
+    2152/    3B4A : F9                  		ld	sp, hl
+    2153/    3B4B : 00                  		nop
+    2154/    3B4C : 21 00 00            		ld	hl, 0
+    2155/    3B4F : C3 00 00            		jp	0
+    2156/    3B52 :                     
+    2157/    3B52 : 00                  		db    0
+    2158/    3B53 : 00                  		db    0
+    2159/    3B54 : 00                  		db    0
+    2160/    3B55 : 00                  		db    0
+    2161/    3B56 : 00                  		db    0
+    2162/    3B57 : 00                  		db    0
+    2163/    3B58 :                     
+    2164/    3B58 :                     ;------------------------------------------------------------------------------
+    2165/    3B58 :                     ; Tabellen für Registeranzeige
+    2166/    3B58 :                     ;------------------------------------------------------------------------------
+    2167/    3B58 :                     
+    2168/    3B58 : 41                  tab_reg:	db 'A'
+    2169/    3B59 : 15                  		db  15h		; Stackoffset Register
+    2170/    3B5A : 42                  		db 'B'
+    2171/    3B5B : 13                  		db  13h
+    2172/    3B5C : 43                  		db 'C'
+    2173/    3B5D : 12                  		db  12h
+    2174/    3B5E : 44                  		db 'D'
+    2175/    3B5F : 11                  		db  11h
+    2176/    3B60 : 45                  		db 'E'
+    2177/    3B61 : 10                  		db  10h
+    2178/    3B62 : 46                  		db 'F'
+    2179/    3B63 : 14                  		db  14h
+    2180/    3B64 : 48                  		db 'H'
+    2181/    3B65 : 31                  		db  31h
+    2182/    3B66 : 4C                  		db 'L'
+    2183/    3B67 : 30                  		db  30h
+    2184/    3B68 : 4D                  		db 'M'
+    2185/    3B69 : F1                  		db 031h+11000000b
+    2186/    3B6A : 50                  		db 'P'
+    2187/    3B6B : B4                  		db 034h+10000000b
+    2188/    3B6C : 53                  		db 'S'
+    2189/    3B6D : 97                  		db  17h+10000000b
+    2190/    3B6E : 49                  		db 'I'
+    2191/    3B6F : 03                  		db    3
+    2192/    3B70 : C1                  		db 0C1h	; -		; bit7=1 Tabellenende
+    2193/    3B71 :                     ;Schattenregister
+    2194/    3B71 : 41                  tab_reg2:	db 'A'
+    2195/    3B72 : 09                  		db    9
+    2196/    3B73 : 42                  		db 'B'
+    2197/    3B74 : 0B                  		db  0Bh
+    2198/    3B75 : 43                  		db 'C'
+    2199/    3B76 : 0A                  		db  0Ah
+    2200/    3B77 : 44                  		db 'D'
+    2201/    3B78 : 0D                  		db  0Dh
+    2202/    3B79 : 45                  		db 'E'
+    2203/    3B7A : 0C                  		db  0Ch
+    2204/    3B7B : 46                  		db 'F'
+    2205/    3B7C : 08                  		db    8
+    2206/    3B7D : 48                  		db 'H'
+    2207/    3B7E : 0F                  		db  0Fh
+    2208/    3B7F : 4C                  		db 'L'
+    2209/    3B80 : 0E                  		db  0Eh
+    2210/    3B81 : 4D                  		db 'M'
+    2211/    3B82 : CF                  		db  0Fh+11000000b
+    2212/    3B83 : 58                  		db 'X'
+    2213/    3B84 : 87                  		db  07h+10000000b
+    2214/    3B85 : 59                  		db 'Y'
+    2215/    3B86 : 85                  		db  05h+10000000b
+    2216/    3B87 : 52                  		db 'R'
+    2217/    3B88 : 02                  		db    2
+    2218/    3B89 : C1                  		db 0C1h	; -		; bit7=1 Tabellenende
+    2219/    3B8A :                     
+    2220/    3B8A :                     ;------------------------------------------------------------------------------
+    2221/    3B8A :                     ; Copyright
+    2222/    3B8A :                     ;------------------------------------------------------------------------------
+    2223/    3B8A :                     
+    2224/    3B8A :                     aF_schwarzenber:
+    2225/    3B8A : 20 46 2E 53 63 68   		db " F.Schwarzenberg 8036,Gamigstr.5 ",0
+                    77 61 72 7A 65 6E 
+                    62 65 72 67 20 38 
+                    30 33 36 2C 47 61 
+                    6D 69 67 73 74 72 
+                    2E 35 20 00       
+    2226/    3BAC :                     
+    2227/    3BAC :                     ;------------------------------------------------------------------------------
+    2228/    3BAC :                     ; CRT-Treiber für LIST
+    2229/    3BAC :                     ; Centronics
+    2230/    3BAC :                     ;
+    2231/    3BAC :                     ; CENTRONICS-Druckerschnittstelle ueber User-Port         |
+    2232/    3BAC :                     ;                                                         |
+    2233/    3BAC :                     ;- 7 Datenbits verfuegbar                                 |
+    2234/    3BAC :                     ;- PIO-RDY wird zur Bildung des CENTRONICS-/STROBE-       |
+    2235/    3BAC :                     ;  Signals verwendet                                      |
+    2236/    3BAC :                     ;- /ACKNLG vom Drucker wird ueber den CTC-Kanal erfasst.  |
+    2237/    3BAC :                     ;                                                         |
+    2238/    3BAC :                     ;- Zeichen in Reg. C                                      |
+    2239/    3BAC :                     ;- Return: Carry=1 bei Stop-Taste                         |
+    2240/    3BAC :                     ;                                                         |
+    2241/    3BAC :                     ;
+    2242/    3BAC :                     ;User-Port-Belegung fuer CENTRONICS-Anschluss
+    2243/    3BAC :                     ;
+    2244/    3BAC :                     ;		A	B	C
+    2245/    3BAC :                     ;	---------------------------
+    2246/    3BAC :                     ;	1 	0 	0	/ACK
+    2247/    3BAC :                     ;	2	DAT1	DAT2	DAT3
+    2248/    3BAC :                     ;	3	DAT4	DAT5	DAT6
+    2249/    3BAC :                     ;	4	DAT7 	-       /STROBE
+    2250/    3BAC :                     ;	5	(+5V)==> +5V	-
+    2251/    3BAC :                     ;------------------------------------------------------------------------------
+    2252/    3BAC :                     
+    2253/    3BAC : =>FALSE             		IF ROM=1
+    2254/    3BAC :                     
+    2255/    3BAC :                     		align 10h
+    2256/    3BAC :                     ;
+    2257/    3BAC :                     ;vp: prinzipiell sollte auch hier statt Reg E besser Reg C genommen werden, s. R0112
+    2258/    3BAC :                     
+    2259/    3BAC :                     CENTR:		res     7, e
+    2260/    3BAC :                                     ld      a, 0CFh		;Bit-Mode
+    2261/    3BAC :                                     out     (PIO1BS), a
+    2262/    3BAC :                                     xor     a
+    2263/    3BAC :                                     out     (PIO1BS), a	;alles Ausgabe
+    2264/    3BAC :                                     ld      a, e
+    2265/    3BAC :                                     out     (PIO1BD), a     ;Zeichen ausgeben, RDY low
+    2266/    3BAC :                                     nop
+    2267/    3BAC :                                     nop
+    2268/    3BAC :                                     ld      a, 57h		;Zaehler,pos. Flanke
+    2269/    3BAC :                                     out     (CTC1), a
+    2270/    3BAC :                                     out     (CTC1), a       ;INIT CTC-1
+    2271/    3BAC :                                     ld      a, 0Fh
+    2272/    3BAC :                                     out     (PIO1BS), a	;Byteausgabe-Mode, RDY high
+    2273/    3BAC :                                     nop
+    2274/    3BAC :                                     ld      a, e
+    2275/    3BAC :                                     out     (PIO1BD), a     ;Zeichen ausgeben
+    2276/    3BAC :                     CENTR1:        	call     STPRQ		;STOP-Taste?
+    2277/    3BAC :                                     ret     c
+    2278/    3BAC :                                     in      a, (CTC1)
+    2279/    3BAC :                                     cp      57h		;/ACKNLG?
+    2280/    3BAC :                                     jr      z, CENTR1	;nein, warten
+    2281/    3BAC :                                     xor     a
+    2282/    3BAC :                                     ret
+    2283/    3BAC :                     
+    2284/    3BAC : [2253]              		ENDIF
+    2285/    3BAC :                     
+    2286/    3BAC :                     ;------------------------------------------------------------------------------
+    2287/    3BAC :                     ; Sprungverteiler für OS-Kommandos
+    2288/    3BAC :                     ;------------------------------------------------------------------------------
+    2289/    3BAC :                     
+    2290/    3C00 :                     		org	nextpage($)
+    2291/    3C00 :                     
+    2292/    3C00 : C3 25 3C            		jp	eos		; OS-Erweiterung
+    2293/    3C03 : 23 20 20 20 20 20   		db "#       ",0
+                    20 20 00          
+    2294/    3C0C : C3 00 30            		jp	beg
+    2295/    3C0F : 5A 4D 20 20 20 20   		db "ZM      ",0
+                    20 20 00          
+    2296/    3C18 : C3 A8 3C            		jp	renew
+    2297/    3C1B : 52 45 4E 45 57 20   		db "RENEW   ",0
+                    20 20 00          
+    2298/    3C24 : 00                  		db    0
+    2299/    3C25 :                     
+    2300/    3C25 :                     ;------------------------------------------------------------------------------
+    2301/    3C25 :                     ; "#       " OS-Erweiterung
+    2302/    3C25 :                     ;------------------------------------------------------------------------------
+    2303/    3C25 :                     
+    2304/    3C25 : CD 31 3C            eos:		call	inittreiber
+    2305/    3C28 : 11 6C 3C            		ld	de, aEos	; "EOS"
+    2306/    3C2B : CD E0 33            		call	zm_prnst
+    2307/    3C2E : C3 89 F0            		jp	0F089h		; GOCPM
+    2308/    3C31 :                     ;
+    2309/    3C31 : 11 C9 EF            inittreiber:	ld	de, 0EFC9h
+    2310/    3C34 : 21 4C 3C            		ld	hl, tab_treiber	; Tabelle der Gerätetreiber
+    2311/    3C37 : 01 20 00            		ld	bc, 20h		; aEOS-tab_treiber
+    2312/    3C3A : ED B0               		ldir
+    2313/    3C3C :                     ; init User-Port 		
+    2314/    3C3C : 3E CF               		ld	a, 0CFh		; Bit-Modus
+    2315/    3C3E : D3 8B               		out	(PIO1BS), a
+    2316/    3C40 : 3E 7F               		ld	a, 01111111b
+    2317/    3C42 : D3 8B               		out	(PIO1BS), a	; Bit7 Eingabe
+    2318/    3C44 : AF                  		xor	a
+    2319/    3C45 : 32 D7 3C            		ld	(varTD40), a
+    2320/    3C48 : 2F                  		cpl
+    2321/    3C49 : D3 89               		out	(PIO1BD), a
+    2322/    3C4B : C9                  		ret
+    2323/    3C4C :                     
+    2324/    3C4C :                     ;------------------------------------------------------------------------------
+    2325/    3C4C :                     ; Tabelle der Gerätetreiber
+    2326/    3C4C :                     ;------------------------------------------------------------------------------
+    2327/    3C4C :                     
+    2328/    3C4C : 77 3C               tab_treiber:	dw BEEP			; TTY-Treiber für CONST
+    2329/    3C4E : F1 F8               		dw 0F8F1h		; CRT: STEUERPROGRAMM DES CRT - TREIBERS
+    2330/    3C50 : B4 F7               		dw 0F7B4h		; BAT: STEUERPROGRAMM FUER BATCH-MODE VON CONST
+    2331/    3C52 : F1 F8               		dw 0F8F1h		; CRT: STEUERPROGRAMM DES CRT - TREIBERS
+    2332/    3C54 :                     ;
+    2333/    3C54 : F1 F8               		dw 0F8F1h		; CRT: STEUERPROGRAMM DES CRT - TREIBERS
+    2334/    3C56 : A0 30               		dw SIFE			; RDR-Treiber für READER
+    2335/    3C58 : 1C 31               		dw TAPER		; UR1-Treiber für READER
+    2336/    3C5A : F1 F8               		dw 0F8F1h		; CRT: STEUERPROGRAMM DES CRT - TREIBERS
+    2337/    3C5C :                     ;
+    2338/    3C5C : F1 F8               		dw 0F8F1h		; CRT: STEUERPROGRAMM DES CRT - TREIBERS
+    2339/    3C5E : 58 30               		dw SIFA			; PUN-Treiber für PUNCH
+    2340/    3C60 : 28 31               		dw TAPEP		; UP1-Treiber für PUNCH
+    2341/    3C62 : C3 30               		dw TD40			; UP2-Treiber für PUNCH
+    2342/    3C64 :                     ;
+    2343/    3C64 : F1 F8               		dw 0F8F1h		; CRT: STEUERPROGRAMM DES CRT - TREIBERS
+    2344/    3C66 : =>TRUE              		IF ROM=0
+    2345/    3C66 : F1 F8               		dw 0F8F1h		; CRT: STEUERPROGRAMM DES CRT - TREIBERS
+    2346/    3C68 : =>FALSE             		ELSE
+    2347/    3C68 :                     		dw CENTR		; CRT-Treiber für LIST
+    2348/    3C68 : [2344]              		ENDIF
+    2349/    3C68 : C3 30               		dw TD40			; LST-Treiber für LIST
+    2350/    3C6A : 58 30               		dw SIFA			; UL-Treiber für LIST
+    2351/    3C6C :                     
+    2352/    3C6C :                     ;------------------------------------------------------------------------------
+    2353/    3C6C :                     ; Systemmeldung
+    2354/    3C6C :                     ;------------------------------------------------------------------------------
+    2355/    3C6C :                     
+    2356/    3C6C : 0B 14 01 45 4F 53   aEos:		db 0Bh,14h,1,"EOS",14h,2,0Ah
+                    14 02 0A          
+    2357/    3C75 : 0D 00               		db 0Dh,0
+    2358/    3C77 :                     
+    2359/    3C77 :                     ;------------------------------------------------------------------------------
+    2360/    3C77 :                     ; TTY-Treiber für CONST
+    2361/    3C77 :                     ; (wie OS, aber mit Tastaturklick)
+    2362/    3C77 :                     ;------------------------------------------------------------------------------
+    2363/    3C77 :                     
+    2364/    3C77 : CD F1 F8            BEEP:		call	0F8F1h		; TTY-Treiber für CONST
+    2365/    3C7A : F5                  		push	af
+    2366/    3C7B : 3A 2F 00            		ld	a, (PU)		; Hilfszelle (aufgerufene Treiberfunktion ?)
+    2367/    3C7E : 3D                  		dec	a
+    2368/    3C7F : CC 84 3C            		call	z, beep0	; wenn PU=1, d.h. Funktion "Eingabe Zeichen"
+    2369/    3C82 : F1                  		pop	af
+    2370/    3C83 : C9                  		ret
+    2371/    3C84 :                     
+    2372/    3C84 :                     ; kurzen Ton ausgeben (Tastaturklick)
+    2373/    3C84 : F5                  beep0:		push	af
+    2374/    3C85 : C5                  		push	bc
+    2375/    3C86 : 06 00               		ld	b, 0
+    2376/    3C88 : 0E 14               		ld	c, 14h
+    2377/    3C8A : 3E 07               		ld	a, 00000111b
+    2378/    3C8C : D3 80               		out	(CTC0),	a	; System CTC0 Kassette,	Beeper
+    2379/    3C8E : 3E 96               		ld	a, 10010110b
+    2380/    3C90 : D3 80               		out	(CTC0),	a	; System CTC0 Kassette,	Beeper
+    2381/    3C92 : DB 88               		in	a, (PIO1AD)	; PIO1 A Daten Beeper, Border, 20Z
+    2382/    3C94 : CB FF               		set	7, a		; Beeper ein
+    2383/    3C96 : D3 88               		out	(PIO1AD), a	; PIO1 A Daten Beeper, Border, 20Z
+    2384/    3C98 :                     ;
+    2385/    3C98 : 10 FE               beep1:		djnz	beep1
+    2386/    3C9A : 0D                  		dec	c
+    2387/    3C9B : 20 FB               		jr	nz, beep1
+    2388/    3C9D : CB BF               		res	7, a		; Beeper aus
+    2389/    3C9F : D3 88               		out	(PIO1AD), a	; PIO1 A Daten Beeper, Border, 20Z
+    2390/    3CA1 : 3E 03               		ld	a, 00000011b
+    2391/    3CA3 : D3 80               		out	(CTC0),	a	; System CTC0 Kassette,	Beeper
+    2392/    3CA5 : C1                  		pop	bc
+    2393/    3CA6 : F1                  		pop	af
+    2394/    3CA7 : C9                  		ret
+    2395/    3CA8 :                     
+    2396/    3CA8 :                     ;------------------------------------------------------------------------------
+    2397/    3CA8 :                     ; Kommando RENEW (für BASIC)
+    2398/    3CA8 :                     ;------------------------------------------------------------------------------
+    2399/    3CA8 :                     
+    2400/    3CA8 : 21 89 F0            renew:		ld	hl, 0F089h	; GOCPM
+    2401/    3CAB : E5                  		push	hl
+    2402/    3CAC : E5                  		push	hl
+    2403/    3CAD : D5                  		push	de
+    2404/    3CAE : F5                  		push	af
+    2405/    3CAF : 21 04 04            		ld	hl, 404h	; erstes Zeichen der ersten BASIC-Zeile
+    2406/    3CB2 : 23                  renew1:		inc	hl		; nächstes Zeichen einer BASIC-Zeile
+    2407/    3CB3 : AF                  renew2:		xor	a
+    2408/    3CB4 : BE                  		cp	(hl)		; Zeilenende ?
+    2409/    3CB5 : 20 FB               		jr	nz, renew1
+    2410/    3CB7 : 23                  		inc	hl
+    2411/    3CB8 : 23                  		inc	hl
+    2412/    3CB9 : 3E 04               		ld	a, 4		; hi(4xxh)
+    2413/    3CBB : BC                  		cp	h
+    2414/    3CBC : 20 15               		jr	nz, renew5
+    2415/    3CBE : BE                  		cp	(hl)
+    2416/    3CBF : 2B                  		dec	hl
+    2417/    3CC0 : 20 F1               		jr	nz, renew2
+    2418/    3CC2 : 22 01 04            		ld	(401h),	hl	; PRAM:	PROGRAMMSPEICHERANFADR.
+    2419/    3CC5 : 18 01               		jr	renew4
+    2420/    3CC7 : EB                  renew3:		ex	de, hl
+    2421/    3CC8 : 7E                  renew4:		ld	a, (hl)
+    2422/    3CC9 : 23                  		inc	hl
+    2423/    3CCA : 56                  		ld	d, (hl)
+    2424/    3CCB : 5F                  		ld	e, a
+    2425/    3CCC : B2                  		or	d
+    2426/    3CCD : 20 F8               		jr	nz, renew3
+    2427/    3CCF : 23                  		inc	hl
+    2428/    3CD0 : 22 D7 03            		ld	(3D7h),	hl	; SVARPT: ADRESSE DER LISTE DER EINFACHEN- UND STRINGVAR.
+    2429/    3CD3 : F1                  renew5:		pop	af
+    2430/    3CD4 : D1                  		pop	de
+    2431/    3CD5 : E1                  		pop	hl
+    2432/    3CD6 : C9                  		ret
+    2433/    3CD7 :                     
+    2434/    3CD7 :                     ;------------------------------------------------------------------------------
+    2435/    3CD7 :                     ;
+    2436/    3CD7 :                     ;------------------------------------------------------------------------------
+    2437/    3CD7 :                     
+    2438/    3CD7 :                     
+    2439/    3CD7 : =>TRUE              		IF ROM=0
+    2440/    3CD7 :                     
+    2441/    3CD7 : 00                  varTD40:	db 0   		; Hilfszelle für TD40
+    2442/    3CD8 : 00 00               var1:		dw 0		; Hilfszelle Gerätetreiber u.a.
+    2443/    3CDA : 19                  varsav:		db 19h		; Hilfszelle für CSAVE
+    2444/    3CDB :                     
+    2445/    3CDB : =>FALSE             		ELSE 		; ROM=1
+    2446/    3CDB :                     
+    2447/    3CDB :                     		phase 230h
+    2448/    3CDB :                     
+    2449/    3CDB :                     varTD40:	db 0
+    2450/    3CDB :                     var1:		dw 0
+    2451/    3CDB :                     varsav:		db 0
+    2452/    3CDB :                     
+    2453/    3CDB :                     		dephase
+    2454/    3CDB :                     
+    2455/    3CDB : [2439]                 		ENDIF
+    2456/    3CDB :                     
+    2457/    3CDB : =3CDBH              end:		equ	$
+    2458/    3CDB :                     
+    2459/    3CDB :                     		end
+ AS V1.42 Beta [Bld 158] - Source File zm20.asm - Page 2 - 4/4/2020 12:57:58
+
+
+  Symbol Table (* = unused):
+  --------------------------
+
+ AADR :                          6D - |  ABREAKBYSTOPKEY :             3393 C |
+ AEOS :                        3C6C C |  AFILENAME :                   31A7 C |
+*AF_SCHWARZENBER :             3B8A C |  ALOADED :                     3217 C |
+ ANO :                         33B6 C | *ARCHITECTURE :  i386-unknown-win32 - |
+ ARECORDSCHECKED :             3356 C |  ARECORDSWRITTEN :             333F C |
+ AREWIND :                     3381 C |  ASAVECOMPLETE :               332A C |
+ AVERIFYYN :                   336E C |  AZ9001MONITORV2 :             343E C |
+ BEEP :                        3C77 C |  BEEP0 :                       3C84 C |
+ BEEP1 :                       3C98 C |  BEG :                         3000 C |
+ BEGDAT :                      3024 C | *BIGENDIAN :                      0 - |
+ BIN_E :                       3AF6 C |  BIN_E1 :                      3AFB C |
+ BIN_HL :                      361B C | *BRANCHEXT :                      0 - |
+ BREAK :                       330D C |  BREAK1 :                      3325 C |
+ BREAKNW :                     32EF C |  BYE :                         3586 C |
+*CASESENSITIVE :                  0 - |  CASS :                        3167 C |
+ CASS1 :                       3190 C |  CASS2 :                       319B C |
+ CLOAD :                       31B1 C |  CLOAD1 :                      31B7 C |
+ CLOAD2 :                      31C7 C |  CLOAD3 :                      31E4 C |
+ CLOAD4 :                      31E9 C |  CONBU :                         80 - |
+*CONSTPI :        3.141592653589793 - |  CONVERT :                     35B2 C |
+ CONVERT1 :                    35EC C |  CSAVE :                       321F C |
+ CSAVE1 :                      323E C |  CSAVE2 :                      325C C |
+ CSAVE3 :                      3284 C |  CSAVE4 :                      3296 C |
+ CSAVE5 :                      32A0 C |  CSAVE6 :                      32AC C |
+ CSAVE7 :                      32B3 C |  CSAVE8 :                      32BF C |
+ CTC0 :                          80 - |  CTC1 :                          81 - |
+*CTC2 :                          82 - | *CTC3 :                          83 - |
+*DATE :                    4/4/2020 - |  DISPLAY :                     363A C |
+ DISPLAY1 :                    363D C |  DISPLAY2 :                    3640 C |
+ DMA :                           1B - |  EADR :                          6F - |
+ END :                         3CDB - |  ENDBLOCK :                    3651 C |
+ EOR :                         341B C |  EOR0 :                        340E C |
+ EOR01 :                       3418 C |  EOR1 :                        341C C |
+ EOR2 :                        341F C |  EOR3 :                        3428 C |
+ EOR4 :                        3437 C |  EOS :                         3C25 C |
+ ERROR :                       3936 C |  EXERR :                       3538 C |
+ EXRST38 :                     3003 C | *FALSE :                          0 - |
+*FCB :                           5C - | *FCB1 :                          5C - |
+*FCB2 :                          6C - |  FILL :                        3672 C |
+ FILL1 :                       3675 C |  FNAME :                         5C - |
+ FTYP :                          64 - | *FULLPMMU :                       1 - |
+ GETCH :                       3A3D C |  GETDEZ :                      35BD C |
+ GETDEZ1 :                     35C0 C |  GETDEZ2 :                     35DE C |
+ GIOBY :                       3405 C |  GO :                          367F C |
+ GO1 :                         3696 C |  GO2 :                         369C C |
+ GO3 :                         36B1 C |  GO4 :                         36B9 C |
+ GO5 :                         36C4 C | *HAS64 :                          1 - |
+*HASDSP :                         0 - | *HASFPU :                         0 - |
+*HASPMMU :                        0 - |  HEXA :                        3970 C |
+*INEXTMODE :                      0 - |  INIT :                        346B C |
+ INIT1 :                       3470 C |  INIT2 :                       348E C |
+ INIT2A :                      3493 C |  INIT3 :                       34AF C |
+ INITTREIBER :                 3C31 C | *INLWORDMODE :                    0 - |
+*INMAXMODE :                      0 - | *INSRCMODE :                      0 - |
+*INSUPMODE :                      0 - |  IOBYT :                          4 - |
+ JMP_SYS :                     33EA C |  KDO_A :                       353B C |
+ KDO_A1 :                      3547 C |  KDO_A2 :                      3550 C |
+ KDO_A3 :                      3551 C |  KDO_A4 :                      355E C |
+ KDO_A5 :                      3565 C |  KDO_A6 :                      3568 C |
+ KDO_A7 :                      356B C |  KDO_A8 :                      3576 C |
+ KDO_A9 :                      3578 C |  KDO_H :                       39DB C |
+ KDO_J :                       36CD C |  KDO_J1 :                      36D0 C |
+ KDO_J2 :                      36E5 C |  KDO_Q :                       3AE4 C |
+ KDO_Q_OUT :                   3B07 C |  KDO_TAB :                     3504 C |
+ KDO_V :                       3B0F C |  KDO_V1 :                      3B12 C |
+ KDO_V2 :                      3B1B C |  KDO_X :                       387D C |
+ KDO_X1 :                      3895 C |  KDO_X10 :                     3912 C |
+ KDO_X2 :                      38A1 C |  KDO_X3 :                      38A4 C |
+ KDO_X4 :                      38BD C |  KDO_X5 :                      38D6 C |
+ KDO_X6 :                      38DC C |  KDO_X7 :                      38E1 C |
+ KDO_X8 :                      38E4 C |  KDO_X9 :                      390D C |
+ KDO_Y :                       37F8 C |  KDO_Y1 :                      37FA C |
+ KDO_Y2 :                      380F C |  KDO_Y3 :                      3814 C |
+ KDO_Y4 :                      3823 C |  KDO_Y5 :                      3831 C |
+ KDO_Y6 :                      383B C |  KDO_Z :                       3950 C |
+ KEYBU :                         25 - |  LBLNR :                         6C - |
+*LISTON :                         1 - |  LISW :                          15 - |
+ LOC_778A :                    378A C | *MACEXP :                         7 - |
+*MOMCPU :                        80 - | *MOMCPUNAME :                   Z80 - |
+ MOVE :                        36EB C |  MOVE1 :                       36EE C |
+*NESTMAX :                      100 - |  NEXTADR :                     39D1 C |
+ NEXTADR1 :                    39CB C |  NOKEY :                       3400 C |
+ NULL :                        396C C |  OUTA :                        39EC C |
+ OUTA1 :                       39F5 C |  OUTHL :                       39E7 C |
+ OUTHLSP :                     395A C |  OUTMEM :                      3628 C |
+ OUTMINUS :                    3A38 C |  OUTNLHLSP :                   3957 C |
+ OUTSP :                       395D C |  OUT_A :                       33BD C |
+ OUT_A1 :                      33CA C |  OUT_A2 :                      33D2 C |
+ OUT_CRLF :                    398A C |  P1ROL :                         3B - |
+*PACKING :                        0 - | *PADDING :                        1 - |
+ PARAM :                       399D C |  PARAM1 :                      39C4 C |
+ PARAMS :                      399F C |  PARAMS1 :                     39A2 C |
+ PARAMS2 :                     39A5 C |  PARAMS3 :                     39B3 C |
+ PARAMS4 :                     39BD C |  PIO1AD :                        88 - |
+*PIO1AS :                        8A - |  PIO1BD :                        89 - |
+ PIO1BS :                        8B - | *PIO2AD :                        90 - |
+*PIO2AS :                        92 - | *PIO2BD :                        91 - |
+*PIO2BS :                        93 - |  PRNSTR :                      391F C |
+ PROMPT :                      34D5 C |  PROMPT1 :                     34E6 C |
+ PSUM :                          69 - |  PU :                            2F - |
+ PUNCH :                       3840 C |  PUNCH1 :                      3843 C |
+ PUNCH2 :                      384E C |  PUNCH3 :                      3860 C |
+ PUNCH4 :                      386C C |  PUNCH5 :                      3878 C |
+ PUNCH_A :                     3A21 C |  PUNCH_HL :                    3A1C C |
+ PUNCH_INIT :                  3A00 C | *PUNCH_INIT0 :                 39FB C |
+ PUNCH_INIT1 :                 3A03 C |  PUN_CRLF :                    3962 C |
+ R0112 :                          1 - |  READ :                        36F6 C |
+ READ1 :                       3705 C |  READ10 :                      3767 C |
+ READ11 :                      376E C |  READ2 :                       370A C |
+ READ3 :                       3737 C |  READ4 :                       373E C |
+ READ5 :                       3746 C |  READ6 :                       374B C |
+ READ7 :                       3754 C |  READ8 :                       3760 C |
+ READ9 :                       3762 C |  READD7 :                      3A4C C |
+ READ_2ZIFF :                  3790 C |  READ_ZIFF :                   3A09 C |
+ REGRSTOR :                    3B35 C | *RELAXED :                        0 - |
+ RENEW :                       3CA8 C |  RENEW1 :                      3CB2 C |
+ RENEW2 :                      3CB3 C |  RENEW3 :                      3CC7 C |
+ RENEW4 :                      3CC8 C |  RENEW5 :                      3CD3 C |
+ ROM :                            0 - |  RST38 :                       3A52 C |
+ RST38_1 :                     3A61 C |  RST38_2 :                     3A78 C |
+ RST38_3 :                     3A83 C |  RST38_4 :                     3A84 C |
+ RST38_5 :                     3AA1 C |  RST38_6 :                     3AAD C |
+ SADR :                          71 - |  SAVEMSG :                     32FB C |
+ SAVEMSG1 :                    3313 C |  SIFA :                        3058 C |
+ SIFA1 :                       306E C |  SIFA2 :                       3073 C |
+ SIFA3 :                       3077 C |  SIFA4 :                       3087 C |
+ SIFE :                        30A0 C |  SIFE1 :                       30B0 C |
+ SIOBY :                       3409 C |  SP_STOP :                     33F1 C |
+ STOP :                        33F4 C |  STPRQ :                       3094 C |
+ SUBSTITUTE :                  37AF C |  SUBSTITUTE1 :                 37B3 C |
+ SUBSTITUTE2 :                 37CC C |  SUBSTITUTE3 :                 37CD C |
+ SUBSTITUTE4 :                 37D5 C |  SUB_7780 :                    3780 C |
+ SUB_77A3 :                    37A3 C |  SYSCALL1 :                    304C C |
+ SYSCALL2 :                    304D C |  TAB_ASGN :                    3B21 C |
+ TAB_REG :                     3B58 C |  TAB_REG2 :                    3B71 C |
+ TAB_TREIBER :                 3C4C C |  TAPE2 :                       312C C |
+ TAPE3 :                       3154 C |  TAPE4 :                       3163 C |
+ TAPEP :                       3128 C |  TAPER :                       311C C |
+ TD40 :                        30C3 C |  TD401 :                       30CD C |
+ TD402 :                       30D6 C |  TD403 :                       30E6 C |
+ TD404 :                       30FC C |  TD405 :                       3102 C |
+ TD406 :                       310A C |  TD407 :                       3116 C |
+ TD408 :                       3118 C |  THREEPARAMS :                 3992 C |
+*TIME :                    12:57:58 - |  TM_CSTS :                     3049 C |
+ TODEZ :                       35F3 C |  TODEZ1 :                      35F9 C |
+ TODEZ2 :                      3612 C | *TRUE :                           1 - |
+ TST_NEXT :                    3A40 C |  TST_ZIFF :                    3A0C C |
+ TWOPARAMS :                   397A C |  TWOPARAMS1 :                  3989 C |
+ TYPE :                        37D8 C |  TYPE1 :                       37DB C |
+ TYPE2 :                       37E0 C |  TYPE3 :                       37E7 C |
+ TYPE4 :                       37E9 C |  VAR1 :                        3CD8 C |
+ VARSAV :                      3CDA C |  VARTD40 :                     3CD7 C |
+*VERSION :                     142F - |  WRITE :                       3593 C |
+ WRITE1 :                      359A C |  WRITE2 :                      35A9 C |
+ WRITE3 :                      35AE C |  ZMMSG :                       391C C |
+ ZMVERSION :                   ZM30 - |  ZM_CHAR :                     3ACA C |
+ ZM_CLOSW :                    33DC C |  ZM_CONSI :                    302A C |
+ ZM_CONSI7 :                   3AC4 C |  ZM_CONSO :                    3034 C |
+*ZM_LISTO :                    3042 C |  ZM_OPENR :                    33E4 C |
+ ZM_OPENW :                    33D4 C |  ZM_PRNST :                    33E0 C |
+ ZM_PUNO :                     303B C |  ZM_READD :                    394B C |
+ ZM_READI :                    302F C |  ZM_READS :                    33E8 C |
+ ZM_WRITS :                    33D8 C |  ZO_CONSA :                    33ED C |
+
+    326 symbols
+     41 unused symbols
+
+ AS V1.42 Beta [Bld 158] - Source File zm20.asm - Page 3 - 4/4/2020 12:57:58
+
+
+  Defined Functions:
+  ------------------
+
+ZALIGN                                | NEXTPAGE                             
+LO                                    | HI                                   
+
+ AS V1.42 Beta [Bld 158] - Source File zm20.asm - Page 4 - 4/4/2020 12:57:58
+
+
+  Code Pages:
+  ----------
+
+STANDARD (0 changed characters)
+
+1 code page
+
+0.03 seconds assembly time
+
+   2523 lines source file
+      2 passes
+      0 errors
+      0 warnings

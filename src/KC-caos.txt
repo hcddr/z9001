@@ -1,0 +1,281 @@
+Die Anleitung stammt aus:
+
+Broschüre "COMPUTER in der außerunterrichtlichen Tätigkeit. Erfahrungen"
+Pädagogische Hochschule Halle-Köthen, 1989, Prof. Dr. Gerd Hutterer
+S. 76-82
+
+Dirk Ambras/Thomas Waegner
+
+ROM-resistente Betriebssystemerweiterung für die Kleincomputer
+KC 85/1 und KC 87
+--------------------------------------------------------------
+
+Die Kleincomputer des VEB ROBOTROH - Meßelektronik Dresden, haben in
+unserer Republik eine große Verbreitung erfahren. Betriebliche Berei-
+che nutzen sie genauso erfolgreich wie außerschulische Einrichtungen,
+polytechnische Zentren und private Anwender.
+Im Vergleich zum KC 85/3 und dessen Nachfolger zeigt sich, daß das
+Betriebssystem des KC 85/1 und des KC 87 nur sehr bescheidene Möglich-
+keiten der Arbeit auf dem Maschinenniveau aufweist.
+Für solche Arbeitsweisen macht sich das zusätzliche Einladen, von Be-
+triebssystemhilfen, wie dem ZM 30, erforderlich. Dieser ist jedoch in
+der Handhabung sehr umständlich und muß vor jeder Nutzung erst von
+Kassette geladen werden.
+Wir stellten uns die Aufgabe, eine ROM-resistente Betriebssystemer-
+weiterung zu entwickeln, die mindestens den Komfort des KC 85/3 er-
+reicht. Gleichzeitig muß die volle Kompatibilität des Rechners erhal-
+ten bleiben. So entstand die Betriebssystemerweiterung, die in MENÜ-
+Technik entwickelt wurde.
+
+1. Allgemeine Systembeschreibung
+
+Leistungsmerkmale sind neben der Erweiterung der Monitorkommandos:
+- FULLSCREEN-Editor mit maximal 72 Zeichen für BASIC
+- sofortige Cursordarstellung für farbtüchtige Rechner an S/W-Pem-
+  sehempfängern als Underline
+- Eintragen aller geladenen oder vorhandenen COM-Flles in das Menü
+- schnelle CLS-Routine
+
+Die Systemerweiterung wurde auf den Speicherbereich von 8000H bis
+8B40H implementiert. Dieser Speicherbereich wird durch Anwendersoft-
+ware des Herstellers, wie Druckertreiber, Plottererweiterung und
+EPROM-Software nicht belegt und ermöglicht so eine Arbeit In BASIC
+mit maximal 32500 Byte. Die Erfahrungen zeigen, daß nicht unbedingt
+alle Rechner auf 48 KByte aufgerüstet sein müssen, da dies ja immer
+zu Konflikten mit industriellen Treiberprogrammen fuhrt.
+
+2. Starten der Erweiterung
+
+Das ROM-Modul ist an einer beliebigen Stelle im Modulschacht des Rech-
+ners zu kontaktieren (ACHTUNG GERÄT AUSSCHALTEN ! ).
+Danach ist das Gerät einzuschalten und der Rechner meldet sich mit
+dem neuen Betriebssystem:
+
+HC-CAOS 3.0 by D.A, Station .....
+% BASIC
+% WBASIC
+% JUMP
+% SWITCH
+% MENÜ
+% DISPLAY
+% MODIFY
+% LOAD
+% VERIFY
+% SAVE
+% _
+
+Sollte sich der Rechner nicht mit diesem Bildschirminhalt melden, so
+sind folgende Punkte zu überprüfen:
+1. DIL-Schalterstellung des ROM-Modules
+   (vgl. Handbuch Einstellung auf Anfangsadresse 8000H)
+2. RAM-Modul für den Adressbereich 4000-7FFFH muß kontaktiert sein
+   (Systemarbeitszellen der Erweiterung)
+3. Drahtbrücke iia Modul zur Betriebssystemausblendung muß getrennt
+   sein.
+
+Wenn diese Bedingungen erfüllt sind, kann nur noch ein Fehler im
+ROM-Modul vorliegen.
+
+3. Beschreibung der Monitorkommandos
+
+Dem Bedienkomfort dieses Zusatzmonitors stand der KC 85/4 Pate. So
+reicht für die Auswahl von Kommandos die Eingabe der Anfangsbuchsta-
+ben aus. Hierbei wird das System vom ROM-Anfang bis Ende und anschlie-
+ßend der RAM nach aktuellen Startadressen des Monitorkommandos durch-
+sucht. Dies ist vorteilhaft, da es bei mehreren Kopien eines Pro-
+grammteiles im RAM nicht zum Start einer nicht lauffähigen Version
+kommt. Damit wurden Systemabstürze weitgehend gemieden und die Erwei-
+terung bleibt unter allen Bedingungen lauffähig. Falls mehrere Kom-
+mandos mit dem gleichen Buchstaben beginnen, sind so viele Buchstaben
+bis zur absoluten Signifikanz einzugeben. Es ist jedoch auch möglich,
+über die CURSOR-Tasten den Menüpunkt anzuwählen und das Programm da-
+mit zu starten.
+
+3.1. Direkte Monitorkommandos
+
+B A S I C
+
+- kennzeichnet den BASIC - Kaltstart
+Bei Benutzung dieses Kommandos ist der Speicherplatz auf 32500 bytes
+zu begrenzen. Dies ist unbedingt notwendig, da die Erweiterung System-
+zellen benötigt, die am RAM-Ende liegen. Der BASIC-Kaltstart ist aber
+auch über die Funktionstaste 0 der Betriebssystemerweiterung aufruf-
+bar. Vergleichen Sie hierzu den Punkt Funktionstasten!
+
+W B A S I C
+
+- BASIC-Warmstart
+Es gibt keine Unterschiede zum alten Monitorkommando.
+
+M E N U
+
+- dient dem Aufruf des Grundmenüs
+Der Bildschirm wird gelöscht und das Menü geschrieben.
+
+J U M P
+
+Mit diesem Kommando ist es möglich, die Systemerweiterung inaktiv zu
+schalten. Mach der Tastenbetätigung JUMP und >ENTER< und dem Drücken
+der RESET-Taste, meldet sich der Rechner mit seinem ursprünglichen-
+Menü:
+
+OS
+>
+
+Damit ist das Gerät in seinen Ursprungszustand versetzt und kann wie
+gewohnt benutzt werden. Soll die Erweiterung wieder aktiviert werden,
+ist dies durch die Eingabe von:
+
+> MENU >ENTER< möglich
+HINWEIS: an dieser Stelle ist das Wort voll auszuschreiben!
+
+S W I T C H
+
+Dieses Kommando hat auf Grund der Spezifik des KC 87 gegenüber dem
+KC 85/3 eine andere Bedeutung. Mit SWITCH S Z kann ein RAM-Bereich S
+( 4,8,C ) als RAM oder ROM deklarieren. So können RAM-Bereiche vor
+dem Kopieren geschützt werden, da ROM-Bereiche bei SAVE die Aus-
+schrift MEMORY PROTECTET erzeugen. Gleichzeitig ist es möglich, auf
+diese Weise Programme auf ihre Lauffähigkeit im ROM zu testen.
+Z = 0 RAM  Z = 1 ROM
+
+L O A D
+
+- Laden von COM-Files in den Rechner
+
+Nach der Eingabe von LOAD und dem Lesen des Kopfblockes des Program-
+mes  wird der Name, Anfangsadresse, Endadresse und Startadresse an-
+gezeigt. Wird nach LOAD eine Adresse angegeben, so wird das Programm
+auf dieser Adresse als Anfangsadresse geladen. Gleichzeitig wird ein
+Autostart unterdrückt. Die neue LOAD-Routine ist auch in der Lage,
+KC 85/3 Files zu lesen. Dies ist für das Brennen von MC-Programmen
+für den KC mittels Eprommer-Modul interessant. Beim Laden von MC-
+Files des KC 85/3 ist zu beachten, daß der KC 87 auf der Adresse 200H
+die Interrupttabelle ablegt. Da viele KC 3 - Programme auf dieser
+Adresse beginnen, ist zum Kopieren eine höhere Adresse zu wählen.
+
+S A V E
+
+- funktioniert analog dem KC 85/3
+Format: SAVE Anfangsadresse Endadresse (Startadresse)
+Es können beliebige COM-Files auf Magnetband gespeichert werden.
+
+V E R I F Y
+
+- führt einen Prüfsummenvergleich des gespeicherten Programmes aus
+und dient somit zur Kontrolle der Aufzeichnung auf Lesefehler.
+
+D I S P L A Y
+
+- Anzeige beliebiger Speicherbereiche des Rechners
+Format: DISPLAY Anfangsadresse Endadresse
+Es werden jeweils 8 Byte hexadezimal mit den entsprechenden ASCII-
+Code angezeigt. Mit einer beliebigen Taste wird weitergeblättert.
+Durch Drücken der RUN-Taste wird in den MODIFY-Modus übergegangen.
+Mit der STOP-Taste kann die Speicheranzeige abgebrochen werden.
+
+M O D I F Y
+
+- Beschreiben (modifizieren) von Speicherzellen
+Format: MODIPY Anfangsadreese
+Der angezeigte hexadezimale Wert der Speicherzelle kann auf diese
+Weise geändert werden. Gleichfalls ist die Eingabe eines ASCII-Zei-
+chens mit vorlaufendem Komma möglich. Nach einem Schrägstrich kann-
+ein anderer Speicherbereich gewählt werden.
+Durch die Eingabe des Punktes wird dieser Modus abgebrochen.
+
+K E Y
+
+- Aufruf der entsprechenden Funktionstastenbelegung zur Änderung.
+Format: KEY Z      (Z = 0 ... 9)
+Die Belegung kann byteweise von hinten durch Betätigung der RUN-Taste
+gelöscht werden. Anschließend ist eine neue Belegung möglich, die
+durch die Betätigung der STOP-Taste abgeschlossen wird.
+
+K E Y L I S T
+
+- Aufruf und Anzeige der aktuellen Punktionstastenbelegung auf den
+Bildschirm.
+
+C O L O R
+
+- stellt ab dem nächsten Zeichen die gewählte Farbkombination ein.
+Format: COLOR Vordergrundfarbe Hintergrundfarbe
+Vergleichen Sie hierzu die entsprechenden Werte im Handbuch des Ge-
+rätes. Mit dem Kommando vcolor ist eine sofortige Umschaltung der
+Farbkombination möglich.
+
+3.2. Monitorkommandos mit Kleinbuchstaben
+
+Diese Kommandos werden genau wie beim KC 85/3 nicht mit im Menü ange-
+zeigt. Sie sind aber immer verfügbar und werden über Kleinbuchstaben
+aufgerufen.
+
+l d i r
+
+- transportiert Speicherbereiche im Rechner
+Format: ldir Quelladresse Zieladresse Länge
+Die Zahlenwerte müssen hexadezimal eingegeben werden.
+
+i n
+
+- Lesen eines Portes des Rechners
+Format: in Portadresse
+Der gelesene Wert wird auf dem Bildschirm ausgegeben.
+
+o u t
+
+- schreiben eines Portes des Rechners
+Format: out Portadresse Wert
+Der vorgegebene Wert wird auf den Port mit der Adresse ausgegeben.
+Alle Eingaben erfolgen hexadezimal!
+
+g o
+
+- Start eines Maschinenprogrammes auf der angegebenen Startadresse
+Format: go Startadresse
+
+w r i t e
+
+- Direkteingabe von ASCII-Zeichen in den Speicher
+Format: write Anfangsadresse
+Nach Betätigung der ENTER-Taste kann beliebiger Text in den Speicher
+geschrieben werden. Mit der STOP-Taste kann diese Funktion abge-
+brochen werden.
+
+v c o l o r
+
+- sofortige Umschaltung der Farbkombination des gesamten Bildschir-
+mes. Im Gegensatz zu COLOR wird bei diesem Kommando nicht zellenwel-
+se die neue Farbkombination ab aktueller Cursorposition erzeugt, son-
+dern der gesamte Bildschirm in der neuen Kombination eingefärbt.
+
+4. Der FULLSCREEN-Editor für die Arbeit in BASIC
+
+Zum Programmieren in BASIC ist zuweilen ein SCREEN-Editor besonders
+bei der Korrektur von Programmen erforderlich. Durch die gleichzei-
+tige Betätigung der Tasten CONTROL und D kann dieser FULLSCREEN-
+Editor aktiviert werden. Danach wird mit den Cursortasten auch verti-
+kale Bewegungen auf dem Bildschirm möglich.
+Die Zellen dürfen maximal 72 Zeichen lang sein. Es ist jedoch zu be-
+achten, daß vor Betätigung der ENTER-Taste der Cursor wieder auf der
+Zeile mit der Zellennummer steht. Das Ausschalten des Editors ist nur
+über RESET und anschließendem BASIC-Warmstart möglich. Im SCREEN-Mode
+sind die Funktionstasten des Rechners wirkungslos.
+
+5. Funktionstasten
+
+Über die Möglichkeit der Änderung der Punktionstastenbelegung wurde
+schon unter Punkt 3.1. geschrieben. Die 10 Funktionstasten sind in
+der Grundversion dieser Betriebssystemerweiterung mit BASIC-Schlüs-
+selwörtern belegt. Sie können durch die Betätigung der ESCAPE-Taste
+und anschließender Eingabe einer Zahl von 0 bis 9 aktiviert werden.
+
+Der ASCII-Code der Funictionstaste erscheint auf dem Bildschirm, bzw.
+wenn er mit ENTER abgeschlossen wurde, wird er sofort ausgeführt.
+
+6. QTAPE-Turbolader
+
+Zu dieser Erweiterung ist noch die Einbindung des Turbosystems QTAPE
+vorgesehen. Es ermöglicht die Aufzeichnung und das Laden von Program-
+men mit unterschiedlichen Geschwindigkeiten.

@@ -1,0 +1,64 @@
+;-------------------------------------------------------------------------------
+
+-- Kopierroutine; setzt vorraus, dass OS-SAVE vorher geladen wurde??
+
+10 DATA6,12,33,0,16,17,128,0,34,27,0,175,50,108,0,229,213,197,205,52,244
+20 DATA193,209,225,25,16,237,201,2,192
+30 K=529:POKE-17067,201
+40 FORI=KTOK+29:READX:POKEI,X:NEXT
+50 DATA79,83,45,83,65,86,69,0,67,79,77,0,0,221,0,0,2,128,0,255,0,128,0,0
+60 K=92:FORI=KTOK+23:READX:POKEI,X:NEXT
+70 PRINTINK6;"start tape: INPUT OS-SAVE"
+80 IFPEEK(36)<>13THEN80
+90 CALL*211
+100 FORI=128TO255:POKEI,PEEK(I+4096):NEXTI
+110 CLS:PRINTINK6;"start tape: OUTPUT OS-SAVE"
+115 POKE36,0
+120 IFPEEK(36)<>13THEN120
+130 CALL*BD15:POKE111,255:POKE112,21:POKE27,0:POKE28,17:POKE107,2:CALL*BD34
+140 POKE-17067,216:END
+
+-- Anzeigen des Speichers
+150 CLS:J=0:FORI1=4096TO9999:H$="0123456789ABCDEF"
+160 A=PEEK(I1):B=INT(A/16):RI$=MID$(H$,B+1,1):B=A-16*B:R$=MID$(H$,B+1,1)
+170 PRINTI1;TAB(6);A;TAB(12);RI$+R$:J=J+1
+180 !X=0:IFPEEK(36)<>13THENA$=INKEY$:INPUTX
+190 !IFX<>0THENI1=X
+200 IFJ=23THENJ=0:PAUSE:GOSUB220:CLS
+210 NEXT
+
+-- ??
+220 OUT206,15:OUT207,207:OUT207,15:OUT206,3:OUT207,3:OUT205,255
+230 K=-5120
+240 FORI=KTOK+39
+250 OUT204,PEEK(I):OUT205,239:OUT205,255
+260 NEXTI
+270 OUT205,223:PAUSE5
+280 IFINP(205)<>220THEN280
+290 OUT205,255
+300 K=K+40:IFK=-4160THENRETURN
+310 PAUSE30:GOTO240
+;-------------------------------------------------------------------------------
+
+529dez
+0211  06 0C            LD      B,0CH
+0213  21 00 10         LD      HL,1000H
+0216  11 80 00         LD      DE,0080H
+0219  22 1B 00         LD      (001BH),HL
+021C  AF               XOR     A
+021D  32 6C 00         LD      (006CH),A
+0220  E5               PUSH    HL
+0221  D5               PUSH    DE
+0222  C5               PUSH    BC
+0223  CD 34 F4         CALL    0F434H
+0226  C1               POP     BC
+0227  D1               POP     DE
+0228  E1               POP     HL
+0229  19               ADD     HL,DE
+022A  10 ED            DJNZ    0219H
+022C  C9               RET
+;-------------------------------------------------------------------------------
+
+92dez
+5Ch
+FCB OS-SAVE 80-FF,80

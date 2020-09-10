@@ -1,0 +1,673 @@
+ AS V1.42 Beta [Bld 55] - source file grtest.asm - page 1 - 7/23/2007 16:25:56
+
+
+       1/       0 :                     ;-----------------------------------------------------------------------------
+       2/       0 :                     ; reass. V. Pohlers 070716
+       3/       0 :                     ;-----------------------------------------------------------------------------
+       4/       0 :                     ;
+       5/       0 :                     ; File Name   :	grtest.com
+       6/       0 :                     ; Base Address:	0000h Range: 1000h - 1400h Loaded length: 0400h
+       7/       0 :                     
+       8/       0 :                     ; Ansteuerung des Grafikzusatz
+       9/       0 :                     ; 6144 Byte (0..17FFh) externer	Speicher (256x192 Pixel), wird über Ports angesteuert
+      10/       0 :                     ; der Speicheraufbau ist linear, dh. 20h Bytes = 256 Pixel pro Zeile, fortlaufend
+      11/       0 :                     
+      12/       0 :                     		cpu	z80
+      13/       0 :                     
+      14/       0 : =B8H                port_0B8h	equ	0B8h		; Farbe	+ Grafik ein/aus
+      15/       0 :                     					; 7 6 5	4 3 2 1	0
+      16/       0 :                     					; | | |	| | | |	|
+      17/       0 :                     					; | --|-- | --|--
+      18/       0 :                     					; |   |	  |   PAPER (BGR)
+      19/       0 :                     					; |   |	  Grafik ein/aus
+      20/       0 :                     					; |   INK (BGR)
+      21/       0 :                     					; RAND
+      22/       0 : =B9H                port_0B9h	equ	0B9h		; Adresse für internen Speicher
+      23/       0 :                     					; die unteren Adressleitungen werden mit OUT (C)
+      24/       0 :                     					; direkt ausgegeben, die oberen	Adressdaten liegen
+      25/       0 :                     					; über Register	B auf dem Adressbus
+      26/       0 : =BAH                port_0BAh	equ	0BAh		; Daten
+      27/       0 :                     
+      28/       0 :                     ;Farben
+      29/       0 :                     ;000	schwarz
+      30/       0 :                     ;001	rot
+      31/       0 :                     ;010	grün
+      32/       0 :                     ;011	gelb
+      33/       0 :                     ;100	blau
+      34/       0 :                     ;101	purpur	(violett)
+      35/       0 :                     ;110	cyan	(hellblau)
+      36/       0 :                     ;111	weiá
+      37/       0 :                     
+      38/       0 :                     
+      39/       0 :                     ;-----------------------------------------------------------------------------
+      40/       0 :                     ; Sprungverteiler
+      41/       0 :                     ;-----------------------------------------------------------------------------
+      42/       0 :                     
+      43/    1000 :                     		org 1000h
+      44/    1000 :                     
+      45/    1000 : C3 30 10            		jp	SPTEST
+      46/    1003 : 53 50 54 45 53 54   aSptest:	db	"SPTEST  ",0
+                    20 20 00 
+      47/    100C : C3 77 10            		jp	UMSCHALT
+      48/    100F : 55 4D 53 43 48 41   aUmschalt:	db	"UMSCHALT",0
+                    4C 54 00 
+      49/    1018 : C3 B8 10            		jp	STIM
+      50/    101B : 53 54 49 4D 20 20   aStim:		db	"STIM    ",0
+                    20 20 00 
+      51/    1024 : C3 EF 10            		jp	GRAFIK
+      52/    1027 : 47 52 41 46 49 4B   aGrafik:	db	"GRAFIK  ",0
+                    20 20 00 
+      53/    1030 :                     
+      54/    1030 :                     ;-----------------------------------------------------------------------------
+      55/    1030 :                     ; Speichertest
+      56/    1030 :                     ; Testen des externen Speichers von 6144x8 Bit (0..17FFh)
+ AS V1.42 Beta [Bld 55] - source file grtest.asm - page 2 - 7/23/2007 16:25:56
+
+
+      57/    1030 :                     ;-----------------------------------------------------------------------------
+      58/    1030 :                     
+      59/    1030 : 0E 09               SPTEST:		ld	c, 9
+      60/    1032 : 11 4E 13            		ld	de, aSpeichertest ; "SPEICHERTEST\r\n"
+      61/    1035 : CD 05 00            		call	5
+      62/    1038 : 3E 08               		ld	a, 8
+      63/    103A : 21 00 00            		ld	hl, 0
+      64/    103D : 32 FB 3F            		ld	(curbyte), a	; current value	in external RAM
+      65/    1040 : 22 FE 3F            		ld	(curadr), hl	; current address in external RAM
+      66/    1043 : 22 FC 3F            		ld	(cnterr), hl	; Anzahl Fehler
+      67/    1046 : CD 7E 11            sptest1:	call	writeadr
+      68/    1049 : CD 8D 11            		call	readadr
+      69/    104C : CD 9C 11            		call	testadr
+      70/    104F : CD 1F 12            		call	stoptst2	; Testen auf Drücken der 'STOP'-Taste
+      71/    1052 :                     					; out: Cy=0 - 'STOP'-Taste gedrückt
+      72/    1052 : D0                  		ret	nc		; wenn STOP gedrückt wurde
+      73/    1053 : 3A FB 3F            		ld	a, (curbyte)	; current value	in external RAM
+      74/    1056 : 3C                  		inc	a
+      75/    1057 : 32 FB 3F            		ld	(curbyte), a	; current value	in external RAM
+      76/    105A : 23                  		inc	hl
+      77/    105B : 22 FE 3F            		ld	(curadr), hl	; current address in external RAM
+      78/    105E : 3E 00               		ld	a, 0
+      79/    1060 : BD                  		cp	l
+      80/    1061 : 20 E3               		jr	nz, sptest1
+      81/    1063 : 3E 18               		ld	a, 18h		; Adresse 1800h	erreicht? Dann Ende
+      82/    1065 : BC                  		cp	h
+      83/    1066 : 20 DE               		jr	nz, sptest1
+      84/    1068 : 2A FC 3F            		ld	hl, (cnterr)	; Anzahl Fehler
+      85/    106B : CD EA 11            		call	outhlx		; Ausgabe HL als Hex-Zahl incl 'H'
+      86/    106E : 0E 09               		ld	c, 9
+      87/    1070 : 11 7F 13            		ld	de, aFehler	; " FEHLER"
+      88/    1073 : CD 05 00            		call	5
+      89/    1076 : C9                  		ret
+      90/    1077 :                     
+      91/    1077 :                     ;-----------------------------------------------------------------------------
+      92/    1077 :                     ; Bildschirmumschaltung testen
+      93/    1077 :                     ; Mit den Tasten 'G' und 'A' wird zwischen den Bildschirmen umgeschaltet
+      94/    1077 :                     ; Ende mit 'STOP'
+      95/    1077 :                     ;-----------------------------------------------------------------------------
+      96/    1077 :                     
+      97/    1077 : 0E 09               UMSCHALT:	ld	c, 9
+      98/    1079 : 11 A4 13            		ld	de, aSchirmumschalt ; "\rSCHIRMUMSCHALTUNG\r\n"
+      99/    107C : CD 05 00            		call	5
+     100/    107F : 0E 0B               umschalt1:	ld	c, 0Bh
+     101/    1081 : CD 05 00            		call	5
+     102/    1084 : FE 00               		cp	0
+     103/    1086 : 28 F7               		jr	z, umschalt1
+     104/    1088 : 0E 01               		ld	c, 1
+     105/    108A : CD 05 00            		call	5
+     106/    108D : CB AF               		res	5, a
+     107/    108F : FE 41               		cp	'A'
+     108/    1091 : 28 09               		jr	z, umschalt2	; alphanum. Bildschirm
+     109/    1093 : FE 47               		cp	'G'
+     110/    1095 : 28 13               		jr	z, umschalt3	; Grafikbildschirm
+     111/    1097 : FE 03               		cp	3		; STOP?
+     112/    1099 : 20 E4               		jr	nz, umschalt1
+     113/    109B : C9                  		ret
+     114/    109C :                     
+     115/    109C : 3E E2               umschalt2:	ld	a, 11100010b	; alphanum. Bildschirm
+     116/    109E : D3 B8               		out	(port_0B8h),	a
+ AS V1.42 Beta [Bld 55] - source file grtest.asm - page 3 - 7/23/2007 16:25:56
+
+
+     117/    10A0 : 0E 09               		ld	c, 9
+     118/    10A2 : 11 87 13            		ld	de, aAlphaSchirm ; "\rALPHA SCHIRM"
+     119/    10A5 : CD 05 00            		call	5
+     120/    10A8 : 18 D5               		jr	umschalt1
+     121/    10AA :                     
+     122/    10AA : 3E 9C               umschalt3:	ld	a, 10011100b	; Grafikbildschirm
+     123/    10AC : D3 B8               		out	(port_0B8h),	a
+     124/    10AE : 0E 09               		ld	c, 9
+     125/    10B0 : 11 95 13            		ld	de, aGrafikSchirm ; "\rGRAFIK SCHIRM"
+     126/    10B3 : CD 05 00            		call	5
+     127/    10B6 : 18 C7               		jr	umschalt1
+     128/    10B8 :                     
+     129/    10B8 :                     ;-----------------------------------------------------------------------------
+     130/    10B8 :                     ; Stimulus-Programm
+     131/    10B8 :                     ; zyklisches Ansteuern der Adreßleitungen
+     132/    10B8 :                     ; Ende mit STOP
+     133/    10B8 :                     ;-----------------------------------------------------------------------------
+     134/    10B8 :                     
+     135/    10B8 : 0E 09               STIM:		ld	c, 9
+     136/    10BA : 11 B9 13            		ld	de, aStimulusProg_ ; "\rSTIMULUS PROG."
+     137/    10BD : CD 05 00            		call	5
+     138/    10C0 : 3E 55               		ld	a, 55h ; 'U'
+     139/    10C2 : 21 00 00            		ld	hl, 0
+     140/    10C5 : 11 00 04            		ld	de, 400h
+     141/    10C8 : 32 FB 3F            		ld	(curbyte), a	; current value	in external RAM
+     142/    10CB : 22 FE 3F            		ld	(curadr), hl	; current address in external RAM
+     143/    10CE : F3                  		di
+     144/    10CF : CD 7E 11            stim1:		call	writeadr
+     145/    10D2 : CD 37 12            		call	stoptst1	; wurde	'STOP'-Taste gedrückt?
+     146/    10D5 :                     					; Out: Z=1, wenn 'STOP'-Taste gedrückt
+     147/    10D5 : C8                  		ret	z
+     148/    10D6 : 3A FB 3F            		ld	a, (curbyte)	; current value	in external RAM
+     149/    10D9 : 2F                  		cpl
+     150/    10DA : 32 FB 3F            		ld	(curbyte), a	; current value	in external RAM
+     151/    10DD : 06 F7               		ld	b, 0F7h	; '÷'
+     152/    10DF : A0                  		and	b
+     153/    10E0 : D3 B8               		out	(port_0B8h),	a
+     154/    10E2 : 3A FB 3F            		ld	a, (curbyte)	; current value	in external RAM
+     155/    10E5 : 2A FE 3F            		ld	hl, (curadr)	; current address in external RAM
+     156/    10E8 : 6F                  		ld	l, a
+     157/    10E9 : 19                  		add	hl, de
+     158/    10EA : 22 FE 3F            		ld	(curadr), hl	; current address in external RAM
+     159/    10ED : 18 E0               		jr	stim1
+     160/    10EF :                     
+     161/    10EF :                     ;-----------------------------------------------------------------------------
+     162/    10EF :                     ; Farbtest
+     163/    10EF :                     ; 'A' - alphanum. Bildschirm
+     164/    10EF :                     ; 'G' - 4 verschachtelte Rechtecke grün auf schwarz
+     165/    10EF :                     ; 'R' - 4 verschachtelte Rechtecke rot auf schwarz
+     166/    10EF :                     ; 'B' - 4 verschachtelte Rechtecke blau auf rot
+     167/    10EF :                     ; Ende mit 'STOP'
+     168/    10EF :                     ;-----------------------------------------------------------------------------
+     169/    10EF :                     
+     170/    10EF : 0E 09               GRAFIK:		ld	c, 9
+     171/    10F1 : 11 C9 13            		ld	de, aTestprogrammGr ; "\rTESTPROGRAMM GRAFIK\r\n"
+     172/    10F4 : CD 05 00            		call	5
+     173/    10F7 : 0E 0B               grafik1:	ld	c, 0Bh
+     174/    10F9 : CD 05 00            		call	5
+     175/    10FC : FE 00               		cp	0
+     176/    10FE : 28 F7               		jr	z, grafik1
+ AS V1.42 Beta [Bld 55] - source file grtest.asm - page 4 - 7/23/2007 16:25:56
+
+
+     177/    1100 : 0E 01               		ld	c, 1
+     178/    1102 : CD 05 00            		call	5
+     179/    1105 : CB AF               		res	5, a
+     180/    1107 : FE 41               		cp	'A'
+     181/    1109 : 28 11               		jr	z, grafik2	; alphanum. Bildschirm
+     182/    110B : FE 47               		cp	'G'
+     183/    110D : 28 1B               		jr	z, grafik3	; grün auf schwarz
+     184/    110F : FE 52               		cp	'R'
+     185/    1111 : 28 25               		jr	z, grafik4	; rot auf schwarz
+     186/    1113 : FE 42               		cp	'B'
+     187/    1115 : 28 2F               		jr	z, grafik5	; blau auf rot
+     188/    1117 : FE 03               		cp	3
+     189/    1119 : 20 DC               		jr	nz, grafik1
+     190/    111B : C9                  		ret
+     191/    111C :                     
+     192/    111C : 3E 00               grafik2:	ld	a, 0		; alphanum. Bildschirm
+     193/    111E : D3 B8               		out	(port_0B8h),	a
+     194/    1120 : 0E 09               		ld	c, 9
+     195/    1122 : 11 87 13            		ld	de, aAlphaSchirm ; "\rALPHA SCHIRM"
+     196/    1125 : CD 05 00            		call	5
+     197/    1128 : 18 CD               		jr	grafik1
+     198/    112A :                     
+     199/    112A : 3E A8               grafik3:	ld	a, 10101000b	; grün auf schwarz
+     200/    112C : D3 B8               		out	(port_0B8h),	a
+     201/    112E : 0E 09               		ld	c, 9
+     202/    1130 : 11 95 13            		ld	de, aGrafikSchirm ; "\rGRAFIK SCHIRM"
+     203/    1133 : CD 05 00            		call	5
+     204/    1136 : 18 1A               		jr	grafik6
+     205/    1138 :                     
+     206/    1138 : 3E 98               grafik4:	ld	a, 10011000b	; rot auf schwarz
+     207/    113A : D3 B8               		out	(port_0B8h),	a
+     208/    113C : 0E 09               		ld	c, 9
+     209/    113E : 11 95 13            		ld	de, aGrafikSchirm ; "\rGRAFIK SCHIRM"
+     210/    1141 : CD 05 00            		call	5
+     211/    1144 : 18 0C               		jr	grafik6
+     212/    1146 :                     
+     213/    1146 : 3E C9               grafik5:	ld	a, 11001001b	; blau auf rot
+     214/    1148 : D3 B8               		out	(port_0B8h),	a
+     215/    114A : 0E 09               		ld	c, 9
+     216/    114C : 11 95 13            		ld	de, aGrafikSchirm ; "\rGRAFIK SCHIRM"
+     217/    114F : CD 05 00            		call	5
+     218/    1152 :                     
+     219/    1152 : CD 43 12            grafik6:	call	clrmem		; externen Speicher löschen (mit 00)
+     220/    1155 : 21 00 00            		ld	hl, 0		; erste	Zeile
+     221/    1158 : 22 FE 3F            		ld	(curadr), hl	; current address in external RAM
+     222/    115B : CD 60 12            		call	fillmem1	; eine Linie zeichnen
+     223/    115E : 21 E0 17            		ld	hl, 17E0h	; letzte Zeile
+     224/    1161 : 22 FE 3F            		ld	(curadr), hl	; current address in external RAM
+     225/    1164 : CD 60 12            		call	fillmem1	; eine Linie zeichnen
+     226/    1167 : 21 20 00            		ld	hl, 20h	; ' '   ; zweite Zeile
+     227/    116A : 22 FE 3F            		ld	(curadr), hl	; current address in external RAM
+     228/    116D : 1E BE               		ld	e, 190
+     229/    116F : CD 75 12            grafik7:	call	fillmem2	; vertikale Seiten des Rechtecks
+     230/    1172 : 1D                  		dec	e
+     231/    1173 : 20 FA               		jr	nz, grafik7
+     232/    1175 :                     ;
+     233/    1175 : CD D0 12            		call	plotrows	; horizontale Linien zeichnen
+     234/    1178 : CD 0C 13            		call	plotcols	; vertikale Linien zeichnen
+     235/    117B : C3 F7 10            		jp	grafik1
+     236/    117E :                     
+ AS V1.42 Beta [Bld 55] - source file grtest.asm - page 5 - 7/23/2007 16:25:56
+
+
+     237/    117E :                     
+     238/    117E :                     ;-----------------------------------------------------------------------------
+     239/    117E :                     ; Lesen und Schreiben im ext. Grafikspeicher
+     240/    117E :                     ;
+     241/    117E :                     ; IN r,(C), OUT (C),r, and the Block I/O instructions actually place the entire BC 
+     242/    117E :                     ; register on the address bus. Similarly IN A,(n) and OUT (n),A put A * 256 + n on 
+     243/    117E :                     ; the address bus.
+     244/    117E :                     ;-----------------------------------------------------------------------------
+     245/    117E :                     
+     246/    117E : ED 4B FE 3F         writeadr:	ld	bc, (curadr)	; current address in external RAM
+     247/    1182 : 79                  		ld	a, c
+     248/    1183 : 0E BA               		ld	c, port_0BAh
+     249/    1185 : D3 B9               		out	(port_0B9h), a	; out low address
+     250/    1187 : 3A FB 3F            		ld	a, (curbyte)	; current value	in external RAM
+     251/    118A : ED 79               		out	(c), a		; out data and high address
+     252/    118C : C9                  		ret
+     253/    118D :                     
+     254/    118D : ED 4B FE 3F         readadr:	ld	bc, (curadr)	; current address in external RAM
+     255/    1191 : 79                  		ld	a, c
+     256/    1192 : 0E BA               		ld	c, port_0BAh
+     257/    1194 : D3 B9               		out	(port_0B9h), a	; Adresse ausgeben
+     258/    1196 : ED 78               		in	a, (c)		; Datenbyte aus	Speicher lesen
+     259/    1198 : 32 FA 3F            		ld	(rdbyte), a	; gelesenes Byte
+     260/    119B : C9                  		ret
+     261/    119C :                     
+     262/    119C : 3A FB 3F            testadr:	ld	a, (curbyte)	; current value	in external RAM
+     263/    119F : 47                  		ld	b, a
+     264/    11A0 : 3A FA 3F            		ld	a, (rdbyte)	; gelesenes Byte
+     265/    11A3 : B8                  		cp	b
+     266/    11A4 : C4 A8 11            		call	nz, anzfehler	; Anzeige fehlerhafte Adresse
+     267/    11A7 : C9                  		ret
+     268/    11A8 :                     
+     269/    11A8 :                     ;-----------------------------------------------------------------------------
+     270/    11A8 :                     ; Anzeige fehlerhafte Adresse
+     271/    11A8 :                     ;-----------------------------------------------------------------------------
+     272/    11A8 :                     
+     273/    11A8 : 0E 09               anzfehler:	ld	c, 9
+     274/    11AA : 11 5D 13            		ld	de, aAdresse	; "\r\nADRESSE "
+     275/    11AD : CD 05 00            		call	5
+     276/    11B0 : 2A FE 3F            		ld	hl, (curadr)	; current address in external RAM
+     277/    11B3 : CD EA 11            		call	outhlx		; Ausgabe HL als Hex-Zahl incl 'H'
+     278/    11B6 : 0E 09               		ld	c, 9
+     279/    11B8 : 11 68 13            		ld	de, aSollwert	; "\r\nSOLLWERT "
+     280/    11BB : CD 05 00            		call	5
+     281/    11BE : 3A FB 3F            		ld	a, (curbyte)	; current value	in external RAM
+     282/    11C1 : 57                  		ld	d, a
+     283/    11C2 : CD F5 11            		call	outax		; Ausgabe A als	Hex-Zahl incl 'H'
+     284/    11C5 : 0E 09               		ld	c, 9
+     285/    11C7 : 11 74 13            		ld	de, aIstwert	; "\r\nISTWERT "
+     286/    11CA : CD 05 00            		call	5
+     287/    11CD : 3A FA 3F            		ld	a, (rdbyte)	; gelesenes Byte
+     288/    11D0 : 7A                  		ld	a, d
+     289/    11D1 : CD F5 11            		call	outax		; Ausgabe A als	Hex-Zahl incl 'H'
+     290/    11D4 : 0E 02               		ld	c, 2
+     291/    11D6 : 1E 0D               		ld	e, 0Dh
+     292/    11D8 : CD 05 00            		call	5
+     293/    11DB : 1E 0A               		ld	e, 0Ah
+     294/    11DD : CD 05 00            		call	5
+     295/    11E0 : E5                  		push	hl
+     296/    11E1 : 2A FC 3F            		ld	hl, (cnterr)	; Anzahl Fehler
+ AS V1.42 Beta [Bld 55] - source file grtest.asm - page 6 - 7/23/2007 16:25:56
+
+
+     297/    11E4 : 23                  		inc	hl
+     298/    11E5 : 22 FC 3F            		ld	(cnterr), hl	; Anzahl Fehler
+     299/    11E8 : E1                  		pop	hl
+     300/    11E9 : C9                  		ret
+     301/    11EA :                     
+     302/    11EA :                     ;-----------------------------------------------------------------------------
+     303/    11EA :                     ; hexadezimale Anzeige
+     304/    11EA :                     ;-----------------------------------------------------------------------------
+     305/    11EA :                     
+     306/    11EA :                     ; Ausgabe HL als Hex-Zahl incl 'H'
+     307/    11EA : CD 00 12            outhlx:		call	outhl		; Ausgabe HL als Hex-Zahl
+     308/    11ED : 1E 48               		ld	e, 'H'
+     309/    11EF : 0E 02               		ld	c, 2
+     310/    11F1 : CD 05 00            		call	5
+     311/    11F4 : C9                  		ret
+     312/    11F5 :                     
+     313/    11F5 :                     ; Ausgabe A als	Hex-Zahl incl 'H'
+     314/    11F5 : CD 05 12            outax:		call	outhx		; Ausgabe A als	Hex-Zahl
+     315/    11F8 : 1E 48               		ld	e, 'H'
+     316/    11FA : 0E 02               		ld	c, 2
+     317/    11FC : CD 05 00            		call	5
+     318/    11FF : C9                  		ret
+     319/    1200 :                     
+     320/    1200 :                     ; Ausgabe HL als Hex-Zahl
+     321/    1200 : 54                  outhl:		ld	d, h
+     322/    1201 : CD 05 12            		call	outhx		; Ausgabe A als	Hex-Zahl
+     323/    1204 : 55                  		ld	d, l
+     324/    1205 :                     
+     325/    1205 :                     ; Ausgabe A als	Hex-Zahl
+     326/    1205 : 7A                  outhx:		ld	a, d
+     327/    1206 : 0F                  		rrca
+     328/    1207 : 0F                  		rrca
+     329/    1208 : 0F                  		rrca
+     330/    1209 : 0F                  		rrca
+     331/    120A : CD 0E 12            		call	outhx1
+     332/    120D : 7A                  		ld	a, d
+     333/    120E : E6 0F               outhx1:		and	0Fh
+     334/    1210 : FE 0A               		cp	0Ah
+     335/    1212 : 38 02               		jr	c, outhx2
+     336/    1214 : C6 07               		add	a, 7
+     337/    1216 : C6 30               outhx2:		add	a, 30h 		; '0'
+     338/    1218 : 5F                  		ld	e, a
+     339/    1219 : 0E 02               		ld	c, 2
+     340/    121B : CD 05 00            		call	5
+     341/    121E : C9                  		ret
+     342/    121F :                     
+     343/    121F :                     ;-----------------------------------------------------------------------------
+     344/    121F :                     ; Testen auf Drücken der 'STOP'-Taste
+     345/    121F :                     ;-----------------------------------------------------------------------------
+     346/    121F :                     
+     347/    121F :                     ; Testen auf Drücken der 'STOP'-Taste
+     348/    121F :                     ; out: Cy=0 - 'STOP'-Taste gedrückt
+     349/    121F :                     
+     350/    121F : C5                  stoptst2:	push	bc
+     351/    1220 : 47                  		ld	b, a
+     352/    1221 : 0E 0B               		ld	c, 11		; CSTS
+     353/    1223 : CD 05 00            		call	5
+     354/    1226 : A7                  		and	a
+     355/    1227 : 28 0A               		jr	z, stoptst21	; wenn keine Taste gedrückt
+     356/    1229 : 0E 01               		ld	c, 1		; CONSI
+ AS V1.42 Beta [Bld 55] - source file grtest.asm - page 7 - 7/23/2007 16:25:56
+
+
+     357/    122B : CD 05 00            		call	5
+     358/    122E : FE 03               		cp	3		; 'STOP' ?
+     359/    1230 : 37                  		scf
+     360/    1231 : 20 01               		jr	nz, stoptst22
+     361/    1233 : 3F                  stoptst21:	ccf
+     362/    1234 : 78                  stoptst22:	ld	a, b
+     363/    1235 : C1                  		pop	bc
+     364/    1236 : C9                  		ret
+     365/    1237 :                     
+     366/    1237 :                     ; wurde	'STOP'-Taste gedrückt?
+     367/    1237 :                     ; Out: Z=1, wenn 'STOP'-Taste gedrückt
+     368/    1237 :                     
+     369/    1237 : 3E BF               stoptst1:	ld	a, 10111111b
+     370/    1239 : D3 90               		out	(90h), a	; Tastatur-PIO2A
+     371/    123B : 00                  		nop
+     372/    123C : DB 91               		in	a, (91h)
+     373/    123E : FE BF               		cp	10111111b	; Tastatur-PIO2B
+     374/    1240 : C0                  		ret	nz		; Test Taste S77 ('STOP')
+     375/    1241 : FB                  		ei
+     376/    1242 : C9                  		ret
+     377/    1243 :                     
+     378/    1243 :                     ;-----------------------------------------------------------------------------
+     379/    1243 :                     ; externen Speicher löschen (mit 00)
+     380/    1243 :                     ;-----------------------------------------------------------------------------
+     381/    1243 :                     
+     382/    1243 : 3E 00               clrmem:		ld	a, 0
+     383/    1245 : 21 00 00            		ld	hl, 0
+     384/    1248 : 32 FB 3F            		ld	(curbyte), a	; current value	in external RAM
+     385/    124B : 22 FE 3F            		ld	(curadr), hl	; current address in external RAM
+     386/    124E : CD 7E 11            clrmem1:	call	writeadr
+     387/    1251 : 23                  		inc	hl
+     388/    1252 : 22 FE 3F            		ld	(curadr), hl	; current address in external RAM
+     389/    1255 : 3E 00               		ld	a, 0
+     390/    1257 : BD                  		cp	l
+     391/    1258 : 20 F4               		jr	nz, clrmem1
+     392/    125A : 3E 18               		ld	a, 18h
+     393/    125C : BC                  		cp	h		; Adresse 1800h	erreicht? Dann Ende
+     394/    125D : 20 EF               		jr	nz, clrmem1
+     395/    125F : C9                  		ret
+     396/    1260 :                     
+     397/    1260 :                     ;-----------------------------------------------------------------------------
+     398/    1260 :                     ; externen Speicher füllen
+     399/    1260 :                     ;-----------------------------------------------------------------------------
+     400/    1260 :                     
+     401/    1260 :                     ; schreibt 32 x	0FFh ab	curadr in Speicher (eine Zeile,	alle Pixel setzen)
+     402/    1260 :                     
+     403/    1260 : 3E FF               fillmem1:	ld	a, 0FFh
+     404/    1262 : 32 FB 3F            		ld	(curbyte), a	; current value	in external RAM
+     405/    1265 : 2A FE 3F            		ld	hl, (curadr)	; current address in external RAM
+     406/    1268 : 16 20               		ld	d, 32
+     407/    126A : CD 7E 11            fillmem11:	call	writeadr
+     408/    126D : 23                  		inc	hl
+     409/    126E : 22 FE 3F            		ld	(curadr), hl	; current address in external RAM
+     410/    1271 : 15                  		dec	d
+     411/    1272 : 20 F6               		jr	nz, fillmem11
+     412/    1274 : C9                  		ret
+     413/    1275 :                     
+     414/    1275 :                     
+     415/    1275 :                     ; schreibt linken und rechten Rand einer Zeile (für vertikale Seiten des Rechtecks)
+     416/    1275 :                     
+ AS V1.42 Beta [Bld 55] - source file grtest.asm - page 8 - 7/23/2007 16:25:56
+
+
+     417/    1275 : 16 1F               fillmem2:	ld	d, 31
+     418/    1277 : 3E 80               		ld	a, 80h ; '€'
+     419/    1279 : 32 FB 3F            		ld	(curbyte), a	; current value	in external RAM
+     420/    127C : 2A FE 3F            		ld	hl, (curadr)	; current address in external RAM
+     421/    127F : CD 7E 11            		call	writeadr
+     422/    1282 : 23                  		inc	hl
+     423/    1283 : 22 FE 3F            		ld	(curadr), hl	; current address in external RAM
+     424/    1286 : 15                  		dec	d
+     425/    1287 : 3E 00               		ld	a, 0
+     426/    1289 : 32 FB 3F            		ld	(curbyte), a	; current value	in external RAM
+     427/    128C : CD 7E 11            fillmem21:	call	writeadr
+     428/    128F : 23                  		inc	hl
+     429/    1290 : 22 FE 3F            		ld	(curadr), hl	; current address in external RAM
+     430/    1293 : 15                  		dec	d
+     431/    1294 : 20 F6               		jr	nz, fillmem21
+     432/    1296 : 3E 01               		ld	a, 1
+     433/    1298 : 32 FB 3F            		ld	(curbyte), a	; current value	in external RAM
+     434/    129B : CD 7E 11            		call	writeadr
+     435/    129E : 23                  		inc	hl
+     436/    129F : 22 FE 3F            		ld	(curadr), hl	; current address in external RAM
+     437/    12A2 : C9                  		ret
+     438/    12A3 :                     
+     439/    12A3 :                     ;-----------------------------------------------------------------------------
+     440/    12A3 :                     ; Linien zeichnen
+     441/    12A3 :                     ;-----------------------------------------------------------------------------
+     442/    12A3 :                     
+     443/    12A3 :                     ; zeichnet (H) Bytes lange horizontale Linie ab	(IX)
+     444/    12A3 :                     
+     445/    12A3 : 2E 00               plotrow:	ld	l, 0
+     446/    12A5 : DD 22 FE 3F         		ld	(curadr), ix	; current address in external RAM
+     447/    12A9 : CD 7E 11            plotrow1:	call	writeadr
+     448/    12AC : DD 23               		inc	ix
+     449/    12AE : DD 22 FE 3F         		ld	(curadr), ix	; current address in external RAM
+     450/    12B2 : 2C                  		inc	l
+     451/    12B3 : 7C                  		ld	a, h
+     452/    12B4 : BD                  		cp	l
+     453/    12B5 : 20 F2               		jr	nz, plotrow1
+     454/    12B7 : C9                  		ret
+     455/    12B8 :                     
+     456/    12B8 :                     ; zeichnet (H) Zeilen lange vertikale Linie ab (IX)
+     457/    12B8 :                     
+     458/    12B8 : 2E 00               plotcol:	ld	l, 0
+     459/    12BA : 11 20 00            		ld	de, 20h	; ' '   ; Offset zur nächsten Bildzeile
+     460/    12BD : DD 22 FE 3F         		ld	(curadr), ix	; current address in external RAM
+     461/    12C1 : CD 7E 11            plotcol1:	call	writeadr
+     462/    12C4 : DD 19               		add	ix, de
+     463/    12C6 : DD 22 FE 3F         		ld	(curadr), ix	; current address in external RAM
+     464/    12CA : 2C                  		inc	l
+     465/    12CB : 7C                  		ld	a, h
+     466/    12CC : BD                  		cp	l
+     467/    12CD : 20 F2               		jr	nz, plotcol1
+     468/    12CF : C9                  		ret
+     469/    12D0 :                     
+     470/    12D0 :                     ; horizontale Linien zeichnen
+     471/    12D0 :                     
+     472/    12D0 : 3E FF               plotrows:	ld	a, 0FFh
+     473/    12D2 : 32 FB 3F            		ld	(curbyte), a	; current value	in external RAM
+     474/    12D5 : DD 21 70 0B         		ld	ix, 0B70h
+     475/    12D9 : 26 01               		ld	h, 1
+     476/    12DB : CD A3 12            		call	plotrow		; zeichnet (H) Bytes lange horizontale Linie ab	(IX)
+ AS V1.42 Beta [Bld 55] - source file grtest.asm - page 9 - 7/23/2007 16:25:56
+
+
+     477/    12DE : DD 21 6E 09         		ld	ix, 96Eh
+     478/    12E2 : 26 05               		ld	h, 5
+     479/    12E4 : CD A3 12            		call	plotrow		; zeichnet (H) Bytes lange horizontale Linie ab	(IX)
+     480/    12E7 : DD 21 6C 07         		ld	ix, 76Ch
+     481/    12EB : 26 09               		ld	h, 9
+     482/    12ED : CD A3 12            		call	plotrow		; zeichnet (H) Bytes lange horizontale Linie ab	(IX)
+     483/    12F0 : DD 21 90 0C         		ld	ix, 0C90h
+     484/    12F4 : 26 01               		ld	h, 1
+     485/    12F6 : CD A3 12            		call	plotrow		; zeichnet (H) Bytes lange horizontale Linie ab	(IX)
+     486/    12F9 : DD 21 6E 0E         		ld	ix, 0E6Eh
+     487/    12FD : 26 05               		ld	h, 5
+     488/    12FF : CD A3 12            		call	plotrow		; zeichnet (H) Bytes lange horizontale Linie ab	(IX)
+     489/    1302 : DD 21 6C 10         		ld	ix, 106Ch
+     490/    1306 : 26 09               		ld	h, 9
+     491/    1308 : CD A3 12            		call	plotrow		; zeichnet (H) Bytes lange horizontale Linie ab	(IX)
+     492/    130B : C9                  		ret
+     493/    130C :                     
+     494/    130C :                     ; vertikale Linien zeichnen
+     495/    130C :                     
+     496/    130C : 3E 01               plotcols:	ld	a, 1
+     497/    130E : 32 FB 3F            		ld	(curbyte), a	; current value	in external RAM
+     498/    1311 : DD 21 8F 0B         		ld	ix, 0B8Fh
+     499/    1315 : 26 08               		ld	h, 8
+     500/    1317 : CD B8 12            		call	plotcol		; zeichnet (H) Zeilen lange vertikale Linie ab (IX)
+     501/    131A : DD 21 8D 09         		ld	ix, 98Dh
+     502/    131E : 26 27               		ld	h, 39
+     503/    1320 : CD B8 12            		call	plotcol		; zeichnet (H) Zeilen lange vertikale Linie ab (IX)
+     504/    1323 : DD 21 8B 07         		ld	ix, 78Bh
+     505/    1327 : 26 47               		ld	h, 71
+     506/    1329 : CD B8 12            		call	plotcol		; zeichnet (H) Zeilen lange vertikale Linie ab (IX)
+     507/    132C : 00                  		nop
+     508/    132D : 3E 01               		ld	a, 1
+     509/    132F : 32 FB 3F            		ld	(curbyte), a	; current value	in external RAM
+     510/    1332 : DD 21 90 0B         		ld	ix, 0B90h
+     511/    1336 : 26 08               		ld	h, 8
+     512/    1338 : CD B8 12            		call	plotcol		; zeichnet (H) Zeilen lange vertikale Linie ab (IX)
+     513/    133B : DD 21 92 09         		ld	ix, 992h
+     514/    133F : 26 27               		ld	h, 39
+     515/    1341 : CD B8 12            		call	plotcol		; zeichnet (H) Zeilen lange vertikale Linie ab (IX)
+     516/    1344 : DD 21 94 07         		ld	ix, 794h
+     517/    1348 : 26 47               		ld	h, 71
+     518/    134A : CD B8 12            		call	plotcol		; zeichnet (H) Zeilen lange vertikale Linie ab (IX)
+     519/    134D : C9                  		ret
+     520/    134E :                     
+     521/    134E :                     
+     522/    134E :                     ;-----------------------------------------------------------------------------
+     523/    134E :                     ; Texte
+     524/    134E :                     ;-----------------------------------------------------------------------------
+     525/    134E :                     
+     526/    134E : 53 50 45 49 43 48   aSpeichertest:	db	"SPEICHERTEST\r\n",0
+                    45 52 54 45 53 54 
+                    0D 0A 00 
+     527/    135D : 0D 0A 41 44 52 45   aAdresse:	db	"\r\nADRESSE ",0
+                    53 53 45 20 00 
+     528/    1368 : 0D 0A 53 4F 4C 4C   aSollwert:	db	"\r\nSOLLWERT ",0
+                    57 45 52 54 20 00 
+     529/    1374 : 0D 0A 49 53 54 57   aIstwert:	db	"\r\nISTWERT ",0
+                    45 52 54 20 00 
+     530/    137F : 20 46 45 48 4C 45   aFehler:	db	" FEHLER",0
+                    52 00 
+ AS V1.42 Beta [Bld 55] - source file grtest.asm - page 10 - 7/23/2007 16:25:56
+
+
+     531/    1387 : 0D 41 4C 50 48 41   aAlphaSchirm:	db	"\rALPHA SCHIRM",0
+                    20 53 43 48 49 52 
+                    4D 00 
+     532/    1395 : 0D 47 52 41 46 49   aGrafikSchirm:	db	"\rGRAFIK SCHIRM",0
+                    4B 20 53 43 48 49 
+                    52 4D 00 
+     533/    13A4 : 0D 53 43 48 49 52   aSchirmumschalt:db	"\rSCHIRMUMSCHALTUNG\r\n",0
+                    4D 55 4D 53 43 48 
+                    41 4C 54 55 4E 47 
+                    0D 0A 00 
+     534/    13B9 : 0D 53 54 49 4D 55   aStimulusProg_:	db	"\rSTIMULUS PROG.",0
+                    4C 55 53 20 50 52 
+                    4F 47 2E 00 
+     535/    13C9 : 0D 54 45 53 54 50   aTestprogrammGr:db	"\rTESTPROGRAMM GRAFIK\r\n",0
+                    52 4F 47 52 41 4D 
+                    4D 20 47 52 41 46 
+                    49 4B 0D 0A 00 
+     536/    13E0 :                     
+     537/    13E0 :                     ;-----------------------------------------------------------------------------
+     538/    13E0 :                     ; Arbeitsspeicher
+     539/    13E0 :                     ;-----------------------------------------------------------------------------
+     540/    13E0 :                     
+     541/    3FFA :                     		org 3FFAh
+     542/    3FFA :                     
+     543/    3FFA :                     rdbyte:		ds 1			; gelesenes Byte
+     544/    3FFB :                     curbyte:	ds 1			; current value	in external RAM
+     545/    3FFC :                     cnterr:		ds 1			; Anzahl Fehler
+     546/    3FFD :                     		ds 1
+     547/    3FFE :                     curadr:		ds 1			; current address in external RAM
+     548/    3FFF :                     
+     549/    3FFF :                     
+     550/    3FFF :                     		end
+ AS V1.42 Beta [Bld 55] - source file grtest.asm - page 11 - 7/23/2007 16:25:56
+
+
+  symbol table (* = unused):
+  ------------------------
+
+ AADRESSE :                    135D C |  AALPHASCHIRM :                1387 C |
+ AFEHLER :                     137F C | *AGRAFIK :                     1027 C |
+ AGRAFIKSCHIRM :               1395 C |  AISTWERT :                    1374 C |
+ ANZFEHLER :                   11A8 C | *ARCHITECTURE :  i386-unknown-win32 - |
+ ASCHIRMUMSCHALT :             13A4 C |  ASOLLWERT :                   1368 C |
+ ASPEICHERTEST :               134E C | *ASPTEST :                     1003 C |
+*ASTIM :                       101B C |  ASTIMULUSPROG_ :              13B9 C |
+ ATESTPROGRAMMGR :             13C9 C | *AUMSCHALT :                   100F C |
+*BIGENDIAN :                      0 - | *BRANCHEXT :                      0 - |
+*CASESENSITIVE :                  0 - |  CLRMEM :                      1243 C |
+ CLRMEM1 :                     124E C |  CNTERR :                      3FFC C |
+*CONSTPI :        3.141592653589793 - |  CURADR :                      3FFE C |
+ CURBYTE :                     3FFB C | *DATE :                   7/23/2007 - |
+*FALSE :                          0 - |  FILLMEM1 :                    1260 C |
+ FILLMEM11 :                   126A C |  FILLMEM2 :                    1275 C |
+ FILLMEM21 :                   128C C | *FULLPMMU :                       1 - |
+ GRAFIK :                      10EF C |  GRAFIK1 :                     10F7 C |
+ GRAFIK2 :                     111C C |  GRAFIK3 :                     112A C |
+ GRAFIK4 :                     1138 C |  GRAFIK5 :                     1146 C |
+ GRAFIK6 :                     1152 C |  GRAFIK7 :                     116F C |
+*HAS64 :                          1 - | *HASDSP :                         0 - |
+*HASFPU :                         0 - | *HASPMMU :                        0 - |
+*INEXTMODE :                      0 - | *INLWORDMODE :                    0 - |
+*INMAXMODE :                      0 - | *INSRCMODE :                      0 - |
+*INSUPMODE :                      0 - | *LISTON :                         1 - |
+*MACEXP :                         1 - | *MOMCPU :                        80 - |
+*MOMCPUNAME :                   Z80 - | *NESTMAX :                      100 - |
+ OUTAX :                       11F5 C |  OUTHL :                       1200 C |
+ OUTHLX :                      11EA C |  OUTHX :                       1205 C |
+ OUTHX1 :                      120E C |  OUTHX2 :                      1216 C |
+*PACKING :                        0 - | *PADDING :                        1 - |
+ PLOTCOL :                     12B8 C |  PLOTCOL1 :                    12C1 C |
+ PLOTCOLS :                    130C C |  PLOTROW :                     12A3 C |
+ PLOTROW1 :                    12A9 C |  PLOTROWS :                    12D0 C |
+ PORT_0B8H :                     B8 - |  PORT_0B9H :                     B9 - |
+ PORT_0BAH :                     BA - |  RDBYTE :                      3FFA C |
+ READADR :                     118D C | *RELAXED :                        0 - |
+ SPTEST :                      1030 C |  SPTEST1 :                     1046 C |
+ STIM :                        10B8 C |  STIM1 :                       10CF C |
+ STOPTST1 :                    1237 C |  STOPTST2 :                    121F C |
+ STOPTST21 :                   1233 C |  STOPTST22 :                   1234 C |
+ TESTADR :                     119C C | *TIME :                    16:25:55 - |
+*TRUE :                           1 - |  UMSCHALT :                    1077 C |
+ UMSCHALT1 :                   107F C |  UMSCHALT2 :                   109C C |
+ UMSCHALT3 :                   10AA C | *VERSION :                     142F - |
+ WRITEADR :                    117E C |
+
+     91 symbols
+     32 unused symbols
+
+ AS V1.42 Beta [Bld 55] - source file grtest.asm - page 12 - 7/23/2007 16:25:56
+
+
+  codepages:
+  ----------
+
+STANDARD (0 changed characters)
+
+
+0.19 seconds assembly time
+
+    551 lines source file
+      2 passes
+      0 errors
+      0 warnings

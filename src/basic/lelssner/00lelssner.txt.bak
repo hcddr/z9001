@@ -1,0 +1,58 @@
+#------------------------------------------------------------------------------
+# 04.10.2009 18:04
+#------------------------------------------------------------------------------
+
+BASIC2
+BASIC2_W 	Basic mit Lutz-Elßner-Erweiterung
+
+s. http://hc-ddr.hucki.net/z9001/z9001_basic.htm, "Die Erweiterung von Lutz
+Elßner"
+
+#------------------------------------------------------------------------------
+# BASIC2
+#------------------------------------------------------------------------------
+
+Ein Nachteil des BASIC-Interpreters besteht in der eingeschränkten Nutzbarkeit 
+von Ein- und Ausgabekanälen. Eingabe ist nur von Tastatur oder Kassette, Ausgabe 
+nur auf Bildschirm (CONSOLE), Kassette oder Drucker (LIST) möglich. Bei der 
+Aufzeichnung auf Tonbandkassette wird ein Verfahren verwendet, das von dem im 
+Betriebssystem üblichen Verfahren abweicht (Typ/Name am Anfang der Daten, 
+undefinierter oder kein File-Control-Block), was sogar zu Verwechslungen von 
+BASIC- und sonstigen Dateien führt. Die veränderte E/A-Anpassung führt den 
+Datenaustausch grundsätzlich über die im Betriebssystem vorgesehenen logischen 
+Geräte CONST, READER, PUNCH und LIST durch. Diesen logischen Geräten können 
+durch ASGN-Kommando beliebige vorhandene physische Geräte zugewiesen werden. Das 
+gilt auch für das Kassetteninterface. Ein Programm, das die Blockung zu je 128 
+Byte für das Kassetteninterface realisiert, ist aus Speicherplatzgründen nur bei 
+Verzicht auf das BASIC-Kommando RENUM im Interpreter-Speicherbereich 
+unterzubringen. Es kann aber bei völliger Beibehaltung aller BASIC-Interpreter-
+Funktionen auch zusätzlich im Speicher bereitgestellt oder weggelassen werden, 
+wenn nicht mit (Analog-) Kassetteninterface gearbeitet werden soll. Dann ist ein 
+anderen externes Speichergerät zuzuweisen. (z. B. Digitalkassettengerät K5261).
+
+Die Anweisungen PRINT#, LIST#, LOAD#, INPUT# sind mit den Gerätenummern 0 ,2 ,3 
+und CLOAD, CLOAD*, CSAVE, CSAVE* mit beliebigen zugewiesenen Peripheriegeräten 
+funktionstüchtig, wobei die "BASIC-üblichen" und die "Betriebssystem- üblichen" 
+Aufzeichnungsverfahren anwendbar sind. Eine durchgehende Behandlung von OPEN und 
+CLOSE ist dabei gewährleistet. Bei der Anwendung von Treiberprogrammen für 
+serielle Schnittstellen (V24, IFSS) oder parallele Schnittstellen (CENTRONICS) 
+mit verschiedenen Protokollen ist Datenaustausch mit gleichen und anderen 
+Rechnern möglich.
+
+neuer Befehl RESET 
+TTY-Treiber initialisieren,
+READER, PUNCH wird TTY-Treiber "BASIC-TAPE 1.00" zugewiesen
+wird auch autom. bei BASIC-Kaltstart ausgeführt
+
+Kanäle in BASIC:
+
+Kanal #0 Eingabe Konsole := CONST
+Kanal #0 Ausgabe Konsole := CONST
+Kanal #1 Eingabe Magnetbandkassette :=	READER
+Kanal #1 Ausgabe Magnetbandkassette :=	PUNCH
+Kanal #2 Eingabe Drucker := READER
+Kanal #2 Ausgabe Drucker := LIST
+Kanal #3 Eingabe frei := READER
+Kanal #3 Ausgabe frei := PUNCH
+
+

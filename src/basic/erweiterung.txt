@@ -1,0 +1,604 @@
+------------------------------------------------------------------------------
+Offensichtlich gab es für den BASIC_Interpreter eine ausführliche Dokumentation
+der internen Arbeitsweise. Für die Erweiterung des Z9001-BASICS (also die obere
+2K) besitze ich ein paar (extrem schlecht lesbare) Seiten dieser Dokumentation
+als Thermokopien. Die folgenden Seite sind so gut es ging abgetippt. Wer das
+Dokument in seiner ganzen Pracht kennt oder sogar hat, möge sich bitte mit mir
+in Verbindung setzen.
+
+Volker Pohlers, Januar 2004
+------------------------------------------------------------------------------
+
+                                                                               5
+5. Erweiterung BASIC-Interpreter
+   -----------------------------
+
+Neu erarbeitet wurden die
+Befehle    PAUSE,
+           BEEP,
+           WINDOW,
+           BORDER,
+           INK,
+           PAPER,
+
+Funktionen   INKEY$,
+             JOYST,
+             STRING$,
+             INSTR,
+
+und die PRINT-Erweiterung
+
+             PRINT AT.
+
+In den Teil Erweiterung wurden übernommen
+
+             RENUMBER,
+             DELETE.
+
+Dafür sind im Kern enthalten das
+Kommando EDIT,
+ein allgemein verwendbarer Zeileneditor,
+die Befehle CSAVE*, CLOAD* für Zeichenkettenfelder,
+der Dateischutz.
+
+5.1. Schnittstellenbeschreibung
+     --------------------------
+
+Die Zielstellung bestand darin, den BASIC-Interpreter so zu
+erweitern, daß er auch ohne die Erweiterung arbeitsfähig ist. Der
+Anschluß der Erweiterung erfolgt übr 4 externe Adressen
+     für Befehle, Funktionen, PRINT-Erweiterung und
+     die Fortsetzung der Schlüsselwortliste.
+
+Für den ROM-BASIC-Interpreter sind das die Adressen
+
+     E003  für    Befehle                 ERW1
+     E006         PRINT-Eerweiterung      ERW2
+     E009         Funktionen              ERW3
+
+Dort steht jeweils ein Sprung zur die Schnittstelle realisieren-
+den Routine (JP ERWx).
+Auf E00C steht die Fortsetzungsadresse der Schlüsselwortliste
+(MNTAB).
+auf E00E ein Sprung zum IO-Verteiler (JP VERTEI).
+Die Schlüsselwortliste hat den gleichen prinzipiellen Aufbau wie
+die im Kern des BASIC-Interpreters; das erste Zeichen eines jeden
+Schlüsselworts enthält ein gesetzte Bit 7, das Ende der Liste
+wird gebildet durch 80H.
+Zu
+
+                                                                               6
+Die Erweiterung des BASIC-Interpreters wird dann vom Kern als
+vorhanden angesehen, wenn im Anlauf festgestellt wird, daß auf
+der Startadresse von ERW1 (auf E003 steht EXTGO1=JP  ERW1)
+eine 78H (LD A,B) steht. Dann wird das Flagbyte EXTFLG auf != 0
+gestellt, sonst auf = 0.
+
+Zugriffe auf die Erweiterung erfolgen
+
+  - bei der Vorübersetzung eingegebener Quellzeilen
+    (Prozedur SCANN, S. 23 Liste),
+    ist die Kernel-Liste zu Ende und EXTFLG = 0, dann wird die
+    Zeichenkette in der Erweiterungsliste gesucht.
+  - bei der Rückübersetzung nach dem kommando List
+    (Prozedur LIST, S. 31),
+    wird ein token gefunden, daß größer sit als da letzte der Kern-
+    Liste ist, so erfolgt die Rückübersetzung anhand der Erweite-
+    rungsliste, ist das token größer als das letzte der Erwite-
+    rungsliste, so ist die Rückübersetzung undefiniert (kein Ver-
+    hindern der Rückübersetzung, wen EXTFLG = 0).
+  - bei der Ermittlung der zu den Befehlen und Kommandos gehören-
+    den Startadressen
+    (Prozedur RUNMOD, S.34)
+    ist ein gefundenes token nicht aus der Grundliste und ist die
+    Erweiterung vorhanden, so erfolgt ein Ansprung von ERW1 über
+    EXTGO1, ansonsten ein Syntaxfehler (SN Error).
+  - bei der Ausführung des PRINT-Kommandos
+    (Prozedur PRINT, S.44)
+    durch die Befehle AT und INK / PAPER wird das PRINT-Kommando
+    modifiziert.
+    INK und PAPER verändern hier die entsprechenden Farben und
+    nach der Abarbeitung der PRINT-Anweisung (eindschließl. CR/LF)
+    werden die ursprünglichen Farben regeneriert.
+    Mit AT erfolgt die Ausgabe direkt auf Zeile und Spalte des
+    Bildschirms (in den Bildschirmwiederholspeicher, ohne Format-
+    steuerung durch , ; SPC und TAB); die Ausgabekonvertierung
+    ist die gleiche wie bei PRINT.
+  - beim Aufruf von Standardfunktionen
+    (Prozedur SNALY, S.53),
+    steht ein gefundenes token an der Stelle einer möglichen
+    Standardfunktion und ist die Erweiterung vorhanden, so wird
+    diese angesprungen über
+      JP   EXTGO3    zu    ERW3.
+
+
+5.2. Programmbeschreibung für Schnittstellenroutinen
+     -----------------------------------------------
+
+Routine ERW1
+------------
+
+Eingang:   B   :  token--LODTOK
+           HL  :  Zeiger auf token in Quellzeile
+
+Ausgang:   SP  :  Startadresse der Routine
+           HL  :  Zeiger auf token in Quellzeile
+
+                                                                               7
+Funktion: Die Routine testet zunächst, ob das token ein für
+          einen Befehl zulässiges token ist (RENUMBER bis
+          PAPER). Wenn es zulässig ist, wird ????????????????????
+          ADRTD1 die Startadresse berechnet und im Stack abge-
+          legt, sonst wird ein SN-Error gemeldet.
+          Die Befehlsroutine selbst wird über den Befehl RET
+          vom UP TCHAR gestartet, welches den Zeiger HL auf das
+          nächste signifikante Zeichen der Quellzeile stellt.
+
+
+Routine ERW2
+------------
+
+Eingang  :   HL   : Zeiger auf signifikantes Zeichen nach PRTTOK
+                    in der Quellzeile
+
+Ausgang  :   HL   : Zeiger auf Zeilen- bzw. Befehlsende in der
+                    Quellzeile
+
+Funktion :  ERW2 realisiert die Erweiterung der PRINT-Anweisung
+            um die lokal wirkenden Anweisungen INK und PAPER und
+            die Erweiterung zur PRINT AT-Anweisung.
+            Zunächst wird getestet, ob das Erweiterungstoken in
+            diesem Sinne zulässig ist und ob es schon aufgetreten
+            war
+            (PRINT INK3;"PAUL";INK5;"EMIL" ist unzulässig).
+            INK bzw. PAPER werden aufgerufen, die Routine PRINT2
+            des BASIC-Kerns wird gerufen und anschließend wird
+            die ursprüngliche Farbe regeneriert.
+            Im Fehlerfalle erfolgt die Meldung eines SN-Error.
+
+
+Routine ERW3
+------------
+
+Eingang  :   HL   : Zeiger auf erstes signifikantes Zeichen nach
+                    token
+             BC , SP  :  2*(token-SGNTOK)
+
+Ausgang  :   HL   : Zeiger auf signifikantes Zeichen nach token
+
+Funktion :  Zunächst erfolgt wieder ein Zulässigkeitstest für das
+            token, im Fehlerfalle folgt einm SN-Error. Dann wird
+            über die Adreßtabelle die Startadresse berechnet, ge-
+            kellert und gestartet über RET (JMP (HL) geht nicht,
+            da HL als Zeiger erhalten bleiben muß).
+
+                                                                               8
+5.3. Funktionsbeschreibung für neue ??????????????? Funktionen
+     ---------------------------------------------------------
+
+
+PAUSE
+-----
+
+Die PAUSE-Anweisunmg unterbricht die Ausführung eines Programmes.
+Ist ein Parameter angegeben, dann für n Zehntelsekunden. Ohne Pa-
+rameter erfolgt die Weiterarbeit nach Betätigen der Taste CONT,
+Mit CONT kann auch die Weiterarbeit veranlaßt werden, wenn ein
+Parameter angegeben, die Pausenzeit aber noch nicht verstrichen
+ist.
+Ablaufplan s.S.14
+
+
+BEEP
+----
+
+Mit der Anweisung BEEP wird ein Ton über den im Heimcomputer ein-
+?????????????????????? durch Ausgabe von CTRL G an die Konsole).
+Die Prozedur BEEP ist für die Benutzung von ??????????
+reitet (Musikmodul). Aus Speicherplatzgründen ist das in dieser
+Erweiterung nicht ausgeführt.
+BEEP mit Parametern erzeugt deshalb noch nichts.
+Ablaufplan s.S.15
+
+WINDOW i,j,k,l
+---------------
+
+Mit dieser Anweisung wird ein Bildausschnitt auf dem Bildschirm
+festgelegt, in dem sämtliche PRINT-Ausgaben (nicht PRINT AT) und
+Eingabeaufforderungen erscheinen.
+
+i: erste Zeile des Fensters
+j: letzte Zeile       "
+k: erste Spalte       "
+l: letzte Spalte      "
+
+WINDOW ist gleich WINDOW 0,23,0,39
+
+Ablaufplan s.S.16
+
+
+BORDER
+------
+
+Mit dieser Anweisung wird die Farbe des Bildschirmrandes festge-
+legt         i =  1   schwarz
+                  2   rot
+                  3   grün
+                  4   gelb
+                  5   blau
+                  6   purpur
+                  7   zyan
+                  8   weiß
+Der entsprechende Farbcode (s. Quellprogramm) wird direkt auf
+den PIO-Port 136 ausgegeben.
+Ablaufplan s.S.17
+
+                                                                               9
+INK i
+-----
+
+legt die Vordergrundfarbe für alle nachfolgenden auszugebenden
+Zeichen fest.
+
+
+PAPER i
+-------
+
+Die Hintergrundfarbe.
+Die Farbcodierung entspricht BORDER.
+Ablaufplan s.S.17
+
+
+INKEY$
+------
+
+Diese Funktion dient der Ermittlung einer Tastenbetätigung, die
+während der Programmabarbeitung und ohne deren Unterbrechung
+erfolgte. Der gelieferte Funktionswert ist eine Zeichenkette der
+Länge 0 wenn keine Taste betätigt wurde, der Länge 1 nach Tasten-
+betätigung. Die Zeichenkette enthält dann das zur Taste äquiva-
+lente Zeichen, auch nichtdarstellbare Zeichen sind möglich
+(1...1FH).
+Die Funktion INKEY$ nutzt die Routine CI des Interpreter-Kernes
+für Tastatureingaben.
+Ablaufplan s.S.18
+
+
+JOYST (i)
+---------
+
+Diese Funktion dient zur Ermittlung der Spielhebelstellung
+(i=1: Spielhebel1, i=2: Spielhebel2).
+Der gelieferte Funktionswert ist ein numerischer Wert zwischen
+0 (Grundstellung) und 16 (Taste).
+
+		       --------
+                       |  16  |
+                       --------
+
+                          8
+                      9   ^   10
+                        \ | /
+                   1 <----|----> 2
+                        / | \
+                      5   v   6
+                          4
+
+Die Routine zur Funktion JOYST nutzt den Monitorruf GSTICK
+(s. Monitorbeschreibung).
+Ablaufplan s.S.19
+
+
+                                                                              10
+STRING$ (i,j$)
+--------------
+
+Die Funktion liefert eine Zeichenkette, die durch i-fache Wie-
+derholung des Zeichenkettenausdrucks j$ entsteht. i kann Werte
+zwischen 0 und 255 (einschließlich) annehmen. Der Zeichenket-
+tenausdruck, der durch die Funktion STRING$ geliefert wird,
+?????? höchstens 255 byte lang sein.STRING$ benutzt folgende
+Funktionen des Interpreterkernes (wesentliche) für
+
+         ARGVL1             Parameter 1 übernehmen
+         SNALY              Parameter 2 übernehmen
+         LEN1               Länge und Adresse Parameter 2 besti
+         STROP              Platz im Stringpool reservieren
+         SADTB1
+         STRMV1             String eintragen in Stringpool
+         STRZS3
+
+Ablaufplan s.S.20
+
+
+INSTR (x$,y$)
+-------------
+
+Diese Anweisung liefert die Position des ersten Auftretens des
+Zeichenkettenausdruckes x$ im Zeichenkettenausdruck y$.
+Ist x$ nicht in y$ enthalten, so den Wert 0.
+Der Funktionswert ist ein numerischer Wert zwischen 0 und 255.
+INSTR nutzt die Routinen SNALY und LEN1 zur Parameterübernahme.
+(s.o.).
+Ablaufplan s.S.21
+
+
+PRINT AT
+--------
+
+Format:
+
+PRINT INK-Anweisung ,PAPER-Anweisung ;
+
+      AT (Zeile,Spalte);Ausdruck ,Ausdruck ...
+
+Die angegebenen Ausdrücke werden auf dem Bildschirm an der durch
+Zeile und Spalte festgelegten Position hintereinander angezeigt.
+Die Parameter Zeile (0 bis 23) und Spalte (0 bis 39) sind
+ganzzahlige Ausdrücke.
+in der PRINT AT-Anweisung wird keine Druckformatierung vorgenom-
+men, d.h. die Funktionen SPC und TAB sind nicht erlaubt und das
+Komma nur Trennzeichen zwischen den Ausdrücken.
+PRINT AT beeinflußt nicht die Kursorposition, sondern schreibt
+direkt in Bildwiederhol - und Farbattributspeicher.
+Dabei kann auch das Zeichen auf der Kursorposition überschrieben
+werden.
+?????????????????????????????????????????????????????????????????
+zeichen) führt das zu einem möglichen Löschen des mit ???????
+auf der Kursorposition geschriebenen Zeichens nach Befehlen PRINT
+und WINDOW (evtl. mehrer bei PRINT SPC bzw. PRINT TAB).
+
+
+                                                                              11
+???????????????????????????????????????????????
+PRINT AT arbeitet bei der Ausgabekonvertierung analog zu PRINT
+(vergl. ERWEI.HC Seite 26/27, BASIC.HC Seite 44/45).
+Ablauf s.S.23
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                                                              12
+
+5.? Die IO-Schnittstelle
+
+Mit der IO-Schnittstelle des BASIC-Interpreters können jeweils
+Ein- und Ausgabekanäle bedient werden. Der Interpreter benötigt
+mindestens die Konsolenein- und ausgabe.
+Alle Ein- und Ausgaben über die Schnittstelle erfolgen zeichen-
+weise. Blockungen (z. Bsp. Kassette und Drucker) sind vom
+jeweiligen Treiberprogramm zu realisieren.
+?????????????? führt der Interpreter selbst aus (???????
+???????????? auf Konsolenausgabe)
+Das zu übertragende Zeichen steht entweder in den Registern A
+und D oder wird in diesen erwartet, Die Kanalinformation steht
+in Register E.
+
+Belegung des E- Registers
+
+    bit
+    0           0   - Eingabekanal
+                 1    -Ausgabekanal
+    1 \          00   - Konsolenkanal
+    2 /          01   - Magnetbandkassette
+                 10   - Drucker
+                 11   - frei
+    3                   Initialisierungsbit
+    4            0    - E/A im ASCII-Code
+                 1    - E/A im internen Code
+    5            1    - Rücksprung zum Steuerprogramm
+    6                   Endebit
+    7                   immediate-return-bit
+    
+- Das Initialsierungsbit wird jeweils bei der Ein- oder Ausgabe
+  des ersten Zeichens auf den benötigten Kanal gesetzt. Es muß im
+  Treiberprogramm rückgesetzt werden.
+  
+- Das Endebit wird gesetzt
+  mit der Ausgabe des letzten Zeichens oder
+  nach der Eingabe des letzten Zeichens (es erfolgt dann, nach
+  dem letzten Zeichen, nochmal ein Ansprung der IO-Schnittstelle
+  mit gesetztem Endebit)
+  
+- Für die Konsolenkanäle werden Initialsierungs- und Endebit
+  nicht gesetzt.
+
+- Bei den Kommandos CSAVE, CSAVE*, CLOAD und CLOAD* erfolgt der
+  Datenaustausch im internen Code, bit 7 ist also nicht Paritäts-
+  bit und darf deshalb nicht verändert werden.
+  Das bit4 ist in diesen Fällen auf 1 gesetzt, sonst auf 0.
+  Der Datenaustausch läuft dabei über Kanal1 (Magnetbandkasset-
+  te).
+  
+- Das immediate-return-bit wird gesetzt, wenn der Status des Kon-
+  soleneingabekanals getestet werden soll (Vorliegen einer Einga-
+  be). Liegt eine Eingabe vor, so ist das Zeichen übergeben wor-
+  den im Register A und das IRB ist rückzusetzen. Das Zeichen muß
+  aber im Treiberpuffer stehen bleiben und kann mit dem nächsten
+  IO-Ruf angefordert werden. Liegt keine Eingabe vor, so bleibt
+  das IRB gesetzt.
+
+                                                                              13
+- Ist bit 5 gesetzt, so erfolgt ein Rücksprung zum Steuerprogramm
+  (Befehl BYE)
+
+- Außerhalb des BASIC-Interpreters ist ein Verteilerprogramm zu
+  realisieren (Start auf 0E00EH, ROM-Variante), das entspre-
+  chend Register E die Treiber für die Kanäle anspricht.
+  
+- Das Verteilerprogramm und die Treiber dürfen keine Register
+  außer A,D und E verändern. Der Rücksprung in den BASIC-Inter-
+  preter erfolgt über RET.
+  
+
+5.6. Dateischutz
+----------------
+
+Der BASIC-Interpreter verarbeitet 3 Dateitypen
+
+für   - Programme in interner Codierung (CSAVE/CLOAD)
+
+      - Programme in ASCII-Code         (LIST/LOAD)
+      
+      - Felder                          (CSAVE*/CLOAD*)
+      
+und diese Dateien können entweder ungeschützt oder geschützt
+sein.
+Es gelten folgende Dateitypen:
+
+                     |   ungeschützt        |  geschützt
+----------------------------------------------------------
+                     |                      |
+CSAVE                |     0D3H           |    0D7H
+CLOAD                |     0D4H           |    0D8H
+LIST                 |     0D5H           |    0D9H
+
+Dateien werden normalerweise als ungeschützte Dateien ausgege-
+ben, wenn vor dem Ausgabebefehl das Flagbyte DATBYT auf = 0 ge-
+gestellt wird, dann als geschützte. Nach jeder Ausgabe einer
+geschützten Datei steht DATBYT wieder auf Null.
+Bei einer Dateieingabe wird die Datei immer mit dem ungeschützten
+Dateityp angefordert. Wenn die angeforderte eine geschützte ist
+(Anforderung mit Typ D3, name1; Anlieferung mit Typ D7,name1)
+wird die Datei als gesuchte akzeptiert und das Flagbyte DATFLG
+wird = 0 gestellt, bei ungeschützten Dateien bleibt DATFLG
+unverändert. Das Setzen von DATFLG erfolgt außerhalb des
+BASIC-Interpreters, da nur dort der ORG-Block der Datei ausgewer-
+tet wird.
+Ist DATFLG = 0, so werden die Kommandos LIST, CSAVE und EDIT
+mit ERROR abgelehnt.
+DATFLG wird auf Null gesetzt bei Neustart des BASIC-Interpreters
+und nach dem Kommando NEW.
+
+
+------------------------------------------------------------------------------
+
+handschriftliche Notizen (vp):
+
+Erweiterung des BASIC-Interpreters
+
+		ORG	0E003H
+	EXTGO1:	JMP	ERW1			Bfehle
+	EXTGO2:	JMP	ERW2			Printerweiterung
+	EXTGO3:	JMP	ERW3			Standardfunktionen
+	EXTTAB:	JMP	VERTEI			Beginn der Tabelle d. zus. Schlüsselworte
+
+E011	MNTAB:	DB	'I'+80H			;D5
+		DB	'NKEY$'
+	IKEYTOK:EQU	0D5H			;Token für INKEY$
+		...
+		DB	'A'+80H			;E1
+		DB	'T'
+	ATTOK:	EQU	0E1H
+E055		DB	80H
+
+E056	ADRTB2:	DA	INKEY
+		...
+		DA	INSTR
+E05E	ADRTAB1:DA	RENUM
+		...
+E06E		DA	AT
+
+E070	ERW1:	; E: (B)    TOKEN-LODTOK	; 0D0H
+		     (HL)   AUF TOKEN
+		  A: ((SP)) STARDTADR. ROUTINE
+		     (HL)   AUF TOKEN
+		
+		LD	A, B
+		SUB	RENTOK-LOADTOK		; zulässig?
+		JRC	ERR1-#
+		CMP	ATTOK-RENTOK+1
+		JRNC	ERR1-#
+		;
+		RLCA				; Adr. berechnen
+		LD	C, A
+		LD	B, 0
+		EX	DE, HL
+		LD	HL, ADRTAB1
+		ADD	HL, BC
+		LD	C, M
+		INC	HL
+		LD	B,M
+		PUSH	BC
+		EX	DE, HL
+		;
+E087		JMP	TCHAR			; Start d. Routine über RET aus TCHAR
+
+	ERW2:	; E: (HL)    auf signifikantes Zeichen nach PRTTOK
+		             wenn PRTFLG <> 0 dann JMP SNER
+		  A: (HL)    auf Zeilenende
+	
+		LD	A, (HL)
+		CMP	INKTOK			0DFH
+		RC				;kein Erweiterungstoken
+		CMP	ATTOK+1
+		RNC
+		;
+		...
+
+E0E0	ERR1:	JMP	SNER
+
+E0E8	ERW3:	; E: (HL)    auf signifikantes Zeichen nach TOKEN
+		     (BC) = ((SP))  (TOKEN-SGNTOK)*2
+		  A: (HL)    auf signifikantes Zeichen nach TOKEN
+	
+		LD	A, C			; zulässig?
+		SUB	IKETOK-SGNTOK+IKETOK-SGNTOK
+		JRC	ERR1-#
+		CMP	INSTOK-IKETOK+INSTOK-IKETOK
+		JPNC	ERR1			; nein
+		;
+		EX	DE, HL
+		LD	BC, ADRTAB2
+		POP	HL
+		ADD	HL, BC
+		LD	C, M
+		INC	HL
+		LD	H, M
+		LD	L, C
+		PUSH	HL
+		EX	DE, HL
+E0FF		RET				; Ansprung zur Routine
+
+
+	Parameter holen durch CALL ARGVL1	(
+
+E322		CALL	TCHAR1			; Parameter vorhanden?
+		JRZ	nn			; nein
+		CALL	ARGVL1
+		PUSH	AF			; in A Parameter
+		CALL	CPCOMM
+		CALL	ARGVL1
+		...
+		CALL	ARGVL1			; Parameter in A bzw. auf Stack
+		
+E419 	in Fkt. durch
+		CALL	SNALY6
+		CALL	CPCOMM
+
