@@ -1,0 +1,17 @@
+;-------------------------------------------------------------------------------	
+; Kommunikation mit SD-Modul
+;-------------------------------------------------------------------------------	
+
+; dummy für JKC-Emu-Tests
+
+; User-PIO
+PIO1BD		EQU	89H		; PIO1 B Daten Anwenderport
+PIO1BS		EQU	8BH		; PIO1 B Kommando Anwenderport
+
+sdinit:		ret
+mode_in:	ret
+getbyte:	ld	a, 0Dh
+		ret
+mode_out:	ret
+outbyte:	ret
+

@@ -1,0 +1,999 @@
+;      Systembeschreibung
+;
+;    Aufruf
+;
+; Das  Assemblersystem wird vom Betriebssystem aus in der im Anhang  zum
+; jeweiligen Rechnertyp angegebenen Form aufgerufen. Der Text wird dabei
+; nicht   geloescht.   Die  Zeiger  auf  den  Objektpuffer  werden  aber
+; initialisiert,  so  dass das Objektprogramm zwar noch  getestet,  aber
+; nicht mehr auf Kassette aufgenommen werden kann.
+;
+;    Das Anfangsmenue
+;
+; Das  Anfangsmenue  zeigt  die  verfuegbaren  Funktionen  an.   Es  hat
+; folgendes Aussehen:
+;
+;           U880-Macro-Assembler
+;           (C) Jochen Roedenbeck 1988
+;
+;           Work file:
+;
+;           Load       Edit   Save        Quit
+;           Assemble   Run    saVe-code   laBel
+;
+;           Text 00001 bytes (EFFFH...EFFFH)
+;           Free 52518 bytes (22D7H...EFFCH)
+;
+;           >_
+;
+; Durch   Druecken   des   jeweils   grosz   geschriebenen   Buchstabens
+; (W,L,E,S,Q,A,R,V,B aber nicht T und F) wird die entsprechende Funktion
+; aufgerufen.  Ein Druecken der ENTER-Taste ist nicht erforderlich. Wird
+; eine  Taste gedrueckt,  zu der keine Menuefunktion gehoert,  wird  das
+; Menue neu und aktualisiert angezeigt.  Sonst werden die Angaben  nicht
+; aktualisiert. Der Bildschirm arbeitet im Scrollmodus.
+; Hinter  "Work  file:" steht der Dateiname des Quelltextes,  falls  ein
+; Text  existiert.  Hinter "Text:" wird die Laenge des  Quelltextes  und
+; seine Lage im Speicher, hinter "Free:" der freie Platz angezeigt.
+;
+;    Eingaben
+;
+; An  verschiedenen  Stellen sind Eingaben von  Dateinamen,  numerischen
+; Ausdruecken oder Zeichenketten erforderlich.  Das Folgende gilt  nicht
+; fuer  das  Veraendern  des Textes in der Funktion E  (Edit).  Es  wird
+; jeweils angezeigt,  was fuer eine Eingabe erwartet wird.  Das  Zeichen
+; "_"  (Unterstreichstrich) kennzeichnet die aktuelle Eingabestelle,  an
+; die  das eingegebene Zeichen gelangt.  Durch DEL und CTRL-H  wird  das
+; jeweils  letzte Zeichen geloescht,  und die Eingabestelle rueckt  nach
+; links. Nach CTRL-P wird das naechste Zeichen als Zeichen mit gesetztem
+; Bit 7 (invers dargestellt) betrachtet.  Ist es ein CTRL-Zeichen,  wird
+; es   nicht  als  Steuerzeichen,   sondern  als  einzugebendes  Zeichen
+; betrachtet.  Auf  diesem Wege kann die eingegebene  Zeichenkette  auch
+; CTRL-Zeichen  enthalten.  Diese  Moeglichkeit sollte aber nur bei  den
+; Such- und  Austauschkommandos  des  Editors  Verwendung  finden.   Die
+; Eingabe wird durch ENTER, CTRL-M oder CTRL-J abgeschlossen.
+; Dateinamen:  Dateinamen koennen bis zu 8 Zeichen umfassen. Sie duerfen
+;      das    Zeichen   "."   nicht   enthalten.    Die    erforderliche
+;      Namenserweiterung   (Dateityp   .ASM  oder  .COM)   wird   intern
+;      angehaengt.  Vor  dem  Dateinamen kann eine "Laufwerksangabe"  in
+;      Form  eines  Buchstabens  A...O und  danach  eines  Doppelpunktes
+;      stehen.
+; Numerische Ausdruecke:  Als numerische Ausdruecke sind alle Ausdruecke
+;      zulaessig,  die  auch als Direktoperanden im Quelltext  vorkommen
+;      koennen.  Insbesondere  koennen auch die im Text definierten  und
+;      beim   Assemblieren   in   die   Markentabelle   (Label    table)
+;      eingetragenen  Labels  verwendet werden.  Die Markentabelle  wird
+;      durch das Editieren des Textes nicht zerstoert,  sondern erst bei
+;      erneutem Assemblieren ueberschrieben.
+;
+;    Taste W: Work file
+;
+; Die  Funktion  dient  der  Eingabe  des  Namens  der   Quelltextdatei.
+; Existiert schon ein Text,  wird gefragt,  ob er geloescht werden soll.
+; Die  Frage ist durch Druecken der Tasten "Y" oder "N" zu  beantworten.
+; Andere Tastendruecke werden zwar angezeigt,  haben aber keine Wirkung.
+; Anschlieszend  wird zur Eingabe des Dateinamens aufgefordert.  Ist die
+; Eingabe  unrichtig,  wird sie ignoriert.  Existierte noch  kein  Text,
+; werden der Textpuffer und die Markentabelle initialisiert.
+;
+;   Taste L: Load
+;
+; Es  wird der durch die Funktion W benannte Quelltext von der  Kassette
+; geladen.  Ein  ewentuell  im  Speicher vorhandener  Text  wird  vorher
+; geloescht.  Wurde  kein Quelltextname eingegeben,  wird ein beliebiger
+; Text  (unabhaengig  von seinem Namen) geladen.  Dessen Name  wird  als
+; Quelltextname  zugewiesen.  Nachdem  die  zu  ladende  Datei  auf  der
+; Kassette  erkannt wurde,  wird "Loading" und der Dateiname  angezeigt.
+; Bei Ladefehlern wird "Loading error" angezeigt.
+;
+;   Taste S: Save
+;
+; Mit  dieser  Funktion wird der Quelltext unter seinem  Namen  auf  der
+; Kassette abgespeichert.  Existiert kein Text, wird "Work file does not
+; exist"  angezeigt.   Anderenfalls  wird  "Saving"  und  der  Dateiname
+; angezeigt. Bei Fehlern wird "Saving error" angezeigt.
+;
+;   Taste V: saVe-code
+;
+; Mit   der  Funktion  V  wird  das  Objektprogramm  auf  der   Kassette
+; abgespeichert.  Nach dem Assemblieren bis zum Aufruf der Funktion darf
+; das  System  nicht neu aufgerufen worden sein,  sonst wird eine  leere
+; Datei ausgegeben.
+; Es sind der Dateiname und gegebenenfalls die Startadresse  einzugeben.
+; Die  Datei  erhaelt  den  Dateityp .COM.  Als  Startadresse  kann  ein
+; beliebiger numerischer Ausdruck eingeben werden, der insbesondere auch
+; Labels enthalten kann.
+; Der Aufnahmevorgang laeuft wie bei der Funktion S (Save) ab.
+;
+;   Taste Q: Quit
+;
+; Mit  Q  erfolgt die Rueckkehr ins Betriebssystem.  Der  Text  und  die
+; Markentabelle  werden nicht geloescht und stehen so nach  Wiederaufruf
+; des  Systems  noch zur Verfuegung.  Es werden aber die Zeiger auf  den
+; Objektpuffer  beim Aufruf initialisiert,  so dass  das  Objektprogramm
+; nach Wiederaufruf zwar noch mit R (Run) getestet,  aber nicht mehr mit
+; V (saVe-code) auf Kassette gespeichert werden kann.
+;
+;   Taste R: Run
+;
+; Mit  der  Funktion  R  ist  ein  Testen  des  assemblierten  Programms
+; moeglich. Es ist die Startadresse einzugeben. Zusaetzlich koennen noch
+; Werte fuer die Register BC,  DE,  HL und A angegeben werden.  Sie sind
+; von der Startadresse durch ":" und untereinander durch "," zu trennen.
+; Es  koennen fuer die Startadresse wie fuer die Registerwerte beliebige
+; numerische Ausdruecke (also auch Labels) angegeben werden.
+; Vor  dem  Aufruf  des Programms wird geprueft,  ob  die  in  der  ORG-
+; Anweisung   angegebene  Adresse  mit  der  Adresse  des  Objektpuffers
+; uebereinstimmt,  anderenfalls  wird  die Fehlermeldung  "Invalid  ORG"
+; ausgegeben.  Das  Fehlen der Startadresse fuehrt zur Meldung  "Invalid
+; OP.".
+; Nach  Rueckkehr  aus  dem aufgerufenen  Programm  werden  die  Inhalte
+; saemtlicher  CPU-Register  angezeigt.  Auszerdem  wird  der  Interrupt
+; freigegeben.
+;
+;   Taste B: laBel
+;
+; Es ist ein numerischer Ausdruck einzugeben, dessen Wert dann berechnet
+; und angezeigt wird. Auf diesem Wege koennen die Werte einzelner Labels
+; bestimmt,  Umrechnungen  zwischen  dezimalen und hexadezimalen  Zahlen
+; sowie  kleinere Berechnungen  durchgefuehrt  werden.  (vgl.  Abschnitt
+; numerische Ausdruecke)
+;
+;   Taste E: Edit
+;
+; Mit  E  erfolgt  der Uebergang in den  Editormodus.  Wurde  noch  kein
+; Workfile-Name  zugewiesen,   wird  danach  gefragt.   Der  Editor  ist
+; bildschirmorientiert. Seine Steuerung erfolgt mittels der CTRL-Zeichen
+; (im Folgenden durch ^ vor dem Buchstaben gekennzeichnet).  Nach ^Q und
+; ^K ist ein zweites Zeichen erforderlich. Hierbei sind das CTRL-Zeichen
+; und  der entsprechende Buchstabe gleichwertig.  Keine Funktion nach ^Q
+; und ^K wird durch Druecken der Leertaste (SPACE) erreicht.
+; In der obersten Zeile des Bildschirms wird eine Statuszeile angezeigt.
+; Sie  enthaelt  Zeilen- und Spaltennummer des Cursors,  die Angabe  des
+; Eingabemodus  (INSERT - Einfuegen,  OVERW.  - Ueberschreiben) und  den
+; Namen der Quelltextdatei.
+; Die Meldung "Invalid OP." beim Editieren deutet auf eine Beschaedigung
+; des Quelltextes, z.B. durch das Testen fehlerhafter Programme, hin. In
+; diesem  Fall  sollten  der Assembler und der  Quelltext  neu  von  der
+; Kassette geladen werden.
+; Der  Text  wird intern in komprimierter Form  abgespeichert.  Nur  die
+; Zeile,  in  der  sich der Cursor befindet,  ist im Klartext  in  einem
+; Eingabepuffer   enthalten.   Deshalb  werden  die  Zeilen  automatisch
+; tabelliert,  wenn  der Cursor die Zeile verlaesst.  Fuer  die  Eingabe
+; gelten folgende Regeln:
+; - Kommentarzeile:
+;   Kommentarzeilen  beginnen  mit dem Zeichen  ";"  (Semikolon).  Davor
+;   duerfen  keine Leerzeichen stehen.  Danach koennen beliebige Zeichen
+;   folgen.   Folgt  dem  Semikolon  ein  Punkt,   wird  die  Zeile  als
+;   Drucksteuerzeile interpretiert.
+; - Programmzeile:
+;   1. ggf.  ein Label, beginnend mit einem Buchstaben, sonst Buchstaben
+;      und Ziffern,  normalerweise max.  5 Zeichen. Mehr Zeichen fuehren
+;      nicht zu Fehlern, sondern stoeren nur das Bild. Labels sind nicht
+;      durch Doppelpunkt abzuschlieszen.
+;   2. ein  oder  mehrere  Leerzeichen  zur  Trennung.  Die  Anzahl  ist
+;      beliebig.   Steht  kein  Label,  beginnt  die  Zeile  mit  diesen
+;      Leerzeichen.
+;   3. Befehl,  normalerweise max. 4 Zeichen. Mehr Zeichen fuehren nicht
+;      zu Fehlern, sondern stoeren nur das Bild.
+;   4. ein oder mehrere Leerzeichen, wenn ein Operand folgt.
+;   5. ggf. Operand
+;   6. ggf.  Kommentar,  beginnend  mit  Semikolon.  Vor  dem  Semikolon
+;      koennen noch Leerzeichen stehen.
+; Der  Eingabepuffer hat eine Breite von 80 Zeichen.  Davon werden  aber
+; nur  so viele Zeichen angezeigt,  wie in eine Bildschirmzeile  passen.
+; Zeichen,  die ueber den rechten Rand hinausgeschoben  werden,  bleiben
+; also erhalten, obwohl sie nicht mehr sichtbar sind.
+; Die CTRL-Zeichen haben folgende Wirkungen:
+; Cursor-Steuerung:
+; ^A   Cursor um ein Wort nach links, auch ueber Zeilengrenzen hinweg
+; ^F   Cursor um ein Wort nach rechts, auch ueber Zeilengrenzen hinweg
+; ^S   Cursor um ein Zeichen nach links
+; ^D   Cursor um ein Zeichen nach rechts
+; ^E   Cursor um eine Zeile nach oben
+; ^X   Cursor um eine Zeile nach unten
+; ^W   Rollen um eine Zeile zurueck (neu sichtbare Zeile oben)
+; ^Z   Rollen um eine Zeile vorwaerts (neu sichtbare Zeile unten)
+; ^R   Blaettern um ein Bild zurueck (Richtung Textanfang)
+; ^C   Blaetterb um ein Bild vorwaerts (Richtung Textende)
+; ^QS  Cursor an den Anfang der Zeile
+; ^QD  Cursor nach dem letzten Zeichen der Zeile
+; ^QE  Cursor in die oberste Zeile des Bildes
+; ^QX  Cursor in die unterste Zeile des Bildes
+; ^QR  Cursor auf das erste Zeichen des Textes
+; ^QC  Cursor nach dem letzten Zeichen des Textes
+; ^QB  Cursor auf das erste Zeichen des markierten Blockes
+; ^QK  Cursor auf das erste Zeichen nach dem markierten Block
+; Loeschen:
+; DEL  (auch ^H) Loeschen des Zeichens links vom Cursor
+; ^G   Loeschen des Zeichens, auf dem der Cursor steht
+; ^T   Loeschen des Wortes ab dem Zeichen, auf dem der Cursor steht
+; ^QY  Loeschen des Restes der Zeile von dem Zeichen, auf dem der Cursor
+;      steht, bis zum Zeilenende
+; ^QH  (auch  ^QDEL) Loeschen vom Zeilenanfang bis zu dem  Zeichen,  auf
+;      dem der Cursor steht
+; ^Y   Loeschen der Zeile, in der sich der Cursor befindet
+; Blockkommandos:
+; ^KB  Setzen  der Blockanfangsmarke (dargestellt durch <B>) an den  An-
+;      fang der Zeile, in der sich der Cursor befindet
+; ^KK  Setzen  der Blockendemarke (dargestellt durch <K>) an den  Anfang
+;      der Zeile, in der sich der Cursor befindet
+;      Es  kann  nur ein Block markiert werden.  Beim Setzen der  Marken
+;      wird aber nicht geprueft,  ob bereits eine gleichartige Marke  im
+;      Text  gesetzt ist.  Die Blockkommandos wirken dann auf den ersten
+;      markierten Block.
+;      Durch  nochmalige  Eingabe  von ^KB  bzw.  ^KK  koennen  einzelne
+;      Blockmarken wieder geloescht werden.
+; ^KH  Loeschen aller Blockmarken
+; ^KC  Kopieren  des Blockes vor die Zeile,  in der sich der Cursor  be-
+;      findet, die Marken wandern mit, der alte Block bleibt erhalten
+; ^KV  Verschieben  des Blockes vor die Zeile,  in der sich  der  Cursor
+;      befindet, die Marken wandern mit, der alte Block wird geloescht
+; ^KY  Loeschen des Blockes einschlieszlich der Marken
+; ^KR  Laden eines Blockes vom Band und Einfuegen vor die Zeile,  in der
+;      sich  der Cursor befindet,  wenn der Ladevorgang erfolgreich war.
+;      Es  wird  nach dem Dateinamen gefragt.  Er kann aber  muss  nicht
+;      eingegeben werden. Der Ladevorgang erfolgt wie bei der Funktion L
+;      (Load).  Der Block wird in den freien Platz vor der Markentabelle
+;      geladen und nach erfolgreichem Abschluss des Ladevorgangs in  den
+;      Text verschoben. Deshalb ist doppelt so viel freier Platz noetig,
+;      wie der zu ladende Block lang ist, anderenfalls kommt die Meldung
+;      "Out  of  memory".  In diesem Fall kann Platz geschaffen  werden,
+;      indem  der  Objektpuffer durch Verlassen und  Wiederaufrufen  des
+;      Systems geloescht wird. Der geladene Block wird nicht markiert.
+; ^KW  Abspeichern des markierten Blockes auf Kassette
+;      Es  wird nach dem Dateinamen gefragt.  Der Ausgabevorgang  laeuft
+;      wie bei der Funktion S (Save) ab. Der Block wird nicht geloescht.
+; ^KP  Drucken eines Blockes:  Es wird der markierte Block als Quelltext
+;      ausgedruckt.   Ist   kein  Block  markiert,   wird  das  Kommando
+;      ignoriert.
+;      Zunaechst   wird  "Options:"  angezeigt.   Es  kann   jetzt   ein
+;      Drucksteuerkommando  eingegeben werden.  Nach dessen  Ausfuehrung
+;      wird    wieder    "Options:"    angezeigt    usw.    Wird    kein
+;      Drucksteuerkommando  eingegeben (nur die ENTER-Taste  gedrueckt),
+;      beginnt  der  Ausdruck.   Die  Nummerierung  der  Zeilen  beginnt
+;      normalerweise  mit  01.  Soll die Seitennummerierung  fortgesetzt
+;      werden, ist das Kommando .PN ohne Angabe einer Zahl zu verwenden.
+;      Das  Ausdrucken  beginnt mit einer neuen Seite.  Das  Papier  ist
+;      deshalb entsprechend einzustellen. Soll das Drucken auf der alten
+;      Seite  fortgesetzt  werden,  sind die Kommandos .LN  und  .PN  zu
+;      geben.  Auf  jeder Seite wird oben der Name des Workfiles und die
+;      Seitennummer     angezeigt.     Der    Text    kann     ebenfalls
+;      Drucksteuerkommandos  enthalten.   Sie  sind  in  Kommentarzeilen
+;      anzugeben, z.B.:
+;      ;.PA
+;      Die  im  Text enthaltenen Drucksteuerkommandos wirken  auch  beim
+;      Ausdrucken  des Assemblerlistings bei der Funktion A  (Assemble).
+;      Folgende Kommandos koennen verwendet werden:
+;      .PA     Vorschub auf neue Seite
+;      .PN n   Seitennummer auf n setzen
+;      .PN     Initialisierung der Seitennummer auf 01 unterdruecken
+;      .LN n   Anzahl der Zeilen bis zum Seitenvorschub setzen
+;      .LN     Initialisierung auf Seitenanfang unterdruecken
+;      .PC n   Spaltenposition der Zeilennummer setzen
+;      .PO n   Druck um n Zeichen einruecken
+;      .PL n   Seitenlaenge (n Zeilen) setzen
+;      .PW1    Nach  jedem  Seitenvorschub wird der Druck  zum  Einlegen
+;              eines neuen Blattes unterbrochen.  Durch ^C oder ^U  wird
+;              das  Druckkommando abgebrochen,  bei jeder anderen  Taste
+;              wird das Drucken fortgesetzt.
+;      .PW0    Das Drucken wird nicht unterbrochen.
+;      Die  von  den jeweiligen Drucksteuerzeichen  eingestellten  Werte
+;      bleiben  erhalten (auszer Seitennummer und Anzahl der Zeilen  bis
+;      zum  naechsten  Seitenvorschub),  bis  das  Steuerzeichen  erneut
+;      auftritt.  Das  gilt  auch  ueber mehrere Aufrufe  von  ^KP  oder
+;      Ausdrucke des Assemblerlistings hinweg.
+; Such- und Austauschkommandos:
+; ^J   Es wird nach einem Label gefragt und der Cursor an den Anfang der
+;      Zeile gesetzt,  in der das Label definiert wird.  Auf diesem Wege
+;      lassen sich schnell Programmteile anhand des Labels,  mit dem sie
+;      aufgerufen werden,  finden.  Das Kommando kann folglich nicht mit
+;      ^L fortgesetzt werden.
+; ^QF  Suchen eines Textteiles:
+;      Es  ist die zu suchende  Zeichenfolge  einzugeben.  Anschlieszend
+;      wird gefragt,  ob das Zeichen nach der gefundenen Zeichenfolge im
+;      Text  ein Trennzeichen sein muss oder nicht.  Es ist "Y" oder "N"
+;      einzugeben.  Danach beginnt der Suchvorgang.  Ist er erfolgreich,
+;      wird  der Cursor auf den Anfang der gefundenen  Zeichenfolge  ge
+;      setzt, anderenfalls aendert sich die Lage des Cursors nicht.
+; ^QA  Suchen einer Zeichenfolge und Ersetzen durch eine andere:
+;      Zusaetzlich   zu   den  Eingaben  wie  bei  ^QF  ist   noch   die
+;      einzusetzende   Zeichenfolge   einzugeben.    Die   einzusetzende
+;      Zeichenfolge  kann  auch Zeilenendezeichen (Eingabe  durch  ^P^M)
+;      enthalten.  Nach den Eingaben beginnt der Suchvorgang.  Wurde die
+;      Zeichenfolge  gefunden,  wird der Cursor darauf gesetzt und  oben
+;      "Replace (Y/N)" angezeigt. Wird die Taste "Y" gedrueckt, wird die
+;      gefundene   durch   die   einzusetzende   Zeichenfolge   ersetzt,
+;      anderenfalls passiert nichts.  Anschlieszend steht der Cursor auf
+;      dem Anfang der gefundenen bzw. ersetzten Zeichenfolge und es kann
+;      normal editiert werden.
+; ^L   Wiederholen des letzten Such- bzw. Austauschkommandos:
+;      Es wird das letzte ^QF- bzw.  ^QA- Kommando wiederholt, ohne dass
+;      die  Zeichenketten  neu  eingegeben  werden  muessen.  Die  Suche
+;      beginnt  hier  nicht am Textanfang,  sondern nach  der  aktuellen
+;      Cursorposition (ab dem Zeichen rechts vom Cursor). Damit kann das
+;      naechste  Auftreten  der  zu  suchenden  Zeichenfolge   ermittelt
+;      werden.  Wurde  kein  erneutes  Auftreten  gefunden,  bleibt  die
+;      Cursorposition  unveraendert  und  das Kommando kann  nicht  mehr
+;      wiederholt werden.
+; Sonstige Kommandos:
+; ET   (auch ^M) Zeilenwechsel einfuegen
+; ^N   Zeilenwechsel  einfuegen,  wenn der Cursor nicht am  Zeilenanfang
+;      steht
+; ^V   Umschaltung zwischen Einfuege- und Ueberschreibmodus:  Bei INSERT
+;      werden  die Zeichen an der aktuellen  Cursorposition  eingefuegt,
+;      der Rest der Zeile rueckt nach rechts;  bei OVERW.  ueberschreibt
+;      das  eingegebene Zeichen das Zeichen,  auf dem der Cursor  steht.
+;      Der aktuell eingestellte Modus wird in der Statuszeile angezeigt.
+; ^P   Das  nach ^P eingegebene Zeichen wird mit gesetztem Bit 7 in  den
+;      Text eingetragen.  Die so eingegebenen Zeichen sind im Text durch
+;      inverse  oder anderweitig hervorgehobene Darstellung gekennzeich
+;      net. Sie duerfen nicht mit dem Cursor verwechselt werden. ^P darf
+;      nur in Operanden und Kommentaren verwendet werden.
+;      Achtung: Mit ^P koennen keine Steuerzeichen in den Text
+;               eingefuegt werden!
+; ^QL  Alle  Veraenderungen  in der Zeile,  seit sich der  Cursor  darin
+;      befindet  und  keine  Blockkommandos  aufgerufen  wurden,  werden
+;      rueckgaengig gemacht.
+; ^KD  Rueckkehr ins Anfangsmenue
+;
+;   Taste A: Assemble
+;
+; Mit   der   Funktion   wird  der  Assembler   aufgerufen.   Sind   die
+; Druckerprogramme installiert, wird "Print (Y/N)" angezeigt. Es ist "Y"
+; zu druecken,  wenn das Assemblerlisting ausgedruckt werden  soll.  Die
+; Nummerierung der Seiten beginnt mit 01.  Das Papier im Drucker ist auf
+; den  Anfang  der Seite einzustellen.  Sollen  diese  Initialisierungen
+; nicht ausgefuehrt werden, sind die entsprechenden Drucksteuerkommandos
+; (siehe  Editorkommando ^KP) in den Text einzufuegen.  Das Drucken kann
+; jederzeit durch Druecken einer Taste angehalten werden.  Hier wie auch
+; beim  Warten auf den Papierwechsel ist ein Abbruch  des  Assemblierens
+; mit CTRL-C oder CTRL-U moeglich.  Es wird die Meldung "Break" erzeugt.
+; Ein  Fortsetzen des Assembliervorganges ist durch Druecken irgendeiner
+; anderen Taste moeglich. Anschlieszend wird "Assembling" angezeigt. Das
+; Assemblieren erfolgt in zwei Durchlaeufen.  Im ersten wird die Marken
+; tabelle erstellt.  Eine ggf.  vorhandene Markentabelle wird zuvor  ge
+; loescht.  Die  Markentabelle wird im Speicher vor dem Quelltext  abge
+; legt.  Im  zweiten  Durchlauf wird das eigentliche Objektprogramm  er
+; zeugt.  Es wird im Objektpuffer abgespeichert.  Das Objektprogramm ist
+; nur dann im Objektpuffer lauffaehig und kann mit der Funktion R  (Run)
+; getestet werden,  wenn die in der ORG-Anweisung angegebene Adresse mit
+; der Adresse des Objektpuffers uebereinstimmt.  Dies kann durch "ORG #"
+; erreicht werden.  Das Objektprogramm wird aber in jedem Fall durch die
+; Funktion  V (saVe-code) so auf der Kassette abgespeichert,  dass es an
+; die durch die ORG-Anweisung bestimmte Adresse geladen wird.
+; Traten   beim  Assemblieren  Fehler  auf,   wird  eine  Fehlermeldung,
+; bestehend  aus  einer Fehlernummer und  einem  Fehlertext,  angezeigt.
+; Auszerdem  wird  "Press  any  key"  angezeigt.  Durch  Druecken  einer
+; beliebigen Taste wird der Editor aufgerufen,  und der Cursor steht  am
+; Anfang  der  Zeile,  in  der der Fehler auftrat.  Der  Text  kann  nun
+; korrigiert werden.
+; Nach  erfolgreichem Abschluss des Assembliervorgangs werden Laenge und
+; Adresslage  des  Objektprogramms  entsprechend den  Angaben  der  ORG-
+; Anweisung  (also  nicht  die  Lage  des  Objektpuffers,   in  dem  das
+; Objektprogramm  tatsaechlich abgespeichert ist) sowie die  Laenge  und
+; die  Lage  des  freien  Platzes  und  der  Markentabelle  im  Speicher
+; angezeigt.  Auszerdem  wird ein Label LENGTH erzeugt,  dessen Wert die
+; Laenge des erzeugten Objektprogramms ist.
+; Beim  Aufruf  des Systems werden die Zeiger auf den  Objektpuffer  neu
+; initialisiert,  das Objektprogramm aber nicht geloescht.  Es wird erst
+; bei erneutem Assemblieren ueberschrieben.
+;
+;  Befehlssatz
+;
+; Es werden die Z80-Mnemonics verwendet.  Labels werden vom Befehl durch
+; einen   oder  mehrere  Leerzeichen  getrennt.   Sie  sind  nicht   mit
+; Doppelpunkt  abzuschlieszen.   Die  Angabe  der  Flags  bei  bedingten
+; Sprungbefehlen erfolgt in der Operandenspalte.  Die Adresse ist  durch
+; Komma  getrennt anzuschlieszen.  Bei Relativspruengen (JR,  DJNZ) wird
+; der  angegebene Operand als Adresse interpretiert,  wenn er mit  einem
+; Label beginnt, und als Sprungdistanz, wenn er mit einer Zahl beginnt.
+; Die  im  normalen  Befehlssatz nicht aufgefuehrten  Befehle  fuer  den
+; hoeher- und  niederwertigen Teil der Indexregister  koennen  verwendet
+; werden. Hierbei ist XH und XL bzw. YH und YL zu schreiben. Die Befehle
+; CB 3B bis CB 37 werden durch SLAI gekennzeichnet.
+; Der Operand A bei 8-Bit-Operationen (ADD,  ADC, SUB, SBC, AND, OR, XOR
+; und CP) muss weggelassen werden,  in allen anderen Faellen ist er aber
+; zu  schreiben (z.B.  ADD B nicht ADD A,B aber LD A,B).  Fuer den durch
+; das  Register HL adressierten Speicherplatz ist (HL) ,  nicht M  ,  zu
+; schreiben.
+; Fuer EX AF,AF' ist EX AF zu verwenden. Der Sprung nach Adresse HL kann
+; JP HL oder JP (HL) geschrieben werden.  Die Ein/Ausgabebefehle sind IN
+; A,(n)  OUT  (n),A IN B,(C) OUT (C),B  usw.  zu  schreiben.  Saemtliche
+; Befehle  (auszer  Macros) sowie  Registerbezeichnungen  muessen  grosz
+; geschrieben werden.
+; Zeilen,  die  nur  Leerzeichen enthalten,  fuehren  zur  Fehlermeldung
+; "MACRO not defined".  Solche Zeilen sind zu loeschen.  Zeilen, die nur
+; aus  dem  Zeilenendezeichen bestehen (Cursor laesst sich in der  Zeile
+; nicht nach rechts und links verschieben), sind jedoch moeglich.
+;
+; Befehle:
+; ADC ADD AND BIT CALL CCF CP CPD CPI CPIR CPL DAA DEC DEFB DEFM DEFS
+; DEFW DI DJNZ EI EM END ENIF ELSE EQU EX EXX HALT IF IM0 IM1 IM2 IN
+; INC IND INDR INI INIR JP JR LD LDD LDDR LDI LDIR MCR NEG NOP OR ORG
+; OTDR OTIR OUT OUTD OUTI POP PUSH RES RET RETI RETN RL RLA RLC RLCA
+; RLD RR RRA RRC RRCA RRD RST SBC SCF SET SLA SLAI SRA SRL SUB XOR
+; Register- und Flagbezeichnungen:
+; B C D E H L (HL) A XH XL YH YL (IX (IY BC DE HL SP AF IX IY NZ Z NC
+; PO PE P M (C) I R (SP) (BC) (DE)
+;
+;  Pseudobefehle
+;
+; Zusaetzlich  verarbeitet  der  Assembler noch  die  folgenden  Pseudo
+; befehle:
+; EQU  Der  Befehl weist dem Label in der Labelspalte den Wert  zu,  den
+;      der  Operand hat.  Im Operanden verwendete Labels muessen  vorher
+;      definiert   sein.   Der   Befehl  fuegt  keine   Bytes   in   das
+;      Objektprogramm ein.
+;      Beispiel: M1    EQU  42H
+; ORG  Der Operand der ORG-Anweisung kennzeichnet die Adresse,  fuer die
+;      das  Objektprogramm  assembliert  wird.   Die  Werte  der  Labels
+;      beziehen  sich  auf diese Adresse.  Das Objektprogramm wird  beim
+;      Assemblieren   aber  nicht  an  diese  Adresse  sondern  in   den
+;      Objektpuffer geschrieben. Der Operand # bedeutet hier die Adresse
+;      des Objektpuffers, so dass mit "ORG #" assemblierte Programme mit
+;      der Funktion R (Run) getestet werden koennen.
+; END  Der  Befehl END kennzeichnet das Ende des Quelltextes.  Nach  dem
+;      END-Befehl stehende Zeilen werden nicht mitassembliert. Fehlt END
+;      im   Text,   wird  das  Assemblieren  nach  der   Erzeugung   der
+;      Markentabelle  mit der Meldung "No END-Instr."  abgebrochen.  Das
+;      dabei im Objektpuffer stehende Programm ist nicht lauffaehig.
+; DEFS Der  Befehl  fuegt in das Objektprogramm so viele Bytes  mit  dem
+;      Wert 00 ein, wie der Operand angibt.
+; DEFB Der  Befehl fuegt in das Objektprogramm ein Byte mit dem Wert des
+;      Operanden  ein.  Statt  DEFB kann bei der Eingabe  B  geschrieben
+;      werden.
+; DEFW Der  Befehl fuegt in das Objektprogramm zwei Bytes mit  dem  Wert
+;      (16  Bit) des Operanden ein.  Dabei wird zuerst der niederwertige
+;      Teil gespeichert (wie bei Befehlen mit  16-Bit-Operanden).  Statt
+;      DEFW kann bei der Eingabe W geschrieben werden.
+; DEFM Mit  dem  Befehl  koennen  Zeichenketten und  Bytefolgen  in  das
+;      Objektprogramm  eingefuegt werden.  Es koennen ein  oder  mehrere
+;      durch  Komma getrennte Operanden angegeben werden.  Die Operanden
+;      koennen in Anfuehrungszeichen eingeschlossene Zeichenketten  oder
+;      numerische Ausdruecke mit einem Wert von 00 bis 0FFH sein. In das
+;      Objektprogramm  werden die ASCII-Codes der Zeichen bzw,  der Wert
+;      des  Ausdrucks  eingetragen.   Anfuehrungszeichen  innerhalb  der
+;      Zeichenkette  sind  doppelt  zu  schreiben.  Mit  ^P  eingegebene
+;      Zeichen  (invers dargestellt) repraesentieren des ASCII-Code  mit
+;      gesetztem Bit 7. Inverse Anfuehrungszeichen sind nicht doppelt zu
+;      schreiben.
+;      Beispiele: DEFM "Text",0DH,0AH
+;                 DEFM ^M,^J,"abcdef",0
+; MCR  Mit dem Befehl wird die Macrodefinition eingeleitet.  Als Operand
+;      stehen  zunaechst  der Name des  Macrobefehls,  der  durch  einen
+;      Doppelpunkt  abgeschlossen wird,  und anschlieszend die Namen der
+;      formalen  Parameter,  die untereinander durch Kommata zu  trennen
+;      sind.  Der  Name des Macrobefehls kann jedes Zeichen  auszer  ":"
+;      enthalten.  Fuer  die  formalen Parameter gelten die Regeln  fuer
+;      Labels.
+; EM   Der Befehl EM kennzeichnet das Ende der Macrodefinition.  Er  hat
+;      keinen Operanden.
+; IF   Der nachfolgende Text bis zum Befehl ELSE oder ENIF wird nur dann
+;      assembliert,  wenn der Wert des Operanden nach IF ungleich 0 ist.
+; ELSE Der Befehl ELSE leitet die Alternative ein. Der zwischen ELSE und
+;      ENIF  stehende Text wird nur dann mit assembliert,  wenn der nach
+;      IF  stehende  Ausdruck gleich 0 ist.  Die Alternative  kann  auch
+;      fehlen. ELSE entfaellt dann.
+; ENIF Der  Befehl kennzeichnet das Ende des bedingt zu  assemblierenden
+;      Textteiles.
+;
+;  Macrodefinitionen
+;
+; Die  Definition  eines Macrobefehls kann an beliebiger Stelle im  Text
+; erfolgen. Macrobefehlsdefinitionen muessen nicht vor dem ersten Aufruf
+; des Macrobefehls stehen.
+; Die  Macrodefinition beginnt mit dem Pseudobefehl MCR.  Als  Operanden
+; stehen  der  Name des Macrobefehls und  die  formalen  Parameter.  Die
+; Bedeutung  der  formalen  Parameter  ist lokal,  so  dass  die  dafuer
+; verwendeten Namen unabhaengig davon im Programm vorkommen koennen.  In
+; der  Liste  der  formalen Parameter  nicht  enthaltene,  aber  in  der
+; Definition  verwendete  Labels  werden  als  im  uebergeordneten  Text
+; definiert  betrachtet.  Dem  Befehl  MCR folgt  die  Befehlsfolge  des
+; Macrobefehls,  die  durch den Befehl EM abgeschlossen wird.  Sie  darf
+; keine Macrobefehlsaufrufe enthalten.
+; Beim   Aufruf  des  Macrobefehls  durch  Angabe  des  Namens  in   der
+; Befehlsspalte  werden  die  formalen Paramter mit den Werten  der  als
+; Operanden  angefuehrten  aktuellen Parameter  (numerische  Ausdruecke)
+; belgegt.   Die   Zahl  der  formalen  und  aktuellen  Parameter   muss
+; uebereinstimmen.   In   das  Objektprogramm  wird  dann  die  in   der
+; Macrodefinition angefuehrte Befehlsfolge assembliert.
+; Beispiel: Mit der folgende Befehlsfolge wird das Macro MOVE definiert.
+;                 MCR  MOVE:SC,DEST,LEN
+;                 LD   HL,SC
+;                 LD   DE,DEST
+;                 LD   BC,LEN
+;                 LDIR
+;                 EM
+;           Der so definierte Macrobefehl kann nun aufgerufen werden,
+;           z.B.:
+;                 MOVE 1000H,5400H,32
+;           Damit wird an diese Stelle die oben angefuehrte Befehlsfolge
+;           mit den aktuelle Werten 1000H fuer SC,  5400H fuer DEST  und
+;           32 fuer LEN assembliert.
+;
+;  Bedingte Assemblierung
+;
+; Mit  Hilfe  der  Befehle  IF,  ELSE und  ENIF  koennen  Textabschnitte
+; eingeschlossen   werden,   die   nur  unter   bestimmten   Bedingungen
+; assembliert  werden.   Der  bedingt  zu  assemblierende  Textabschnitt
+; beginnt  mit  IF.  Der nachfolgende Text,  der durch  ELSE  oder  ENIF
+; abgeschlossen  wird,  wird  assembliert,  wenn  der  Operand  nach  IF
+; ungleich  0  ist.  Ist  ELSE vorhanden,  wird  anderenfalls  der  Text
+; zwischen ELSE und ENIF assembliert.  Ist ELSE nicht vorhanden, wird in
+; diesem Fall der Text zwischen IF und ENIF uebersprungen.
+; Der  Operand  nach IF kann ein beliebiger numerischer  Ausdruck  sein.
+; ELSE und ENIF haben keine Operanden.
+; IF-Befehle duerfen nicht verschachtelt werden.
+;
+;  Numerische Ausdruecke
+;
+; Fuer  numerische Ausdruecke (Direktoperanden im Quelltext,  Ausdruecke
+; bei  den  Funktionen  V (saVe-code),  R (Run) und  B  (laBel))  gelten
+; folgende Regeln:
+; Numerische Ausdruecke bestehen aus einem oder mehreren Operanden,  die
+; durch  jeweils eines der Operationszeichen +,  -,  * oder /  verbunden
+; sind.  Ein Ausdruck darf auszer mit einem Operanden auch mit + oder  -
+; beginnen.  Einschraenkungen  hinsichtlich der Zahl oder der  Anordnung
+; der Operanden bestehen nicht.  Der Ausdruck wird streng von links nach
+; rechts abgearbeitet. Prioritaeten gibt es nicht.
+;
+; Folgende Operanden sind moeglich:
+; Zahl:
+; Zahlen  beginnen mit einer Ziffer.  Anschlieszend koennen Ziffern  und
+; Buchstaben  stehen.  Zahlen,  die mit einer Ziffer enden,  werden  als
+; Dezimalzahlen betrachtet. Bei hexadezimalen Zahlen ist hinter die Zahl
+; ein "H", bei binaeren Zahlen ein "B" zu schreiben.
+; Label:
+; Labels beginnen mit einem Buchstaben. Anschlieszend koennen Buchstaben
+; und  Ziffern stehen.  Registernamen duerfen nicht als Label  verwendet
+; werden.
+; # oder $:
+; Doppelkreuz bzw.  Waehrungszeichen kennzeichnen die Adresse des gerade
+; zu assemblierenden Befehls. Dieser Operand hat den Wert, den ein Label
+; erhielte, das in derselben Zeile definiert wuerde.
+; "Zeichen"
+; Ein Zeichen in Anfuehrungszeichen repraesentiert den ASCII-Code dieses
+; Zeichens.  Stehen  zwei Zeichen zwischen den Anfuehrungszeichen,  wird
+; eine  16-Bit-Zahl gebildet,  deren niederwertiges Byte der  ASCII-Code
+; des  ersten  Zeichens und deren hoeherwertiges Byte  der  des  zweiten
+; Zeichens   ist.    Es   koennen   alle   Zeichen   verwendet   werden.
+; Anfuehrungszeichen  sind  doppelt  zu schreiben.  Mit  ^P  eingegebene
+; Zeichen  (invers  dargestellt)  repraesentieren  den  ASCII-Code   mit
+; gesetztem  Bit  7.  Inverse Anfuehrungszeichen sind nicht  doppelt  zu
+; schreiben.
+; ^Buchstabe
+; Das  Zeichen  "^" und danach ein Buchstabe kennzeichnet den  Code  des
+; entsprechenden CTRL-Zeichens (^A=01 usw.).
+; Funktionen:
+; Funktionen  sind  durch  einen Buchstaben,  gefolgt  vom  Klammer-auf-
+; Zeichen,  gekennzeichnet.  Danach steht ein numerischer Ausdruck,  das
+; Argument,   der  durch  das  Klammer-zu-Zeichen  abgeschlossen   wird.
+; Folgende Funktionen sind implementiert:
+; H( - (High)  Diese Funktion liefert den Wert der hoeherwertigen 8  Bit
+;      des Arguments.
+;      H(n):=INT(n/256)
+; L( - (Low)  Diese  Funktion liefert den Wert der niederwertigen 8  Bit
+;      des Arguments.
+;      L(n):=n-INT(n/256)*256
+; P( - (Peek)  Diese  Funktion liefert den Inhalt  des  Speicherplatzes,
+;      dessen Adresse das Argument angibt.
+; D( - (Deek) Diese Funktion liefert einen Wert, der sich aus dem Inhalt
+;      des   durch   das  Argument  adressierten   Speicherplatzes   als
+;      niederwertigem   und  dem  des  folgenden   Speicherplatzes   als
+;      hoeherwertigem Teil zusammensetzt.
+;      D(n):=P(n+1)*256+P(n)
+; Die  Funktionen P( und D( sind vor allem fuer den Gebrauch beim Testen
+; vorgesehen.
+; $.TEXT
+; Dieser  Operand  gibt die Adresse der Systemvariable an,  in  der  die
+; Adresse des Quelltextes abgespeichert ist.
+; $.OEND
+; Dieser  Operand  gibt die Adresse der Systemvariable an,  in  der  die
+; Adresse des Textpufferendes abgespeichert ist.
+; $.CONIN
+; Dieser  Operand  gibt  die  Adresse  des  Tastatureingabetreibers   im
+; betriebssystemabhaengigen Teil des Assemblersystems an.
+; $.CONOUT
+; Dieser  Operand  gibt  die Adresse  des  Bildschirmausgabetreibers  im
+; betriebssystemabhaengigen Teil des Assemblersystems an.
+; $.ANZ
+; Dieser   Operand  gibt  die  Adresse  des  Ausgabeunterprogramms   des
+; Assemblersystems an.  Das Zeichen ist im Register A zu uebergeben. Die
+; Register BC, DE, HL und AF werden nicht veraendert.
+;
+;    Systemvariablen
+;
+; Unmittelbar hinter der Sprungleiste befindet sich der Systemvariablen
+; bereich  des Assemblers.  Seine Lage laesst sich mit $.TEXT ermitteln.
+; Er hat folgenden Aufbau:
+VERSI 	DEFM "xx.xx.x_"; Versionsnummer
+;
+ERRSP 	DEFW 0		; Wert des Stackpointers beim Aufruf
+ERRNR 	DEFB 0		; Flags der Funktion A (Assemble)
+NXTK 	DEFW 0		; Zeiger fuer TABK
+TABK 	DEFS 7		; Zwischenspeicher beim Assemblieren
+MACR 	DEFW 0		; Rueckkehradresse beim Macroaufruf
+ELBLS 	DEFW 0		; Zwischenspeicher fuer LBLS
+LADR 	DEFW 0		; Adresse der gerade zu ass. Zeile
+OBOT 	DEFW 0		; Adresse des Objektpuffers
+OEND 	DEFW 0		; Adresse des ersten freien Bytes
+;    	                     hinter dem Objektpuffer
+LBLS 	DEFW TXTEN-2	; Adresse der Markentabelle
+TEND 	DEFW TXTEN	; Adresse des Textendes (zeigt auf ^Z)
+TEXT 	DEFW TXTEN	; Adresse des Testanfangs
+FLINE 	DEFW 0		; Adresse der obersten Zeile des Bildes
+ALINE 	DEFW 0		; Adresse der aktuellen Zeile
+APOS 	DEFB 1		; aktuelle Cursorzeile
+ACOL 	DEFB 1		; aktuelle Cursorspalte
+DPOS 	DEFB 1		; aktuelle Zeile beim Anzeigen des Bildes
+FLAG 	DEFB 2		; Flags der Funktion E (Edit)
+LNLEN 	DEFW 0		; Laenge der
+??? (Fehler in Datei ASM3.ADC Block 81, der ist gleich Block 83)
+??? DEFB 1	Anz. Bildschirmspalten
+??? DEFB 1	Anz. Bildschirmzeilen-1
+Bildschirms (Zeilen)
+ALN   	DEFW 1          ; aktuelle Zeilennummer (bei LN: angezeigt)
+BLLAB 	DEFB 0          ; Eingabezeile enthaelt Blockmarke
+WFILE 	DEFS 12         ; Filevariable Work-file
+KFILE 	DEFS 12         ; Filevariable ^KW, ^KR, Funktion V (saVe-code)
+ELINE 	DEFs 82         ; Eingabepuffer
+FLEN  	DEFB 0          ; Laenge des Suchstrings
+FSTR 	DEFS 20		; Suchstring fuer ^QF und ^QA
+ALEN 	DEFB 0		; Laenge des einzusetzenden Strings
+ASTR 	DEFS 20		; einzusetzender String (^QA)
+	IF PRINT
+PROW 	DEFB 64		; Laenge der Druckseite (.PL)
+PWAIT 	DEFB 0		; Warten bei Seitenwechsel an/aus (.PW)
+PLCT 	DEFB 1		; Anzahl d. Zeilen bis zum Seitenwechsel (.LN)
+PPCT 	DEFB 1		; aktuelle Seitennummer (.PN)
+PCCOL 	DEFB 50		; Spalte der Seitennummer (.PC)
+POCOL 	DEFB 10		; Einruecken (.PO)
+	ENIF
+;
+;    Besonderheiten der einzelnen Versionen
+;
+; Die   Versionen   fuer  die  einzelnen  Rechnertypen   weisen   einige
+; Unterschiede  auf,  die  die Tastaturbelegung,  die Anzeige sowie  den
+; Lade- und  Speichervorgang  betreffen.  Sie sind in  einem  besonderen
+; Anhang aufgefuehrt.
+;
+;    Anmerkung
+;
+; Das   vorliegende   Editor/Assemblersystem   wurde   beim    Verfasser
+; umfangreich  getestet.   Trotzdem  sind  einzelne  Fehler  nicht  ganz
+; auszuschlieszen. Fuer Hinweise dazu sowie Verbesserungsvorschlaege bin
+; ich deshalb stets dankbar.
+;
+; Jochen R|denbeck
+; Tschaikowskistr. 23
+; Leipzig
+; 7010
+
+#------------------------------------------------------------------------------
+Datei befehle.asm, aus dem Editor gedruckt (^KB, ^KK, ^KP)
+
+          BEFEHLE.ASM                                       Page 01
+
+          ; MACROASSEMBLER ASM
+          ; BEFEHLSSATZ
+          ; "BEFEHLE.ASM"
+
+          ; 05.11.88
+
+          ; BEISPIELPROGRAMM
+
+                ORG  #            ; PROGRAMM MIT R AUFRUFBAR, DA #
+
+          START LD   HL,TEXT
+          M1    LD   A,(HL)       ; ZEICHEN LESEN
+                AND  A
+                RET  Z            ; ENDE WENN NUL
+                INC  HL           ; ZEIGER WEITERSTELLEN
+                CALL $.ANZ        ; ANZEIGE DES ZEICHENS
+                JR   M1
+          TEXT  DEFM ^M,^J,"Das ist ein Beispiel"
+                DEFM "programm.",0DH,0AH,0
+                END
+
+          ; Das Programm wird mit A assembliert.
+          ; Anschlieszend kann es mit R aufge-
+          ; rufen werden. Als Startadresse ist
+          ; das Label START einzugeben:
+          ; >R
+          ; Start address(:BC,DE,HL,A): START
+
+
+          ; BEFEHLSSATZ
+
+          ; ABKUERZUNGEN:
+          ; r,r1,r2 := B C D E H L A
+          ;            ggf. auch XH XL YH YL
+          ; n       := Direktoperand n (Byte)
+          ; nn      := Direktoperand nn (Wort)
+          ; s       := r (HL) (IX+d) (IY+d) n
+          ; f       := r (HL) (IX+d) (IY+d)
+          ; dd      := BC DE HL SP
+          ; qq      := BC DE HL AF
+          ; pp      := BC DE IX SP
+          ; rr      := BC DE IY SP
+          ; e       := Sprungdistanz (mit Zahl beginnend)
+          ;            Sprungadresse (mit Label beginnend)
+          ; b       := Bit (0...7)
+          ; p       := 0 8 10H 18H 20H 28H 30H 38H
+          ; cc      := NZ Z NC C PO PE P M
+
+          ; 8-Bit-Operationen
+                ADD  s            ; A:=A+s
+                ADC  s            ; A:=A+s+CY
+                SUB  s            ; A:=A-s
+                SBC  s            ; A:=A-s-CY
+                AND  s            ; A:=A AND s
+                OR   s            ; A:=A OR s
+                XOR  s            ; A:=A XOR s
+                CP   s            ; A-s
+                INC  f            ; A:=A+1
+                DEC  f            ; A:=A-1
+
+          ; 8-Bit-Ladebefehle
+                LD   r1,r2        ; r1:=r2
+                LD   r,n          ; r:=n
+          BEFEHLE.ASM                                       Page 02
+
+                LD   r,(HL)       ; r:=(HL)
+                LD   r,(IX+d)     ; r:=(IX+d)
+                LD   r,(IY+d)     ; r:=(IY+d)
+                LD   (HL),r       ; (HL):=r
+                LD   (IX+d),r     ; (IX+d):=r
+                LD   (IY+d),r     ; (IY+d):=r
+                LD   (HL),n       ; (HL):=n
+                LD   (IX+d),n     ; (IX+d):=n
+                LD   (IY+d),n     ; (IY+d),n
+                LD   A,(BC)       ; A:=(BC)
+                LD   A,(DE)       ; A:=(DE)
+                LD   A,(nn)       ; A:=(nn)
+                LD   (BC),A       ; (BC):=A
+                LD   (DE),A       ; (DE):=A
+                LD   (nn),A       ; (nn):=A
+                LD   A,I          ; A:=I
+                LD   I,A          ; I:=A
+                LD   A,R          ; A:=R
+                LD   R,A          ; R:=A
+
+          ; 16-Bit-Ladebefehle
+                LD   dd,nn        ; dd:=nn
+                LD   IX,nn
+                LD   IY,nn
+                LD   dd,(nn)      ; dd:=(nn)
+                LD   IX,(nn)
+                LD   IY,(nn)
+                LD   (nn),dd      ; (nn):=dd
+                LD   (nn),IX
+                LD   (nn),IY
+                LD   SP,HL        ; SP:=HL
+                LD   SP,IX
+                LD   SP,IY
+                PUSH qq           ; [SP]:=qq
+                PUSH IX
+                PUSH IY
+                POP  qq           ; qq:=[SP]
+                POP  IX
+                POP  IY
+                EX   DE,HL        ; HL:=:DE
+                EX   AF           ; AF:=:AF'
+                EXX               ; BC:=:BC' DE:=:DE' HL:=:HL'
+                EX   (SP),HL      ; [SP]:=:HL
+                EX   (SP),IX
+                EX   (SP),IY
+                LDI               ; (DE):=(HL) DE:=DE+1 HL:=HL+1 BC:=BC-1
+                LDIR
+                LDD               ; ABER DE:=DE-1 HL:=HL-1 BC:=BC-1
+                LDDR
+                CPI               ; A-(HL) HL:=HL+1 BC:=BC-1
+                CPIR
+                CPD               ; ABER HL:=HL-1 BC:=BC-1
+                CPDR
+
+          ; 16-Bit-Operationen
+                ADD  HL,dd        ; HL:=HL+dd
+                ADC  HL,dd        ; HL:=HL+dd+CY
+                SBC  HL,dd        ; HL:=HL-dd-CY
+                ADD  IX,pp        ; HL:=HL+pp
+                ADD  IY,rr        ; HL:=HL+rr
+                INC  dd           ; dd:=dd+1
+                INC  IX
+                INC  IY
+          BEFEHLE.ASM                                       Page 03
+
+                DEC  dd           ; dd:=dd-1
+                DEC  IX
+                DEC  IY
+
+          ; SONSTIGE BEFEHLE
+                DAA
+                CPL               ; A:=/A
+                NEG               ; A:=-A
+                CCF               ; CY:=/CY
+                SCF               ; CY:=1
+                NOP               ; KEINE OPERATION
+                HALT
+                DI                ; INTERRUPT SPERREN
+                EI                ; INTERRUPT FREIGEBEN
+                IM0               ; INTERRUPTMODE
+                IM1
+                IM2
+
+          ; VERSCHIEBEBEFEHLE
+                RLCA
+                RLA
+                RRCA
+                RRA
+                RLC  s
+                RL   s
+                RRC  s
+                RR   s
+                SLA  s
+                SLAI s
+                SRA  s
+                SRL  s
+                RLD
+                RRD
+
+          ; Bit-Befehle
+                BIT  b,s          ; Z:=/s.b
+                SET  b,s          ; s.b:=1
+                RES  b,s          ; s.b:=0
+
+          ; Sprungbefehle
+                JP   nn
+                JP   cc,nn
+                JR   e
+                JR   C,e
+                JR   NC,e
+                JR   Z,e
+                JR   NZ,e
+                JP   HL
+                JP   IX
+                JP   IY
+                DJNZ e
+
+          ; Ein-/Ausgabebefehle
+                IN   A,(n)
+                IN   r,(C)
+                INI
+                INIR
+                IND
+                INDR
+                OUT  (n),A
+                OUT  (C),r
+                OUTI
+                OTIR
+          BEFEHLE.ASM                                       Page 04
+
+                OUTD
+                OTDR
+
+          ; Unterprogrammbefehle
+                CALL nn
+                CALL cc,nn
+                RET
+                RET  cc
+                RETI
+                RETN
+                RST  p
+
+          ; Pseudobefehle
+                ORG  nn
+                END
+                DEFW nn
+                DEFB n
+                DEFS nn
+                DEFM "text"
+                MCR  name:par1,par2,...
+                EM
+                IF   nn
+                ELSE
+                ENIF
+          label EQU  nn
+#------------------------------------------------------------------------------
+Assemblerlauf
+
+          BEFEHLE.ASM                                       Page 01
+
+                          ; MACROASSEMBLER ASM
+                          ; BEFEHLSSATZ
+                          ; "BEFEHLE.ASM"
+
+                          ; 05.11.88
+
+                          ; BEISPIELPROGRAMM
+
+          2864                  ORG  #            ; PROGRAMM MIT R AUFRUFBAR, DA #
+
+          2864  217028    START LD   HL,TEXT
+          2867  7E        M1    LD   A,(HL)       ; ZEICHEN LESEN
+          2868  A7              AND  A
+          2869  C8              RET  Z            ; ENDE WENN NUL
+          286A  23              INC  HL           ; ZEIGER WEITERSTELLEN
+          286B  CD840A          CALL $.ANZ        ; ANZEIGE DES ZEICHENS
+          286E  18F7            JR   M1
+          2870            TEXT  DEFM ^M,^J,"Das ist ein Beispiel"
+          2886                  DEFM "programm.",0DH,0AH,0
+          2892                  END
+
+
+#------------------------------------------------------------------------------
+# mp
+#------------------------------------------------------------------------------
+
+mp 6/89, Seite 187
+
+Macroassembler für Kleincomputer 
+
+Das Programm ist ein Assemblersystem für Kleincomputer der Typen KC 85/2/3, KC
+85/1, KC 87, Z 1013 und ZX Spectrum. Es besteht aus dem Editor, dem
+Macroassembler und einfachen Testhilfen. Der Editor ist bildschirmorientiert und
+wurde nach dem Vorbild von Wordstar gestaltet. Es werden die gleichen Kommandos
+verwendet. Auch die Blockkommandos Löschen (^KY), Kopieren (^KC), Verschieben
+(1KV), das Laden eines Blocks von der Kassette und das Einfügen an beliebiger
+Stelle (^KR), das Abspeichern eines Blocks auf der Kassette wie auch die
+Kommandos zum Suchen (QF) sowie Suchen und Ersetzen (^QA) sind verfügbar. Ein
+zusätzliches Kommando (^J) erwartet die Eingabe eines Labels und sucht die
+Stelle im Text, wo das Label definiert ist. Aul diesem Wege lassen sich schnell
+Unterprogramme finden. Der Quelltext wird in komprimierter Form abgespeichert,
+um den knappen Speicherplatz besser ausnutzen zu können. Dadurch lassen sich bei
+etwa 23 KByte freiem Speicherplatz aus einem Quelltext etwa 4,5 KByte
+Maschinenprogramm erzeugen. Der Assembler bietet die Möglichkeit der Definition
+und der Nutzung von Macros auch mit formalen Parametern. Mit den Pseudobefehlen
+IF, ELSE und ENIF können Textabschnitte eingeschlossen werden, die nur unter
+bestimmten Bedingungen mit assembliert werden sollen. Die beim Assemblieren
+gebildete Markentabelle kann auch beim Testen verwendet werden. Sie wird auch
+durch erneutes Editieren des Textes nicht zerstört. Die Testfunktionen
+ermöglichen den Aufruf von Programmen mit Initialisierung der Register und mit
+Anzeige der Registerinhalte bei Rückkehr sowie die Anzeige der Werte von Labels
+und Zahlenumrechnungen.
+
+Karl-Marx-Universität, Institut für Biophysik, Liebigstraße 27, Leipzig, 7010
+Rödenbeck
+
+---
+
+mp 6/90, Seite 189:
+
+Macroassembler für KCs
+Schwabe
+
+Der in MP 6/1989, Seite 187, angebotene
+Macroassembler läuft zusätzlich
+zu den dort angegebenen Computertypen
+auch auf dem KC 85/4. Inzwischen
+wurde auch eine CP/M-Version
+dieses Assemblers fertiggestellt.
+
+Karl-Marx-Universität Leipzig, Institut
+für Biophysik, Liebigstraße 27, Leipzig,
+7010	 Rödenbeck
+
+
+#------------------------------------------------------------------------------
+# Version Z9001 27.10.89
+#------------------------------------------------------------------------------
+
+zusätzliche Kommandos
+
+dUmp       Poke   Copy-asm    Dir 
+
+dUmp		Hex-Dump. Adressen dezimal, Symbole oder hexadezimal mit H am Ende
+Poke		^ Zeichen Ctrl-Code
+		< ein Byte zurück
+		> neue Adresse eingeben
+		ungültige Eingaben wie ? oder ( brechen ab
+Copy-asm	speichert Kopie des Programms als ASM87.COM ab
+Dir		zeigt die OS-Kommandos an
+<DEL>		Anzeige der Version (Datum)
+
+Zusätzliche Tastenbefehle im Editor
+
+^KQ
+^KS
+^KX

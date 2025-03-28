@@ -1,0 +1,89 @@
+robotron Kassette R 0121	Assembler
+=========================================
+
+Die Kassette R0121 Assembler enthält das Programmpaket EDAS. Es besteht aus
+Zeileneditor EDIT und Assembler ASM.
+
+Mit dem Programmsystem Editor/Assembler hat der Anwender die Möglichkeit,
+Programme auf Assemblerniveau zu schreiben. Es wird die Assemblersprache SYPS K
+1520 realisiert. Sie ist eine maschinenorientierte Programmiersprache, die auch
+für das Mikrorechnersystem K 1520 verwendet wird.
+
+Durch den Editor (EDIT) ist eine einfache Korrektur der Assemblerprogramme
+möglich. Mit dem Editor werden die Programme für den Assembler (ASM)
+bereitgestellt, der daraus Maschinencode erzeugt.
+
+s.a.  http://www.sax.de/~zander/z9001/doku/z9_edas.pdf U. Zander
+
+Programme
+---------
+
+    ASM Editor/Assembler
+    ZM30 Zusatz-Monitor
+    ZM70 Zusatz-Monitor
+    ZMA8 Zusatz-Monitor
+
+Programmbeschreibungen
+----------------------
+
+ASM
+---
+
+Dateiname 	ASM.COM
+Laden in 	OS
+Programmstandort 	1000H-37FFh
+OS-Kommando 	EDIT, ASM
+
+EDIT ist ein Dienstprogramm zum Erstellen uns Aufbereiten von Quelltexten. Die
+Aufbereitung der Quelltexte, in diesem Falle Quellen in der Assemblersprache
+SYPS K 1520, erfolgt in einem frei wählbaren Textpuffer. Der Editor arbeitet
+zeilenorientiert. EDIT realisiert folgende Funktionen:
+
+    - Streichen von Zeilen,
+    - Einfügen von Zeilen,
+    - Substituieren von Zeichenketten,
+    - Anfügen von Kommentar,
+    - Streichen von Kommentar,
+    - Anzeigen des Textpufferinhaltes auf dem Bildschirm,
+    - Ausgeben des Textpufferinhaltes auf Magnetbandkassette,
+    - Eingeben von Quelltexten von der Magnetbandkassette in den Textpuffer.
+
+Der Assembler ASM dient zum Übersetzen von Quellprogrammen in der
+Assemblersprache SYPS K 1520 in die Maschinensprache. ASM erzeugt einen absolut
+addressierten Maschinencode. Die Übersetzung erfolgt aus dem Textpuffer des
+Editors. ASM realisiert folgende Funktionen:
+
+    - Quellprogrammeingabe aus dem Textpuffer des Editors EDIT,
+    - Maschinencodeausgabe in den Speicher,
+    - Maschinencodeausgabe auf das Magnetband,
+    - Ausgabe der Assemblerprotokolle auf dem Listgerät (Bildschirm oder Drucker).
+    - Es kann zwischen Übersetzungsliste, Fehlerliste, Crossreferenztabelle und 
+      Symbolreferenztabelle gewählt werden.
+
+Beschreibung für das Programmsystem Editor/Assembler s. EDAS.
+
+
+ZM30, ZM70, ZMA8
+----------------
+
+Dateiname 	ZM30.COM, ZM70.COM, ZMA8,COM
+Laden in 	OS
+Programmstandort 	3000h-3FFFh (ZM30)
+		7000h-7FFFh (ZM30)
+		A800h-B7FFh (ZMA8)
+		220H-2FFH (EXEC-Sprungvektoren)
+OS-Kommando 	ZM
+
+Zusatz-Monitor
+
+Der Zusatz-Monitor ist ein leistungsfähiges Maschinencodeprogramm zum
+Implementieren von Programmen auf der Ebene der Maschinensprache (Debugger). Er
+dient zum:
+
+    Einlesen von Speicherinhalten (z. B. Maschinencodeprogrammen)
+    Ausschreiben und Abspeichern von Speicherinhalten
+    direkten Eingeben von Maschinencode in den Speicher des Rechners
+    Testen und Manipulieren von Maschinencodeprogrammen.
+
+Beschreibung s. Zusatzmonitor ZM
+

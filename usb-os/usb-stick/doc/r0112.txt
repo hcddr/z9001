@@ -1,0 +1,178 @@
+robotron Kassette R 0112	Grundkassette KC 87
+===================================================
+ 
+Diese Kassette lag dem Grundgerät KC 87 bei. (s.a. R 0111)
+
+Die Beschreibung der Programmkassette R 0112 befindet sich in der 
+Bedienungsanleitung des KC 87, Anhang 3.
+
+Programme
+---------
+
+Die Seite A der Programmkassette R0112 enthält drei BASIC-Programme, einen 
+Zusatz-Monitor sowie drei Treiberprogramme für den Programmiermodul. Auf der 
+Seite B befinden sich drei BASIC-Demonstrationsprogramme und drei gesprochene 
+Texte, die zur Erläuterung der Demonstrationsprogramme abgespielt werden können.
+
+	R+HANOI Logisches Spiel
+	R+FPLOT Quasigrafische Darstellung mathematischer Funktionen
+	R+MOSAIK Rechen- und Übungsprogramm für Kinder
+	ZM30 	Zusatz-Monitor
+	EPROM2A Treiber für Programmiermodul
+	EPROM6A Treiber für Programmiermodul
+	EPROMA2 Treiber für Programmiermodul
+	R+DEMO1 Demonstrationsprogramm Vorstellung KC87
+	R+DEMO2 Demonstrationsprogramm Anwendung für Lehre und Lernen
+	R+DEMO3 Demonstrationsprogramm Anwendung in Wissenschaft, Technik und Verwaltung
+	
+	Text R+Demo1.mp3
+	Text R+Demo2.mp3
+	Text R+Demo3.mp3
+
+Programmbeschreibungen
+----------------------
+
+R+HANOI
+-------
+
+Dateiname	R+HANOI
+Laden in	BASIC
+
+Turm von Hanoi
+
+In diesem Kombinationsspiel geht es darum, einen symbolisierten Turm von einer 
+Position 1 zu einer Position 3 zu transportieren. Dabei darf nur eine 
+Zwischenlagerstelle (Position 2) benutzt werden. Außerdem kann nur jeweils eine 
+Schicht des Turmes bewegt werden, und es sind in jedem Fall nur kleinere auf 
+größeren Schichten abzulegen. Ziel dieses Spiels ist es, diese Aufgabe mit 
+möglichst wenigen Zügen zu lösen. Bei regulärem Programmende wertet der 
+Kleincomputer die Anzahl der benötigten Züge aus. Auf Wunsch kann das Spiel 
+wiederholt werden.
+
+R+FPLOT
+-------
+
+Dateiname	R+FPLOT
+Laden in	BASIC
+
+PLOT-Programm (Zeichen-Programm) zur Darstellung mathematischer Funktionen 
+mittels Quasigrafik
+
+Vom Anwender selbst zu definierende Funktionen der Form y = y(x) werden 
+ausgewertet, und die Bilder der Funktionen werden grafisch dargestellt.
+
+In der Zeile 1000 ist die darzustellende Funktion mit einer "DEF FN"-Anweisung 
+zu definieren. Der Name der Funktion muß Y sein. Als Funktionsargument sollte 
+die Variable X verwendet werden.
+
+Beispiel:
+
+1000 DEFFN Y(X)=3*X^2-7
+
+
+R+MOSAIK
+--------
+
+Dateiname	R+MOSAIK
+Laden in	BASIC
+
+Rechenmosaik
+
+"Rechenmosaik" ist ein Übungsprogramm für 1 bis 3 Personen. Es ist besonders für 
+Schüler der Klassen 1 bis 3 geeignet. Mit dem Programm kann spielend das Rechnen 
+in den 4 Grundrechenarten geübt werden. Der Computer stellt Aufgaben. Bei deren 
+richtiger Lösung erhält der Spieler einen Mosaikstein auf dem Bildschirm. 
+Falsche Lösungen und Zeitüberschreitung werden vorn Rechner angezeigt. Hat ein 
+Spieler sein Mosaik vollständig aufgebaut, wird das Spiel unterbrochen und der 
+Sieger angezeigt. Außerdem gibt der Rechner für jeden Spieler die Anzahl der 
+falschen Lösungen während des Spiels bekannt.
+
+ZM30
+----
+
+Dateiname		ZM30.COM
+Laden in		OS
+Programmstandort	3000h-3FFFh (ZM30)
+			220H-2FFH (EXEC-Sprungvektoren)
+OS-Kommando		ZM
+
+Zusatz-Monitor
+
+Der Zusatz-Monitor ist ein leistungsfähiges Maschinencodeprogramm zum 
+Implementieren von Programmen auf der Ebene der Maschinensprache (Debugger). Er 
+dient zum:
+
+- Einlesen von Speicherinhalten (z. B. Maschinencodeprogrammen)
+- Ausschreiben und Abspeichern von Speicherinhalten
+- direkten Eingeben von Maschinencode in den Speicher des Rechners
+- Testen und Manipulieren von Maschinencodeprogrammen.
+
+Beschreibung s. Zusatzmonitor ZM
+
+EPROM2A, EPROM6A, EPROMA2
+-------------------------
+
+Dateiname		EPROM2A.COM, EPROM6A.COM, EPROMA2.COM
+Laden in		OS
+Programmstandort	EPROM2A: 2A00h-2DA1h
+			EPROM6A: 6A00h-6DA1h
+			EPROMA2: A200h-A5A1h
+OS-Kommando		EPROM2A, EPROM6A, EPROMA2
+
+Die vollständige Beschreibung dieser Treiberprogramme ist der dem 
+Programmiermodul 690 023.6 beigelegten Dokumentation zu entnehmen.
+
+Folgende wesentliche Funktionen werden realisiert:
+
+READ 	Einlesen des EPROM-Inhaltes (auch teilweise) in den Arbeits-RAM des 
+	Kleincomputers, wobei der CRC-Prüfrest gebildet wird.
+PROG 	Programmieren eines EPROMs (auch teilweise) aus dem adressierbaren 
+	Speicherbereich des Kleincomputers mit vorhergehender Leerkontrolle 
+	des EPROMs. Bei Programmierfehler erfolgt Abbruch. Am Programmierende 
+	erfolgt die Ausschrift des CRC-Prüfrestes.
+END 	Rücksprung in das Betriebssystem des Kleincomputers.
+
+Alle Zustände werden durch entsprechenden Bildschirmdialog angezeigt. Durch das 
+Signal BEEP wird Programmier-Ende oder -Abbruch auch akustisch angezeigt.
+
+R+DEMO1
+-------
+
+Dateiname	R+DEMO1
+Laden in	BASIC
+
+Demonstrationsprogramm
+
+R+DEMO1 erläutert anhand von Übersichtsbildern den grundsätzlichen Aufbau, 
+wesentliche Parameter und Eigenschaften des "robotron KC 87".
+
+Für jedes Demonstrationsprogramm befindet sich auf der Kassette ein gesprochener 
+Text, der zur Erläuterung des Programms synchron abgespielt werden kann.
+
+Dazu ist das jeweilige BASIC-Demonstrationsprogramm zu laden und mit <RUN> zu 
+starten. Danach wird die Kassette vor den dazugehörigen Text positioniert und 
+das Kassettengerät auf Wiedergabe geschaltet. Ertönt im gesprochenen Text ein 
+Piepton, so ist jeweils die [ENTER]-Taste zu betätigen.
+
+R+DEMO2
+-------
+
+Dateiname	R+DEMO2
+Laden in	BASIC
+
+Demonstrationsprogramm 2
+
+R+DEMO2 stellt Anwendungsbeispiele für den Einsatz des "robotron KC 87" zum 
+Lehren und Lernen vor.
+
+R+DEMO3
+-------
+
+Dateiname	R+DEMO3
+Laden in	BASIC
+
+Demonstrationsprogramm 3
+
+R+DEMO3 enthält Beispiele für die Anwendung des "robotron KC 87" in der 
+Verwaltung sowie in Wissenschaft und Technik.
+

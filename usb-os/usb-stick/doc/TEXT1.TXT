@@ -1,0 +1,199 @@
+                                                              1
+
+                  Kurzbeschreibung von TEXT1
+                  ==========================
+
+
+
+1. Allgemeines
+--------------
+
+
+Begriffe
+--------
+   Es treten die Begriffe "Bildschirmzeile" und "Textzeile"
+auf. Eine Bildschirmzeile ist genau 40 Zeichen lang, waehrend
+eine Textzeile ueber mehrere Bildschirmzeilen gehen kann.
+
+
+Zeilengestaltung
+----------------
+   Die Laenge der Textzeile richtet sich nach dem Wert, der
+bei der Formateinstellung (Funktion 7) fuer ZEICHEN PRO ZEILE
+gewaehlt wurde.
+
+
+Bildgestaltung
+--------------
+   Das Programm TEXT1 stellt den Bildschirm auf den 20 -
+Zeilen - Modus ein. Die erste Zeile ist die Statuszeile. In
+ihr wird links das Kommando mit evtl. Unterkommando und rechts
+die Nummer der Seite, die Nummer der Textzeile innerhalb einer
+Seite und die Position des Zeichens innerhalb der aktuellen
+Textzeile angezeigt. Die zweite Zeile dient der Trennung von
+Statuszeile und Text, welcher in den Zeilen 3 bis 19 angezeigt
+werden kann. Die 20. Zeile dient den Fehlermeldungen.
+
+
+Start
+-----
+   Ist TEXT1 auf die uebliche Art und Weise in den Rechner
+eingelesen, erscheint die Frage "NEUSTART? (J/N) " auf dem
+Bildschirm. Wird hier mit "J" geantwortet, so wird eventuell
+vorhandener Text geloescht, er ist nicht mehr verfuegbar. Bei
+der Beantwortung mit "N" bleibt der schon vorhandene Text
+erhalten. Danach erscheint das Hauptmenue auf dem Bildschirm :
+
+
+                1 EDITIEREN
+                2 NEUEINGABE
+                3 UMBRUCH
+                4 DRUCKEN
+                5 ANZEIGEN
+                6 SPEICHERN
+                7 FORMATE
+
+                8 ENDE
+
+
+
+
+
+
+
+
+
+
+                                                             2
+
+2.Beschreibung der einzelnen Funktionen
+---------------------------------------
+
+EDITIEREN
+---------
+   Der Text ist im Editor von zwei "Sternchenzeilen"
+(Grafik K ***) eingeschlossen, die aber im Anzeige - bzw.
+Druckbild nicht mit erscheinen.
+   Bei Arbeitsbeginn erscheint hier die Frage "DATEINAME? ".
+Es muss nun der Name der Datei eingegeben werden, die geladen
+und anschliessend editiert werden soll. Das Laden geschieht
+auf die uebliche Art und Weise. Ist die Datei bereits
+vorhanden, so erscheint nach Wahl des Edit - Modus sofort die
+1. Sternchenzeile. Erreicht man beim Editieren die 2.
+Sternchenzeile, so erscheint zusaetzlich in der Statuszeile
+ein EOF (END OF FILE).
+Beendet wird der Modus mit der STOP - Taste.
+
+
+NEUEINGABE
+----------
+   Diese Funktion wird gewaehlt, wenn ein Text erstmalig
+erfasst werden soll. Das Programm ist sofort zur Texteingabe
+bereit. Zur Textgestaltung koennen alle Buchstaben, Ziffern,
+Sonderzeichen und Drucksteuerzeichen verwendet werden.
+   Es wurde ein automatischer Textzeilenabschluss,
+entsprechend den eingegebenen Wert fuer ZEICHEN PRO ZEILE bei
+Funktion 7 (FORMATE), realisiert. Dadurch kann der Text
+fortlaufend, ohne Betaetigen der Taste >ENTER<, eingegeben
+werden.
+   Korrekturmoeglichkeiten gibt es hier nur in der aktuellen
+Textzeile mit folgenden Tasten :
+
+      -->       <--           -->I      I<--
+      >RUN<     >ESC RUN<     >INS<     >DEL<
+
+Die Taste "Kursor hoch" wirkt nicht!
+Beendet wird der Modus mit der STOP - Taste.
+
+
+UMBRUCH
+-------
+   Diese Funktion dient der Ausrichtung des Textes auf die in
+der Funktion 7 (FORMATE) angegebenen Werte der Zeilen - und
+Seitengroessen.
+Danach erscheint wieder das Hauptmenue.
+
+
+DRUCKEN
+-------
+   Diese Funktion dient zur Eingabe der Parameter fuer die
+Druckgestaltung. Mit den Tasten "Kursor hoch" und "Kursor
+runter" kann der Kursor zu allen Positionen bewegt werden. Die
+Zahlenangaben muessen mit >ENTER< abgeschlossen werden.
+Gedruckt wird nach Betaetigen der Taste >LIST<. Der Druck
+selber kann mit >PAUSE< unterbrochen und mit >CONT<
+fortgesetzt werden.
+Danach erscheint wieder das Hauptmenue.
+
+
+
+
+
+
+                                                             3
+
+
+
+ANZEIGEN
+--------
+   Mit dieser Funktion kann der Text mit der Wirkung der
+Drucksteuerzeichen kontrolliert werden. Seitennummern werden
+dabei unterdrueckt und der Seitenwechsel wird durch einen quer
+ueber den Bildschirm laufenden Strich angezeigt.
+   Das Tempo der Anzeige kann durch Betaetigen einer der
+Zifferntasten variiert werden. Tempo 0 entspricht der
+langsamsten und Tempo 9 der schnellsten
+Anzeigegeschwindigkeit.
+   Die Anzeigefunktion kann mit >PAUSE< unterbrochen und mit
+>CONT< fortgesetzt werden.
+Beendet wird der Modus mit der STOP - Taste.
+
+
+SPEICHERN
+---------
+   Mit dieser Funktion kann der eingegebene bzw. der
+geaenderte Text auf Kassette gespeichert werden. Es erscheint
+die Frage "DATEINAME? " auf dem Bildschirm. Der Dateiname ist
+anzugeben und in ueblicher Art und Weise ist der Text
+abzuspeichern.
+Danach erscheint wieder das Hauptmenue.
+
+
+FORMATE
+-------
+   Diese Funktion dient der Formatgestaltung des Textes,
+welches nach der Umbruchfunktion 3 erreicht werden soll, bzw.
+schon waehrend der Eingabe der Textzeilen (ZEICHEN PRO ZEILE)
+erreicht wird. Mit den Tasten "Kursor hoch" und "Kursor
+runter" kann der Kursor zu den ersten 4 Positionen im Menue
+bewegt werden.
+   Die Zahlenangaben muessen mit >ENTER< abgeschlossen werden.
+Akzeptiert werden Werte zwischen 5 und 132. Fuer die Angabe
+der Farbgestaltung genuegt das Druecken einer der Tasten "1"
+bis "8" entsprechend der zugehoerigen Farben.
+   Die beiden letzten Zeilen im Menue dienen der Information
+ueber die Laenge des im Rechner befindlichen Textes (Anzahl
+der Zeichen), sowie der Anzahl der noch schreibbaren Zeichen.
+Beendet wird der Modus mit der STOP - Taste.
+
+
+ENDE
+----
+   Mit der Ausschrift "TEXT SPEICHERN? (J/N) " wird hier an
+das Abspeichern des Textes auf Kassette erinnert. Bei
+Beantwortung mit "J" wird zur Funktion 6 "SPEICHERN"
+uebergegangen und bei Beantwortung mit "N" wird die Arbeit mit
+TEXT1 beendet.
+Es meldet sich das Betriebssystem OS.
+
+
+
+
+
+
+
+
+
+
+
+

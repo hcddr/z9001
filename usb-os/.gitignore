@@ -1,0 +1,7 @@
+*.lst
+*.rom
+*.bin
+*.inc
+*.p
+*.depend
+*~

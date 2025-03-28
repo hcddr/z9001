@@ -1,0 +1,697 @@
+WURZELVERZEICHNIS
+-- wichtige und diverse Programme, die man ohne Verzeichniswechsel direkt starten kann
+
+<DIR>          asm87
+<DIR>          chip8
+<DIR>          doc		-- die genannten Anleitungen liegen hier (kein Z9001-Ordner)
+<DIR>          forth
+<DIR>          robotrn2
+<DIR>          robotron
+<DIR>          SOFT
+<DIR>          vp
+
+
+
+ASM.COM		SYPS-K1520-Editor/Assembler		robotron	Editor_Assembler.pdf
+BASIC.COM	Basic-Interpreter			robotron,vp	Programmierhandbuch Teil 1.pdf, Programmierhandbuch Teil 2.pdf, Anhang zum Programmierhandbuch.pdf
+CAMEL80.COM	ANSI-FORTH-System					http://www.camelforth.com/page.php?5
+CRT40.COM	Beispiel-Treiber für CRT		vp
+DEVICE.COM	Gerätezuordnung ähnlich ASGN		vp		usb-os.pdf
+EPROM2A.COM	Software zum Programmiermodul		robotron	Eprommer-Modul.pdf
+EPSON.COM	Druckertreiber				vp		usb-os.pdf
+GRAF.COM	Basic-Plotter-Grafik-Treiber f. BASIC	robotron,vp	Grafik-Zusatz.pdf, Plotter xy4131.pdf
+GRAF14.COM	1/4tel-Grafik-Treiber f. BASIC		robotron,vp
+GRAFP.COM	KRT-Grafik-Treiber f. BASIC		robotron,vp
+HBASIC.COM	Basic-Interpreter im oberen RAM		robotron,vp
+HLPEDIT.COM	Editor für HLP-Dateien			vp
+IDAS.COM	Interpretativer Dialogassembler		robotron	IDAS.pdf
+INSCRIPT.COM	Textverarbeitung SCRIPT, Installation	robotron	R0115 Script V24.pdf
+JUMPING.COM	Spiel					G.Fischer,hobbes
+P.COM		Druckertreiber f. JKCEMU		vp
+SCRIPT.COM	Textverarbeitung SCRIPT, startbar	robotron	R0115 Script V24.pdf
+STRNG.COM	Tastaturmakros				vp
+SYSINFO.COM	System-Information			vp		https://hc-ddr.hucki.net/wiki/doku.php/z9001/software/sysinfo
+TEXT1.COM	Textverarbeitung TEXT1			robortron	R0136 Text1.pdf
+V24.COM		Druckertreiber V24A1,..V24A3		robotron	R0115 Script V24.pdf, Drucker-Modul V24.pdf
+WORD.COM	Textverarbeitung MicroWord		Brosig,vp	https://hc-ddr.hucki.net/wiki/doku.php/z9001/software/microword
+ZM30.COM	Zusatzmonitor ZM 3000 vp		robotron,vp	usb-os.pdf
+ZMA8.COM	Zusatzmonitor ZM A800 vp		robotron,vp	usb-os.pdf
+HLPEDIT.HLP	Anleitung zum HLP-Editor		vp
+USB.HLP		Anleitung USB-Kommandos			vp
+SCRIPTDK.TX2	Anleitung SCRIPT			?
+STRNG.TXT	ASM-Quellcode zu STRNG.COM		vp
+TEXTDOKU.TXT	Beschreibung Textverarbeitung TEXT1	robotron	Laden mit TEXT1
+V24A3Q.TXT	Quellcode V24A3				robotron	Laden mit EDIT/ASM
+WORD15.TXT	Anleitung zu WORD			Brosig,vp
+CD.ZBS		Basic Beispiel zu CD			vp
+-- Beispiele zum schnellen Ausprobieren ohne Verzeichniswechsel
+MESSDEMO.zbs	aus Verzeichnis SOFT
+R-DEMO1.ZBS	aus Verzeichnis robotron
+TATUM.ZBS	aus Verzeichnis SOFT
+Z90-DEMO.ZBS	aus Verzeichnis SOFT
+
+
+
+VERZEICHNIS \ROBOTRON
+-- alles, was von robotron auf Kassetten vertrieben wurde
+
+
+ASM.COM		SYPS-K1520-Editor/Assembler		R0121	Editor_Assembler.pdf
+BASIC.COM	Basic-Interpreter			(R0111,vp)	Programmierhandbuch Teil 1.pdf, Programmierhandbuch Teil 2.pdf, Anhang zum Programmierhandbuch.pdf
+EPROM2A.COM	Software zum Programmiermodul		R0112,R0113	Eprommer-Modul.pdf
+EPROM6A.COM	Software zum Programmiermodul		R0112,R0113	Eprommer-Modul.pdf
+EPROMA2.COM	Software zum Programmiermodul		R0112,R0113	Eprommer-Modul.pdf
+IDAS.COM	Interpretativer Dialogassembler		R0122	IDAS.pdf
+INSCRIPT.COM	Textverarbeitung SCRIPT, Installation	R0115	R0115 Script V24.pdf
+K6311G1.COM	Druckertreiber K6311			R0115	R0115 Script V24.pdf
+K6313G1.COM	Druckertreiber K6313			R0115	R0115 Script V24.pdf
+RAMBASIC.COM	orig. RAM-BASIC				R0111	Programmierhandbuch Teil 1.pdf, Programmierhandbuch Teil 2.pdf, Anhang zum Programmierhandbuch.pdf
+SCRIPT.COM	Textverarbeitung SCRIPT, startbar	R0115	R0115 Script V24.pdf
+SPRACHE1.COM	Programm für Spracheingabemodul		R0113	Spracheingabe-Modul.pdf
+SPRACHE2.COM	Programm für Spracheingabemodul		R0113	Spracheingabe-Modul.pdf
+TEXT1.COM	Textverarbeitung			R0136	R0136 Text1.pdf, TEXT1.TXT
+V24.COM		Druckertreiber V24A1,..V24A3		R0115	R0115 Script V24.pdf, Drucker-Modul V24.pdf
+ZM30.COM	Zusatzmonitor ZM 3000 orig.		R0112	Bedienungsanleitung.pdf, usb-os.pdf
+ZM70.COM	Zusatzmonitor ZM 7000 orig.		R0121,R0122
+ZMA8.COM	Zusatzmonitor ZM A800 orig.		R0121,R0122
+ASM.HLP		kurze Hilfe zu EDIT/ASM 		vp	Anzeigen mit HELP
+IDAS.HLP	kurze Hilfe zu IDAS			vp	Anzeigen mit HELP
+ZM.HLP		kurze Hilfe zum ZM			vp	Anzeigen mit HELP
+TEXTDOKU.TXT	Beschreibung Textverarbeitung TEXT1	R0136	Laden mit TEXT1
+V24A3Q.TXT	Quellcode V24A3				R0115	Laden mit EDIT/ASM
+-- Basic-Programme
+R#BUDGEN.ZBS	Beispieldaten zu R-BUDGET.zbs		vp
+R#BUDGEZ.ZBS	Beispieldaten zu R-BUDGET.zbs		vp
+R-AFRI1.ZBS	Wissenstest Geografie - Afrika (1)	R0145	R0145.pdf
+		R+AFRI1 WISSENSTEST GEOGRAFIE - AFRIKA	Richter,Koenig,Kuechler RED/PSF DATUM 22.09.1984 VERSION 12 
+R-AUTOCR.ZBS	Autocross 				R0166	R0166.pdf
+		R+AUTOCR REAKTIONSSPIEL AUTOCROSS Breitschuh,19.9.84
+R-BRUCH1.ZBS	Einführung in Bruchrechnung		R0193	R0193.pdf
+		R+BRUCH1 LEHRE UND LERNEN EINFUEHRUNG IN DIE BRUCHRECHNUNG Gansauge,Neumann,Kuechler
+R-BRUCH2.ZBS	Übungen zur Bruchrechnung		R0193	R0193.pdf
+		R+BRUCH2 LEHRE UND LERNEN UEBUNGEN ZUR BRUCHRECHUNG Gansauge,Neumann,Kuechler
+R-BUDGET.ZBS	Haushaltsbudget				R0192	R0192.pdf
+R-CLUST.ZBS	Clusteranalyse				R0137	R0137.pdf
+R-DEMO1.ZBS	Demonstrationsprogramm			R0112	Bedienungsanleitung.pdf
+		VORSTELLUNGSPROGRAMM KC 87 VEB KOMBINAT ROBOTRON STAND: 3.3.86
+R-DEMO2.ZBS	Demonstrationsprogramm			R0112	Bedienungsanleitung.pdf
+R-DEMO3.ZBS	Demonstrationsprogramm			R0112	Bedienungsanleitung.pdf
+R-FLAE1.ZBS	Flächenberechnung			R0145	R0145.pdf
+R-FLAE2.ZBS	Flächenberechnung			R0145	R0145.pdf
+		R+FLAE2 LEHRE + LERNEN GEOMETRIE FLAECHENBERECHNUNG  KELLER MKD/EEM DATUM 16.7.84 VERSION 1
+R-FLOHSP.ZBS	Lustiges Flohspringen			R0192	R0192.pdf
+		R+FLOHSP DAS LUSTIGE FLOHSPRINGEN EIN GESELLSCHAFTSSPIEL AUTOR:SCHROETER
+R-FPLOT.ZBS	Darstellung mathemematischer Funktionen	R0133,R0111,R0112	R0133.pdf
+		R+FPLOT DATENVERARBEITUNG
+R-FUNKNU.ZBS	Berechnung von Nullstellen		R0153	R0153.pdf
+		R+FUNKNU WISSENSCHAFT UND TECHNIK Autoren:Klein,Th.;Deimling,D.:TU Dresden/Sekt. Mathematik;Version 3/85
+R-GAUSS.ZBS	Lösen linearer Gleichungssysteme	R0133	R0133.pdf
+		R+GAUSS DATENVERARBEITUNG
+R-GRAPHM.ZBS	Computer als Zeichenstift		R0193	R0193.pdf
+		R+GRAPHM DER COMPUTER ALS ZEICHENSTIFT AUTOR:Neumann
+R-GREKAL.ZBS	Gregorianischer Kalender		R0191	R0191.pdf
+		R+GREKAL GREGORIANISCHER KALENDER
+R-HALMA.ZBS	Steckhalma 				R0166	R0166.pdf
+		HALMA	RENZ,RED EC745,801 DRESDEN 
+R-HANOI1.ZBS	Turm von Hanoi				R0111	Bedienungsanleitung.pdf
+		R+HANOI TURM VON HANOI	VERSION 1
+R-HANOI.ZBS	Turm von Hanoi				R0112	Bedienungsanleitung.pdf
+		R+HANOI TURM VON HANOI	VERSION 2, 6.6.86
+R-HOBBIT.ZBS	Strategiewettstreit			R0192	R0192.pdf
+		R+HOBBIT HASE UND WOELFE EIN STRATEGIE-WETTSTREIT  AUTOR:SCHROETER
+R-INFO.ZBS	RVB-Information				R0191,R0192	R0191.pdf
+R-KIN1.ZBS	Wichtige Gesetze der Kinematik		R0193	R0193.pdf
+		R+KIN1 LEHRE UND LERNEN GRUNDLAGEN DER KINEMATIK   AUTOREN:Kuechler,Koenig
+R-KIN2.ZBS	Übungen zur Kinematik			R0193	R0193.pdf
+		R+KIN2 LEHRE UND LERNEN UEBUNGEN ZUR KINEMATIK   AUTOREN:Kuechler,Koenig
+R-KTEST.ZBS	Kolmogorov-Anpassungstest		R0137	R0137.pdf
+		R+KTEST WISSENSCHAFT UND TECHNIK
+R-LINGEN.ZBS	Lösen linearer Gleichungssysteme	R0152	R0152.pdf
+		R+LINGEN WISSENSCHAFT UND TECHNIK Autoren:F.Buchert,G.Haensch;TU Dresden/Sekt.Mathematik;Version 15.3.85
+R-LINREG.ZBS	Lösen linearer Regressionsaufgaben	R0152	R0152.pdf
+		R+LINREG WISSENSCHFT UND TECHNIK Autoren:S.Schramm,F.Boettner:TU Dresden,Sekt. Mathematik;Version I/85
+R-LINSYM.ZBS	Lösen linearer Gleichungssysteme	R0152	R0152.pdf
+		R+LINSYM WISSENSCHAFT UND TECHNIK Autoren:F.Buchert,T.Ernst;TU Dresden/Sektion Mathematik;Version 15.3.85
+R-MASTER.ZBS	Master Mind				R0165	R0165.pdf
+		R+MASTER SPIEL MASTER MIND RATEN EINER ZIFFERNFOLGE
+R-MAT.ZBS	Unterprogr. für Matrizenoperat.(R+mat)	R0133	R0133.pdf
+		R+mat Matrizenoperationen Haase STAND: 6.8.84
+R-MATHEX.ZBS	Mathematik-Übungsprogramm		R0145	R0145.pdf
+		R+MATHEX LEHRE UND LERNEN Breitschuh RED/EKR DATUM 28.08.1984 VERSION 0.1 
+R-MEMORY.ZBS	Logisches Kartenspiel			R0191	R0191.pdf
+		R+MEMORY BILDERMEMORY Gansauge,Koenig,Kuechler
+R-MOND.ZBS	Simulation einer Mondlandung		R0165	R0165.pdf
+		R+MOND SPIEL  W. Poenisch /RED DATUM 13.08.1984 VERSION 1.0 
+R-MORSET.ZBS	Morsetexte/Übung			R0191	R0191.pdf
+		R+MORSET LEHRE UND LERNEN MORSETEXTE FUER HOERUEBUNGEN K.-D.WEISE / RED/EKR
+R-MOSAIK.ZBS	Rechenmosaik				R0145,R0112	R0145.pdf, Bedienungsanleitung.pdf
+		R+MOSAIK VERSION: HCL2   14.9.84 Bearbeiter: Gaertner EEM Variante mit 3 Bildern, vgl. R-REMOSA.ZBS)
+R-NIM.ZBS	NIM Spiel 				R0165	R0165.pdf
+		R+NIM SPIEL VERSION 1
+R-NLREG.ZBS	Lösen nichtlinearer Regressionsaufgaben	R0153	R0153.pdf
+		R+NLREG WISSENSCHAFT UND TECHNIK Autoren:Koksch,N.;Klein,Th.:TU Dresden/Sekt.Mathematik;Version 3/85
+R-OTHELO.ZBS	Brettspiel OTHELO			R0165	R0165.pdf
+		R+OTHELO SPIEL ENGER / RED  KITTELMANN/SCHROETER/MKD VERSION 1
+R-PASCH.ZBS	Würfelspiel				R0191	R0191.pdf
+		R+PASCH SPIEL PASCH EIN WUERFELSPIEL AUTOR:SCHROETER
+R-PERDAT.ZBS	Verzeichnis/Datei			R0191	R0191.pdf
+		R+PERDAT HEIM UND HOBBY VERZEICHNIS PERSOENLICHE DATEN AUTOR:KITTELMANN
+R-PLDEMO.ZBS	Demonstrationsprogramm für Kleinplotter	R0114	Plotter xy4131.pdf
+		R+PLDEMO PLOTTER - DEMONSTRATIONSPROGRAMM Gaertner, Dr.Keller VERSION 4 (10.1.87)
+R-PLOT.ZBS	Unterprogr. für Kurvendarst. (R+plot)	R0133	R0133.pdf
+		R+plot Haase STAND:20.9.84
+R-POLYNU.ZBS	Bestimmung v. Nullstellen von Polynomen	R0153	R0153.pdf
+		R+POLYNU WISSENSCHAFT UND TECHNIK Autoren: Zoepfel,U.;Burmeister,W.:TUD/Sekt. Mathematik; Version 3/85
+R-REMOSA.ZBS	Rechenmosaik für Kinder			R0111	(Bedienungsanleitung.pdf als R+MOSAIK)
+R-SI.ZBS	Umrechnung von Maßeinheiten		R0193	R0193.pdf
+		R+SI LEHRE UND LERNEN  AUTOR:Gaertner
+R-SKEET.ZBS	Wurftaubenschießen			R0165	R0165.pdf
+		R+SKEET SPIEL  D. Neumann RED/EC8 DATUM 13.08.1984 VERSION 1.0 
+R-SLALOM.ZBS	Geschicklichkeitsspiel			R0192	R0192.pdf
+		R+SLALOM SPIELE SLALOM-ABFAHRTSLAUF AUTOR:SCHROETER
+R-SORT.ZBS	Unterprogr. zum Sortieren (R+sort)	R0133	R0133.pdf
+R-TBVERZ.ZBS	Tonbandinhaltsverzeichnis		R0192	R0192.pdf
+		R+TBVERZ EINRICHTEN UND VERWALTEN VON TONBANDINHALTEN   AUTOR: BERNHARDT
+R-TRUMPF.ZBS	Kartenspiel "Trumpf 8" oder "Mau"	R0166	R0166.pdf
+		R+TRUMPF SPIEL KITTELMANN MKD/1EKG DATUM 26.09.1984 VERSION 4.0
+R-VARANA.ZBS	Varianzanalyse				R0137	R0137.pdf
+		R+VARANA WISSENSCHAFT UND TECHNIK
+R-VOKALE.ZBS	Lernprogramm für Englisch-Vokabeln	R0193	R0193.pdf
+		R+VOKALE LEHRPROGRAMM  AUTOR:KITTELMANN
+R-WORTE.ZBS	Wörter raten				R0166	R0166.pdf
+		R+WORTE SPIEL WORT RATEN EIN LOGIK-SPIEL KITTELMANN MKD/1EKG DATUM 17.09.1984 VERSION 3.2
+R-ZIELE.ZBS	Ziele suchen				R0166	R0166.pdf
+		R+ZIELE SPIEL LOGIK-SPIEL KITTELMANN MKD,1EKG 17.09.1984 VERSION 2.3
+R-ZUF_UP.ZBS	BASIC-Unterprogramme (R+zufall)		R0137	R0137.pdf
+R-ZUFALL.ZBS	Erzeugung von ZufaIlszahlen		R0137	R0137.pdf
+		R+ZUFALL WISSENSCHAFT UND TECHNIK
+
+
+
+VERZEICHNIS \ASM87
+
+ASM87.COM	Makroassembler mit Screen-Editor	Jochen Roedenbeck	asm87.txt
+ASMDOK1.ASM	Doku, laden in ASM87.COM
+ASMDOK2.ASM	Doku, laden in ASM87.COM
+ASMDOK3.ASM	Doku, laden in ASM87.COM
+BEFEHLE.ASM	Doku, laden in ASM87.COM
+TST.ASM		Beispiel, laden in ASM87.COM
+TST.COM		assembliertes Beispiel-Programm
+
+
+
+VERZEICHNIS \CHIP8
+-- https://hc-ddr.hucki.net/wiki/doku.php/z9001/software/chip_8
+
+CHIP8.COM	CHIP-8-Interpreter			vp	
+*.CH8		diverse CHIP-8-Programme
+GAMES.TXT	Beschreibungen (keine Z9001-Datei!)
+
+
+
+VERZEICHNIS \FORTH
+-- https://hc-ddr.hucki.net/wiki/doku.php/forth/fgforth
+-- Dokus: f83kurzdoku.txt, f83words.txt, f83glossar.txt, f83code.txt
+
+F83.COM		F83 der IG Forth			Beierlein,vp	
+F83A4.COM	komplette Version f. Kassettenarbeit
+F83A5.COM	komplette Version incl. DIR
+DEBUG.F83	Debugger (in F83A4, F83A5)
+DIR.F83		DIR  (in F83A5)
+FASM.F83	Assembler
+FILES.F83	FILES f. USB (-> DIR)
+FORMI2.F83	Formelinterpreter
+GETPUT.F83	Massenspeicher-Interface (in F83A4, F83A5)
+HANOI.F83	Turm von Hanoi
+LINED.F83	Zeileneditor
+LLICHT2.F83	Lauflicht
+MTASK.F83	Multi-Tasker
+REASS.F83	Reassembler
+SEDIT.F83	Screen-Editor (in F83A4, F83A5)
+SEE.F83		Forth-Decoder (in F83A4, F83A5)
+SHOW.F83	Listing-Ausdruck
+UNSINN.F83	Unsinnstextgenerator
+F83.HLP
+
+
+
+VERZEICHNIS \INFORMAT
+https://hc-ddr.hucki.net/wiki/doku.php/z9001/kassetten_informatik, PK01 und PK05, teilw. PK!5 
+
+AMPEL.ZBS	COMPUTERGESTEUERTE LICHTSIGNALANLAGE  DR.PAETZOLD,R,ERBRECHT  09.1987
+BLIOTHEK.ZBS	BIBLIOTHEK  APW/FZH;STAND 1/87 mod.:Pt-Softwareleitstelle Guestrow 
+DEMO.ZBS	VORSTELLUNGSPROGRAMM KC 85/1  MARIO GAERTNER,R.ERBRECHT HU Berlin 
+GEBDATEI.ZBS	GEBURTSTAGSKALENDER, erzeugt Feld-Dateien "NAMEN.ZBS" und "GEB-TAG.ZBS"
+GRAFIK.ZBS	LKW-KONFIGURATIONEN ST.JESSA; D.BAUERS mod.:Pt-Softwareleitstelle Guestrow
+I-HAUS.ZBS	UEBUNG mit der TASTATUR   R.ERBRECHT 
+KC85-1.ZBS	AUFBAU und BEGRIFFE zum KC 85/1 mod.:Pt-SOFTWARELEITSTELLE Guestrow
+NETZE.ZBS	UEBUNGSPROGRAMM WUERFEL-UND QUADERNETZE 3.STUDJ.MA/GEO MAERZ 1988 
+PERDAT.ZBS	PERSOENLICHE DATEN R+PERDAT KITTELMANN MKD-robotron/RVB robotron mod.:Pt-Softwareleitstelle Guestrow   
+PRBEISP.ZBS	PROGRAMMIERBEISPIELE AUS DEM ESP-UNTERRICHT  S.BOHNSACK
+PROGR0.ZBS	PROGRAMMIERBEISPIELE AUS DEM ESP-UNTERRICHT  S.BOHNSACK DATUM:24.12.86 
+PROGR1.ZBS	TESTPROGRAMM DIGITALE SIGNALEIN- und AUSGABE (PIO)  S.BOHNSACK
+PROGR2.ZBS	EINFACHES PROGRAMM ZUR MESSWERTERFASSUNG UND DARSTELLUNG 
+PROGR3.ZBS	NC-MASCHINENMODELL   S.BOHNSACK,R./CH.SCHILLING 
+PROGR4.ZBS	PROGRAMM ZUR DREHZAHLREGELUNG   S.BOHNSACK/G.FRANKE
+PROGR5.ZBS	FUELLSTANDSTEUERUNG mit GRAPHIK
+PROGR6.ZBS	PROGRAMM ZUR ARBEITSWEISE DER ALU DES MIRKROPROZESSORS U 880 D   BOHNSACK/KLIEWER 
+PROGR7.ZBS	PROGRAMM ZUR DARSTELLUNG DES REGISTERSATZES DES MP U880D   BOHNSACK/KLIEWER  
+PROGR8.ZBS	PROGRAMM ZUR STEUERUNG EINES BOHRMODELLS MIT 3 FREIHEITSGRADEN   BOHNSACK/SCHILLING
+		(erfordert Koppelbausteine der PH Guestrow KOLL.f.t.UNTERRICHT)
+PROGR9.ZBS	BOHRWEGOPTIMIERUNG   S.BOHNSACK
+PROGR10.ZBS	ZUSATZMONITOR FUER MASCHINENPROGRAMMIERUNG(mit USR und CALL)  S.BOHNSACK 
+SNAKY1.ZBS	SNAKY die nimmersatte Anakonda Gunnar KNOPF 22.02.1987  
+SORT.ZBS	ZEICHENKETTEN-SORTIEREN  APW/FZH;STAND 1/87 mod.:Pt-Softwareleitstelle Guestrow
+TEXT.ZBS	TEXTVERARBEITUNG  mod.:Pt-Softwareleitstelle Guestrow  
+WURF1.ZBS	WUERFELSPIEL U.S. 7.2.1986 
+
+
+
+VERZEICHNIS \ROBOTRN2
+
+BASIC.COM	Basic-Interpreter			(R0111,vp)	Programmierhandbuch Teil 1.pdf, Programmierhandbuch Teil 2.pdf, Anhang zum Programmierhandbuch.pdf
+BOMBER.COM	Spiel Bomben abwerfen			Schroeter,Kittelmann	beschreibungen.txt
+COMODORE.COM	C64-BASIC-Import			Kittelmann	beschreibungen.txt
+FDTEST18.COM	Floppy-Modul-Test					Beschrieben in http://www.sax.de/~zander/z9001/module/fdc/z9_fdcp.pdf
+GRTEST.COM	Testprogramm Grafik-Zusatz				Beschrieben in http://www.sax.de/~zander/z9001/module/pixgraf/z9_grafp.pdf
+LIFE.COM	Spiel "Life"				Kittelmann	beschreibungen.txt
+LPRO15.COM	Funktionstest Version 1.5				https://hc-ddr.hucki.net/wiki/doku.php/z9001/software/testprg und Serviceanleitung
+LPRO16.COM	Funktionstest Version 1.6				https://hc-ddr.hucki.net/wiki/doku.php/z9001/software/testprg und Serviceanleitung
+MORSEDEC.COM	Morse-Decoder				Kittelmann	beschreibungen.txt
+OTHELLO.COM	Brettspiel Othello			Kittelmann
+OTHELLOM.COM	Brettspiel Othello, andere Version	Kittelmann
+R80.COM		Reassembler R80 1.1			L. Dähne
+R80KOR.COM	Reassembler R80 1.1 korrigiert?		L. Dähne
+TEST-12.COM	RAM-Testprogramm f. ASA					Serviceanleitung
+-- Basic-Programme
+AFRICA2.ZBS	R+AFRI2		WISSENSTEST GEOGRAPHIE - AFRIKA		Richter,Koenig,Kuechler RED/PSF 05.10.1984
+BAANAL.ZBS	K+BAANAL	BASIC-ANALYSE-PROGRAMM			KITTELMANN MKD/1EKG V1.0 22.09.1984
+BILDER.ZBS	R+MEMORY	BILDERMEMORY				Gansauge,Koenig,Kuechler RED/PSF 26.10.1984 VERSION 9
+BOALAB.ZBS	BOALABYR	SCHLANGEN-LABYRINTH GESCHICKLICHKEITSSPIEL	SCHROETER MKD,DTW 00.00.1984 VERSION 0.0
+BOALAB2.ZBS	S+BOALAB	SCHLANGEN-LABYRINTH GESCHICKLICHKEITSSPIEL	SCHROETER MKD,DTW 08.04.1985 VERSION 2.0
+CATLAB.ZBS	X+CATLAB	KATZENLABYRINTH REAKTIONS-SPIEL		SCHROETER MKD,DTW 07.09.1984 VERSION 2.0
+CENTIP.ZBS	-		CENTIPEDE nach ZX81			H.KITTELMANN  UND A.SCHROETER 15.04.1985 VERSION 1.0
+DATEN.ZBS	PERDATEI	VERZEICHNIS PERSOENLICHE DATEN		KITTELMANN MKD/1EKG 21.11.1984 VERSION 3.1
+ENGLISH.ZBS	R+VOKALE	LERNPROGRAMM ENGLISCH-VOKABELN		KITTELMANN MKD/1EKG 22.11.1984 VERSION 1.0
+GAMMON.ZBS	K+GAMMON	BACKGAMMON				KITTELMANN MKD,1EKG 21.02.1985 VERSION 1.0
+GRAPHSET.ZBS	-		GRAPHIK-SET, Malen			A.Schroeter MKD/DTW
+HANOI.ZBS	R+HANOI		TURM VON HANOI				VERSION 1
+HASE.ZBS	R+HOBBIT	HASE UND WOELFE STRATEGIE		SCHROETER MKD,DTW 24.10.1984 VERSION 3.0
+HISTO.ZBS	R+HISTO1	WISSENSTEST INTERNATIONALE GESCHICHTE	Richter,Schneider RED/PSF 28.09.1984 VERSION 25 
+HISTORY1.ZBS	R+HISTO1	WISSENSTEST INTERNATIONALE GESCHICHTE	Richter,Schneider RED/PSF 28.09.1984 VERSION 25 
+HISTORY2.ZBS	R+HISTO2	WISSENSTEST DEUTSCHE GESCHICHTE		Richter,Schneider RED/PSF 08.11.1984 VERSION 12
+HISTORY4.ZBS	R+HISTO4	WISSENSTEST FRUEHBUERGERLICHE REVOLUTION	Richter,Schneider RED/PSF 08.03.1985 VERSION 20
+HOBBIT.ZBS	R+HOBBIT	HASE UND WOELFE STRATEGIE		SCHROETER MKD,DTW 05.11.1984 VERSION 4.0
+MAUS.ZBS	S+MAULAB	MAEUSELABYRINTH				SCHROETER MKD,DTW 28.02.1985 VERSION 2.0
+MAZOGS.ZBS	-		MAZOGS nach ZX81, f. ROM-BASIC		ANDREAS SCHROETER
+MAZOGSR.ZBS	-		MAZOGS nach ZX81, f. RAM-BASIC(und USB)	ANDREAS SCHROETER
+MESSE.ZBS	R+MESSE2	SCHAUPROGRAMM FUER WERBUNG UND MESSEN	KITTELMANN,SITTE MKD/1EKG,EKK 11.11.1984 VERSION 3.2
+NEWENTER.ZBS	-		ENTERPRISE nach C64			ANDREAS SCHROETER
+ORAKEL.ZBS	K+ORAKEL	ORAKEL-HOROSKOP	nach HAPPY-COMPUTER VON D. LOKAY	KITTELMANN MKD,1EKG 05.09.1986 VERSION 1.1
+PONG.ZBS	K+PONG		JAGD AUF PONG REAKTIONS-SPIEL LAKAN-COMPUTER LGH 5-28.03.83	KITTELMANN MKD,1EKG 24.02.1985 VERSION 1.0
+PROGNOSE.ZBS	PROGNOSE	LEBENSERWARTUNGS-PROGNOSE		KITTELMANN/SCHROETER MKD,1EKG/DTW 06.09.1984 VERSION 1.0
+REASS.ZBS	K+REASS		RE-ASSEMBLER-PROGRAMM			KITTELMANN,MKD/1EKG+ZUSATZ MENDE VEB NAL BTD, VERSION 1.0  DATUM 29.09.1984
+RECHER.ZBS	R+RECH		DATENVERARBEITUNG RECHERCHIEREN		WEITZMANN, GABRIELE STAND:20.5.85
+REVERSI.ZBS	-		Othello/Reversi				ENGER/RED KITTELMANN/SCHROETER/MKD VERSION 1
+SPIEDI.ZBS	K+SPIEDI	REAKTIONS-SPIEL				(C) 1983 BY T. STAHMER ,2000 HAMBURG 60, PREYSTR. 13
+TATUM.ZBS	-		NIEMANDSLAND nach HAPPY COMPUTER	A. SCHROETER, ORIGINAL FUER COMMODORE C64 VON A. HAGESTEDT BREMERHAVEN
+ZIELE.ZBS	R+ZIELE		ZIELE SUCHEN LOGIK-SPIEL		KITTELMANN MKD,1EKG 17.09.1984 VERSION 2.3
+
+
+
+VERZEICHNIS \SOFT
+
+ANALYSE.COM	Kassetteninhalt auflisten		U.Zander?
+ARITH_CO.COM	ARITH LANGKETTENARITHMETIK		STP (Stefan Polster?)
+BASIC.COM	Basic-Interpreter			(R0111,vp)
+BITEX2.COM	BITEX-88/Ki1	BITEX,K6311,K6312,SEIKO
+BITEX5.COM	BITEX-T63
+BITEX87.COM	BITEX87 V2.0	BITEX,K6311,K6312,SEIKO,OKIDATA
+BOLERO.COM	Bandtestprogramm fuer Quicksave	R.Wobst 1987
+BUGGY.COM	Spiel 		Sir Clive cube ware (Stefan Schlenzig), Originalbauplan 70	BUGGY, QRXCV
+CFORTH.COM	Fig-Forth	U880 CFORTH 1.1		CFORTH
+CHESS.COM	Schach, VIDEO-CHESS-MASTER, ADAPTED BY REINHOLD LUDLEI 1987	-> beschreibungen.txt
+CN.COM		Serviceprogramm (MC-Editor u.a.)	R.Wobst 1987
+CNDOC.COM	Serviceprogramm Anleitung	R.Wobst 1987
+COPX.COM	Kassetten-Kopierprogramm
+COSD.COM	Asm/MC-Edit/Tracer etc. COSD Version 2.2 KMU Leipzig
+CTIME.COM	Uhr, vorher mit TIME stellen, HC-Computer
+DATUM.COM	Kalender, U.Zander
+DBAC87.COM	BASICODE, Andreas und Uwe Zierott, V1.5, 31.01.90
+DEBUGGER.COM	Dump, Debugger, ...
+EBASIC.COM	EXTENDED BASIC
+EDI.COM		Turbo-Pascal-ähnlicher Editor (C)1987 Herzmann TUD	EDI,WEDI
+FIGFORTH.COM	FIG-FORTH 1.1
+FORTH.COM	FIG-FORTH 1.1
+FORTH64.COM	FIG-FORTH 1.1	
+FORTH87.COM	FORTH 87  V 1.4 mit RAMDISK
+HEXI.COM	Hex-Editor 1988 SC Sir Clive (Stefan Schlenzig), Originalbauplan 70
+I-GRAFIK.COM	Zeichenprogramm, IGOR von NYSSEN, VERSION 1.1 
+KCPASCAL.COM	Turbopascal f. KC (KCPASCAL)	KC Pascal  V 0.9 (c) W.Tischer D.Poenigk 1987
+LKCCDEMO.COM	Last KC-Club Demo		https://hc-ddr.hucki.net/wiki/doku.php/z9001/software/lkcc
+LPRINTER.COM	Druckertreiber 
+M1.COM		Serviceprogramm (MC-Editor;Eprommer u.a.)	HOTRON
+MOVIE.COM	Laufschrift
+OTHELLO.COM	Othello in Farbe, U. Zander
+PACKMAN.COM	Z9001-PACKMAN-1985
+PAINTBOX.COM	Malprogramm	Andreas Bartusch Original, USB-Version unter \VP	https://hc-ddr.hucki.net/wiki/doku.php/z9001/software/paintbox
+PASCAL.COM	KC Pascal, Version 2.1 by Burmeister,Lehmann,Vetters 1989, Hisoft-Pascal mit Zeilennummern
+PERSEUS.COM	Spiel, STP (Stefan Polster?)
+PRETTYC.COM	C-Compiler-Paket	Pretty C  ***  R.Wobst 1987 V1.1
+RAMBUG.COM	Memory-Tester RAMBUG Version 2.84 (C)1982,H.Krake
+SFORTH.COM	CFORTH 1.1
+SPACEACT.COM	Spiel
+TAPEDIR.COM	Kassettenlisten uzdat'94 U. Zander
+TURBO.COM	Turbo Kassetten Save V 1.0  Random Queen, 1989
+V24G.COM	Grafikfähiger Druckertreiber V24 über User-PIO
+V24K6313.COM	?
+WOBUGOR.COM	Debugger R. Wobst			wobugor.txt
+XYBASIC.COM	XYBASIC ROMSQ REV. 1.1 COPYRIGHT 1978,1979 BY MARK WILLIAMS CHEMICAL CO., INC., CHICAGO	  http://www.nesssoftware.com/home/mwc/XYBASIC.php
+ZM.COM		Serviceprogramm (c) betasoft 85
+TZEDIT.DOC	Anleitung EDI.COM, Laden mit EDI
+BITEX.HLP	Kurzanleitung Bitex, Laden mit HELP	vp
+TEST.PAS	Beispiel f. KCPASCAL
+Z9001.PIC	Laden mit ???
+BTXHELP2.TXT	Hilfe zu Bitex, Laden mit BITEX
+GDDOC.TXT	Anleitung GDRUCK, Laden mit TEXT1
+PIOTR.TXT	Assemblerquelltext PIO-TREIBER Lutz Elssner 03.07.88, Laden mit EDIT/ASM
+S3004.TXT	reass. Assemblerquelltext Treiberroutine fuer Schreibmaschine "S3004" 10.12.88 - Hurtienne, Laden mit EDIT/ASM
+-- Basic-Programme
+17_4.ZBS	17 UND 4    EIN KARTENSPIEL
+4PLAY.ZBS	Vier gewinnt/Vier in einer Reihe
+6AUS49-3.ZBS	Zufallszahlengenerierung
+ABFAHRT.ZBS	Ski Abfahrt
+ADDERII.ZBS	Barrels by Matthias Geissler, Edelsteine einsammeln
+ALKOHOL.ZBS	ALKOHOLPROGRAMM, DIRK HARTWIG mindgame 1986
+ALPINE.ZBS	climb alpine	MAJOR-DATA, 1985
+ALZAN.ZBS	Textadventure, Flucht aus Alzan
+AMPEL.ZBS	Ampelsimulation
+ANGELN.ZBS	Preisangeln, Fische fangen
+ANGELN2.ZBS	Preisangeln, Fische fangen
+APOLLO.ZBS	Chris Koegler, Mondlandung
+ATOM.ZBS	Atome suchen, Knobelspiel, Frank Boettcher
+AUSBRUCH.ZBS	Gefängnisausbruch
+AUTO1.ZBS	Auto fahren
+A-Z.ZBS		Redewendungen erraten
+B66.ZBS		66, Kartenspiel, Matthias Schreiber K,P,H,C, 7,8,9,B,D,K,10,A 
+BAC87.ZBS	BASICODE, Andreas und Uwe Zierott Stand: 16.01.90
+BAC87C.ZBS	Andreas und Uwe Zierott, BASICODE-3C Routinen  Werner Weicht Stand:  10.04.1992
+BAELLE.ZBS	BAELLE FANGEN  FRANK JARSETZ ABF-Jahrgang 1984/86
+BALLON.ZBS	Luftballon-Jagd
+BARRELS.ZBS	Barrels by Matthias Geissler, Edelsteine einsammeln
+BEATLES.ZBS	BEATLES Medley, STEFAN RUDECK, Juli 1986
+BILD.ZBS	BILDVERARBEITUNGSPROGRAMM
+BILD1.ZBS	Level eines Jump-and-Run-Spiel
+BILD2.ZBS	Level eines Jump-and-Run-Spiels
+BILD3.ZBS	Level eines Jump-and-Run-Spiels
+BILLIARD.ZBS	PUNKTEBILLIARD
+BIOKOMP.ZBS	Biorhythmus, V. Pohlers, 1986, Programm ist kompaktiert
+BLACKHO.ZBS	BLACK HOLE 12.4.86
+BOALAB.ZBS	GESCHICKLICHKEITSSPIEL BOALAB DAS SCHLANGEN - LABYRINTH
+BOERSE.ZBS	STAR TRADERS, EIN WELTRAUM-HANDELSSPIEL
+BOHNE.ZBS	Bohnenspiel, Hartmut Schwetlick 1985
+CASINO.ZBS	Roulette
+CAVE.ZBS	CAVE U-Boot durch Höhle navigieren	M.Geissler 25.3.1986 
+CAVE2.ZBS	CAVE NEUGESCHRIEBEN VON MICHAEL PFEIFER 23.5.1989
+C-DUR.ZBS	Klavier spielen
+CENTIP.ZBS	CENTIPEDE nach ZX81 H.KITTELMANN  UND A.SCHROETER 15.04.1985 VERSION 1.0
+CHAOS.ZBS	"Feierabendverkehr" Straße überqueren
+CHAOS2.ZBS	"Feierabendverkehr" Straße überqueren, andere Version
+CITY.ZBS	City, Verfolgungsjagd, 1.01, SSC, Ulf Zschuckelt
+CLIMBER.ZBS	CLIMBER V2 Ludwig,R.-C.  30.1.1985
+CLIMBER2.ZBS	CLIMBER 2   STEFFEN POLSTER, 23.9.1986, nach CLIMBER.ZBS
+CODE.ZBS	KODEKNACKER, DAS GEHEIME KODEWORT FINDEN (code ist Cäsar-Chiffre mit Verschiebung um 1)
+COINGAME.ZBS	COINGAME, eine Art einarmiger Bandit
+COMP-TA.ZBS	COMPUTERTAFELWERK ELEKTRIK   MIRKO ANDRAE
+CRAZY.ZBS	Crazy Quader  S. Kraft '92, nutzt Joystick(1)
+CZMUEHLE.ZBS	3D-NOUGHT AND CROSSES dreidimensionales Muehlespiel  Cornelius Zippe  Version 4  vom 22.2.1986
+DAME.ZBS	Damespiel, Farbe
+DAMEC.ZBS	gleiche Version, ohne Farbbefehle
+DEMO.ZBS	VORSTELLUNGSPROGRAMM KC 85/1  MARIO GAERTNER,R.ERBRECHT HU Berlin 
+DICKER2.ZBS	Schiebespiel, H. Brennicke -> A.Arnold  29.12.1989
+DISK22.ZBS	Autofahrsimulation, nutzt Joystick(1)
+DOMINO.ZBS	SNAKE-Variante, nutzt Joystick(1) und Joystick(2)
+DRAGON.ZBS	DRAGON   A MAZE-ADVENTURE-GAME  MIRKO ZETTL
+DYNA-L.ZBS	Schaltungssimulation s. rfe-Reihe
+ELIZA-D.ZBS	ELIZA in deutsch
+ENTER.ZBS	ENTERPRISE, Weltraumspiel
+FABAS_SS.ZBS	Arithmetik mit langen Zahlen, H. Völz Vers. Mai 1987, mit MC-Programm in Zeile 0, nur ROM-BASIC
+FALLE.ZBS	Labyrinth, nutzt Joystick(1)
+FIRE.ZBS	mit Laser schießen
+FKT4_SSS.ZBS	FUNKTIONSDARSTELLUNG  JEHECO 1986, Anzeige mit 16tel-Grafik
+FLAGGEN.ZBS	Flaggen Wissenstest  ROBERT WOLF
+FLEISS.ZBS	15er Schiebespiel, rainer jung 29.10.88 -> joerg bensch, rene poetschke
+FLIPPER.ZBS	FLIPPER VERSION 1.0 Bälle fangen  M. Augsten
+FLOOR.ZBS	FLOOR  Ladder-Variante   M. Augsten, 2xRUN, nur ROM-BASIC
+FLYER.ZBS	HELIKOPTER, vgl. HELIKOPT.ZBS, JAEGER90.ZBS
+FORMEL1.ZBS	Autorennen, palm ware Gerd Frahn, nur ROM-BASIC, nutzt Joystick(1), tolle Grafik
+FORMEL1B.ZBS	ZUSAMMENSTOSS  CREATIVE COMPUTING MORRISTOWN,NEW JERSEY
+FREITAG.ZBS	Freitag der 13. Wahrscheinlichkeitsprobleme
+GALGEN.ZBS	Galgenraten Wortliste (CSAVE*)
+GALGENRA.ZBS	Galgenraten
+GALOPP.ZBS	GALOPPRENNSPORT WETTSPIEL
+GAME.ZBS	GAME1, Kreuze treffen, BERT SCHULZKI 1986 
+GANYMED.ZBS	Kristalle einsammeln, Labyrinth
+GARTEN.ZBS	Packman-Variante
+GASSE.ZBS	HINDERNISRENNEN, Sat1-Ball
+GEISTER.ZBS	Die MAUS im GEISTERSCHLOSS, Labyrinth, Packman
+GEO.ZBS		Geo.1 BEZIRKSSTAEDTE DER DDR Wissenstest
+GHOST.ZBS	GHOSTBUSTER  UWE ZAGER, nicht lauffähig ?
+HANDELSF.ZBS	HANDELSFAHRT Wirtschaftssimulation CLAUS-D. HEINECK 1986 -> R.WERMKE, M.KNOKE
+HELEN.ZBS	ELIZA, englisch
+HELIKOPT.ZBS	Helikopter, vgl. FLYER.ZBS, JAEGER90.ZBS
+HELLSEHN.ZBS	Zaubertrick, Kartentrick
+HELP87.ZBS	KASSETTENLESEPROGRAMM, HILFSPROGRAMM FUER RUNDFUNKPROGRAMME, verbesserte Laderoutine
+HISTORIE.ZBS	GESCHICHTSTRAINER   ANDREAS KIEWITT
+HIT.ZBS		Balken entfernen, mit Joystick, netter Anfang
+HOROSKOP.ZBS	ORAKEL DAS COMPUTER HOROSKOP  D.LOKAY DEZ.83
+HUBI.ZBS	Fallschirmspringer retten  M.Augsten nur ROM-BASIC, mit MC-Programm, 2x RUN
+HUPFLI.ZBS	Punkte einsammeln ROLAND ROEDEL
+INVASION.ZBS	INVASION  space invaders variante  A.P.ERFURT
+JAEGER90.ZBS	Helikopter, vgl. FLYER.ZBS, HELIKOPT.ZBS
+JAGD.ZBS	HASENJAGD 
+JAGD2.ZBS	ENTENJAGD, nach z1013, H. Gutzner
+KAEFER.ZBS	KAEFERJAGD
+KAISER.ZBS	Wirtschaftssimulation, f. mehrere Spieler
+KALENDER.ZBS	Jahreskalender (zum Drucken)
+KAMIKAZE.ZBS	SPIEL SMULATION KAMIKAZE-FLIEGER   C.S.KRAFT,R.MEHLHORN   f. Joystick 1
+KATZE.ZBS	KATZE und Maus im Käselabyrinth  Domschke - Wolff  7.6.1988
+KC87INFO.ZBS	PROGRAMM AUFBAU und BEGRIFFE zum KC 85/1 mod.:Pt-SOFTWARELEITSTELLE Guestrow 9/89  
+KC-HILFE.ZBS	TASTE LEHRPROGRAMM zur Einfuehrung in die Bedienung des KC 85-1  Dr. U. Richter
+KEEPS.ZBS	KEEP SMILING (Eine Art MENSCH AERGERE DICH NICHT)  R.Bernhardt
+KNOSSOS.ZBS	KNOSSOS - DAS GEHEIMNIS VON KRETA  3D-Labyrinth
+KOMBA_SS.ZBS	KOMBA Ganzzahlartihmeltik mit langen Zahlen  H.Voelz 28.6.87
+KUNGFU.ZBS	KUNG-FU  Michael Siedentopf 
+LADDER.ZBS	LADDER  O.Quasdorff (C)1986	nur ROM-BASIC
+LADY.ZBS	LITTLE LADY 3x3-Felder-Dame-Spiel St.Rudeck
+LAMBADA.ZBS	Musik Lambada  Robert Wolf & Christoph Koegler
+LEBEN.ZBS	LEBENSERWARTUNG  VEB MIKROELEKTRONIK WILHELM PIECK MUEHLHAUSEN f. KC87
+LEBEN2.ZBS	LEBENSERWARTUNG  Umgeschrieben auf KC85/1 1986 H.U.Kuester
+LEITER.ZBS	LEITER / Ladder
+LEITER-2.ZBS	LEITER / Ladder  DORNACK 29.11.86
+LIDO.ZBS	LINE-DOMINO SOLITAERSPIEL   TTX-COMPUTER-PLAYS
+LIFE.ZBS	LIVE frei nach J.Conway
+LMET.ZBS	Meteoriten ausweichen
+LS.ZBS		LANGE STRASSE Würfelspiel  H.U.Kuester
+LSKEET.ZBS	SKEETL9 Luxus SKEET WURFTAUBENSCHIESSEN  Grundprogramm D. Neumann RED/EC8  ERWEITERUNG W.SPIEHL MKD/TN
+LSPIEL.ZBS	DAS L-SPIEL  ANDREAS SCHROETER
+MANAGER.ZBS	FUSSBALL-MANAGER Bundesliga-Simulation
+MANN.ZBS	UEBER DIE HINDERNISSE SPRINGEN
+MAU.ZBS		MAU-MAU  TRUMPF-8 ODER MAU Kartenspiel  D.H
+MAUER.ZBS	MAUERSPIEL, Breakout-Variante
+MAUS.ZBS	Die MAUS im GEISTERSCHLOSS, Labyrinth, Packman vgl. GEISTER.ZBS
+MAZOGS.ZBS	MAZOGS nach ZX81, f. ROM-BASIC		ANDREAS SCHROETER Deutsch U. Zander
+MAZOGSR.ZBS	MAZOGS nach ZX81, f. RAM-BASIC(und USB)	ANDREAS SCHROETER Deutsch U. Zander
+MELKLI.ZBS	MELODIEKLINGELEMULATOR FUER MELODIEENTWICKLUNG NACH FA 4/86  BERND HUTSCHENREUTHER, 23.9.87
+MESSDEMO.ZBS	DEMONSTRATIONSPROGRAMM f. LEIPZIGER HERBSTMESSE 1986  STEFAN RUDECK
+METEOR.ZBS	Meteoriten ausweichen, vgl. LMET.ZBS
+MINE.ZBS	MINEN SUCHEN  UWE SIEBERT 28.5.1986
+MINTEX.ZBS	Mini-Textverarbeitung
+MIST20.ZBS	Lasershow/Grafikshow
+MONDLAND.ZBS	Mondlandung  Michael Hohmuth I3/1985
+MONOPOLY.ZBS	Monopoly Brettspiel
+MONSTER.ZBS	MONSTERKAMPF SCROLL-SPIEL
+MUEHLE.ZBS	3D-Mühle-Spiel gegen Computer
+MUSI1-87.ZBS	gewürfelte Musik nach Kirnberger   REM-RADIO DDR
+MUSIC.ZBS	Der Computer als Klavier, Spielen mit Tasten, Ende mit ESC
+MUSIK.ZBS	KOMMT EIN VOGEL GEFLOGEN, TANCUJ,TANCUJ, BUDEME, BEATLES
+MUSIK20.ZBS	20 VOLKSLIEDER
+MUSIKMIX.ZBS	ALLE MEINE ENTCHEN, ES BLIES EIN JAEGER WOHL IN SEIN HORN, KUCKUCK,KUCKUCK, HAENSCHEN KLEIN
+NAME2.ZBS	Testprogramm Namenseingabe per Joystick
+NIBBLER.ZBS	Nibbler SINCLAIR/QL-SPIEL VON W.USLAR, Mäuse abfangen
+ORBIT.ZBS	Raumschiff abschießen
+ORGEL.ZBS	Computer als Orgel, incl. Rekorder!
+OTHELLO.ZBS	Othello/Reversi
+OTHELLO2.ZBS	OTHELLO/Reversi  M.Pester, 5 Schwierigkeitsstufen
+P1.ZBS		1. Tekkno-Hour, Video zu Techno-Musik
+P2.ZBS		2. Tekkno-Hour, Video zu Techno-Musik
+P3.ZBS		3. Tekkno-Hour, Loveparade 4.7.92 (Steffen Schmidt, Ralf Mehlhorn, Sebastian Kraft Dresden ???)
+P4.ZBS		4. Tekkno-Hour "Die schwarze Zone"
+PARAVIA.ZBS	SANTA PARAVIA,DEUTSCH Wirtschaftssimulation TEGETHOFF,24.05.81/01.09.82; orig. ANDREAS GRIMM, BERND SCHINDLER
+PFERD.ZBS	Reaktionsspiel Hindernisse ueberwinden  Jan Bochmann 17.12.85
+PLOTTER.ZBS	Plotter-Painter for KC-Plotter XY 4133 or XY 4140 written in >The LKCC< in Berlin (1990)
+POKER.ZBS	Poker-Milly
+PYRAMIDE.ZBS	Pyramide ausrauben JB SOFTWARE J.Bochmann 19.9.86
+QUIZ.ZBS	TIERNAMENQUIZ
+RACER.ZBS	STARCAR grosser Preis von Monaco  Version 2.1 / 12.04.1989 Jens Kunath
+RADIER.ZBS	Sterne aufsammeln GOLDSCHMIDT 1985
+RAETSEL.ZBS	ein Kreuzworträtsel Thema EDV
+RALLEY.ZBS	Taxi fahren
+RALLYE.ZBS	SAFARI-RALLYE, ähnlich Ski-Abfahrt
+RAUMFLUG.ZBS	Mondlandung
+RECHNEN.ZBS	KOPFRECHNEN  UWE SIEBERT
+ROBOTER.ZBS	CHASE, IRRGARTEN 
+ROULETTE.ZBS	Roulette
+RUEBE.ZBS	Rüben gärtnern, Simulation
+RUMPI.ZBS	RUMPELSTILZCHEN, Adventure, STEFFEN POLSTER, 25./28. 9.1986 VERSION 1
+SATURN.ZBS	"Erde anfunken", Prinzip Entenjagd
+SATZ.ZBS	Satzgruppe des Pythagoras, Lehrprogramm
+SCHATZ.ZBS	Labyrint, Sylvio Sell, COMPUTERKLUB DER BERTOLT-BRECHT-OS
+SCHILD.ZBS	SCHILDKROETEN FANGEN  30.11.85 . S. Goetze
+SEDEMO1.ZBS	BEISPIEL FUER NUTZUNG DES SPRACHEINGABE-MODUL 690 032.4, VERSION 3 24.4.87
+SIMU.ZBS	Autofahrsimulation 
+SIRENE.ZBS	Sirenen-Sound
+SKANDAL.ZBS	Skandal um Rosi, Ladder mit Strip
+SKAT.ZBS	Skat spielen
+SKEET2.ZBS	SKEETL9 vgl. LSKEET.ZBS	Luxus SKEET WURFTAUBENSCHIESSEN  Grundprogramm D. Neumann RED/EC8  ERWEITERUNG W.SPIEHL MKD/TN
+SKI.ZBS		Slalom, Ski-Abfahrt  F.Mertens, IH Mittweida SG 84.10.4, nur ROM-BASIC
+SKORPS.ZBS	Blumen sammeln, Skorpione meiden
+SMUGLE.ZBS	Schmuggel, vom ZX 81 von U. Schulze
+SNAKE.ZBS	Uwe Ahrendt 4/1985
+SNAKE2.ZBS	Uwe Ahrendt 4/1985, ältere Version?
+SOUND.ZBS	E-Orgel, mit Recorder
+SPACE.ZBS	VIDEOSPIEL, VIDEOSPIEL, KNOP-SOFT:H.KNOP
+SPORT.ZBS	VIERKAMPF  TU Karl-Marx-Stadt M.P.  O1.O7.86
+SP-TAFEL.ZBS	Zeichnen ueber Spracheingabe, NUTZUNG DES SPRACHEINGABE-MODUL 690 032.4
+SQ.ZBS		SEX-QUOTIENT bestimmen
+STARTREK.ZBS	mit Kampfflugzeug feindl. Objekte abschießen (auch BOMBER)
+STRASSE.ZBS	FEIERABENDVERKEHR, Straße überqueren
+SUMARIA.ZBS	ANTIKE STADT SUMARIA REGIEREN, Wirtschaftssimulation
+SUMERIA.ZBS	Sumeria regieren, Wirtschaftssimulation (andere Umsetzung)
+TAXI.ZBS	Taxi steuern
+TENNIS.ZBS	Pong
+TEST.ZBS	SCHUELERTEST 
+TICTAC.ZBS	TIC-TAC-TOE nach Wurzel 9 und 10/87
+TIER.ZBS	Computer errät Tier  W.STRAUCH 12.09.84
+TREFFER.ZBS	Flugkörper treffen, Jagdspiel
+TYP_ATT3.ZBS	TYPO ATTACK, Gebilde abschießen
+UFO.ZBS		Ufos ausweichen  B. Hellmund, 18.06.88
+UFO2.ZBS	Ufos abschießen
+UFO-TOWN.ZBS	Ufos abschießen,  STEPHAN RESSEL, TOBIAS DORNACK, 15.5.1986
+VIER.ZBS	VIER GEWINNT, vier in einer Reihe
+V-SPIELE.ZBS	vier Spiele: Bingo, Bomber, 17+4, Master Mind
+WERBE.ZBS	VORSTELLUNGSPROGRAMM  KC 85/1 VEB KOMBINAT ROBOTRON SONDERVERSION  STAND 23.4.85
+WERKESA.ZBS	Werkesammlung: Farbtest V.1, V.2, Take Down The Wall, Weckerprogramm Konstantin, Berechnung von Mittelwert
+WILDDIEB.ZBS	Enten schießen
+WUERFELN.ZBS	Statistik, n mal Würfeln
+YAHTZEE.ZBS	YAHTZEE/Kniffel, Gesellschaftsspiel
+Z90-DEMO.ZBS	Z9001-Demonstration, B-S. Großmann
+ZAHL_COM.ZBS	PRIMZAHLEN, ZERLEGUNG VON ZAHLEN, ZAHLENTHEORIE, IRRATIONALE ZAHLEN, GEBROCHENE ZAHLEN, ZAHLENSYSTEME, SIMULATION 'LIFE', ARITHMETIK 
+		Basic--Programm mit MC, St.Polster, 4.10.1987  f. ROM-BASIC
+ZWINGER.ZBS	Dresdner Zwinger, Bild zum Ausdrucken (aus R-DEMO1.zbs)
+
+
+
+VERZEICHNIS \VP
+alles Sachen von V.Pohlers oder zumindest angepasst
+
+AMELIE.COM	1-Bit-Musik
+BASIC.COM	Basic-Interpreter			(R0111,vp)
+BLOCKS.COM	Schiebespiel, Block befreien
+CRT40.COM	Beispiel-Treiber für CRT
+CRT40P.COM	40-Zeichen-CRT-Treiber f. KRT-Grafik, erlaubt nachladbare Zeichensätze
+CRT80P.COM	80-Zeichen-CRT-Treiber f. KRT-Grafik
+DEVICE.COM	Gerätezuordnung anzeigen/ändern, ähnlich ASGN
+EPSON.COM	universeller Druckertreiber f. User-Port
+F83A4.COM	Forth, s. VERZEICHNIS \FORTH
+FDTEST18.COM	Floppy-Test-Programm
+GD.COM		Druckertreiberprogramm GDRUCK, Anleitung s. GDDOC.TXT
+GRAF.COM	Basic-Plotter-Grafik-Treiber f. BASIC	robotron,vp	Grafik-Zusatz.pdf, Plotter xy4131.pdf
+GRAF14.COM	1/4tel-Grafik-Treiber f. BASIC		robotron,vp
+GRAFP.COM	KRT-Grafik-Treiber f. BASIC		robotron,vp
+INITKC.COM	Disketten formatieren (braucht robotron-Floppy-Modul)
+K6313G1.COM	Druckertreiber K6311 (reassd)
+LPRINTER.COM	Druckertreiber
+MUSIK3.COM	1-Bit-Musik
+P.COM		Druckertreiber speziell f. JKCEMU
+PAINTBOX.COM	Zeicheprogramm
+PICTURE8.COM	Beispielbild, LAden direkt oder mit PAINTBOX.COM
+RAMTEST.COM	Speichertestprogramm
+ROM.COM		TEST-Z9001 IHM, ZEG, 86
+SCHIEB.COM	Schiebespiel, Block befreien (dt. Version von BLOCKS)
+SM.COM		Schreibmaschine, S3004-Treiber
+SWITCH_Z.COM	3 Zeichensätze für CRT40P, Aktivieren mit ZG1..ZG3
+SYSINFO.COM	System-Information
+TREIBER1.COM	Treiberpaket aus mp 10/87	F. Schwarzenberg
+WORD.COM	Textverarbeitung MicroWORD (von Z1013)  Brosig,vp
+KRT.HLP		kurze Hilfe zur KRT-Grafikprogrammen, Anzeigen mit HELP
+ZM.HLP		kurze Hilfe zum Zusatzmonitior ZM30, Anzeigen mit HELP
+GDDOC.TXT	Anleitung zu GD.COM (Druckertreiberprogramm GDRUCK), Laden mit TEXT1
+WORD15.TXT	Anleitung zu WORD.COM, Laden mit WORD.COM
+GLOBUS87.ZBS	Beispielprogramm f. Vollgrafik/KRT-Grafik
+N-ECK.ZBS	Beispielprogramm f. Vollgrafik/KRT-Grafik
+R-GRDEM2.ZBS	Beispielprogramm f. KRT-Grafik (R+PLDEMO angepasst)
+R-GRDEMO.ZBS	Beispielprogramm f. Plotter u. Vollgrafik
+UHR.ZBS		Beispielprogramm f. KRT-Grafik grafp.com	
+UHR14.ZBS	Beispielprogramm f. 1/4tel-Grafik graf14.com	
+
+
+
+VERZEICHNIS \DOC
+-- Anleitungen etc, kein Z9001-Ordner!
+
+Bedienungsanleitung.pdf			Handbuchsatz KC85.1x
+Programmierhandbuch Teil 1.pdf		Handbuchsatz KC85.1x
+Programmierhandbuch Teil 2.pdf		Handbuchsatz KC85.1x
+Anhang zum Programmierhandbuch.pdf	Handbuchsatz KC85.1x
+z9_kc2.pdf				Ergänzungen zu KC87.2x
+--
+Betriebssystem Routinen.pdf		Beschreibung Betriebssystem KC 85/1
+os12.lst				Listing Betriebssystem
+z9001_unterlagen.txt			meine Entwicklungsunterlagen
+--
+ADU-Modul.pdf				Beschreibung Analog-Digital-Umsetzer-Modul
+Drucker-Modul K6311.pdf			Beschreibung Drucker-Modul (alt, mit K6311/12-ROM)
+Drucker-Modul V24.pdf			Beschreibung Drucker-Modul (neu, mit V24A1..V24A3)
+EA-Modul.pdf				Beschreibung Eingabe-/Ausgabe-Modul
+Editor_Assembler.pdf			Beschreibung Editor/Assembler (ASM)
+Eprommer-Modul.pdf			Beschreibung Programmier-Modul (EPROM2A etc.)
+Grafik-Zusatz.pdf			Beschreibung Grafik-Zusatz und Basic-Grafik-Treiber
+IDAS.pdf				Beschreibung Interpretativer Dialogassembler (IDAS)
+Plotter xy4131.pdf			Beschreibung Plotter und Basic-Grafik-Treiber
+Spracheingabe-Modul.pdf			Beschreibung Spracheingabe-Modul (SPRACHE1)
+Diskettenstation.pdf			robotron-Doku, für CP/M-Zusatzmodule
+megamodul.pdf				Beschreibung für Mega-Module
+PASCAL-Modul.pdf			Turbopascal f. KC (KCPASCAL)
+-- Kassetten-Beschreibungen
+r0111.pdf				Kasette R0111 Grundkassette Z9001
+R0115 Script V24.pdf			Kasette R0115 Druckergrundkassette
+R0133.pdf				Kasette R0133 Datenverarbeitung
+R0136 Text1.pdf				Kasette R0136 Datenverarbeitung
+R0137.pdf				Kasette R0137 Datenverarbeitung
+R0145.pdf				Kasette R0145 Mathematik/Geografie
+R0152.pdf				Kasette R0152 Mathematik
+R0153.pdf				Kasette R0153 Mathematik
+R0165.pdf				Kasette R0165 Spiele
+R0166.pdf				Kasette R0166 Spiele
+R0191.pdf				Kasette R0191 Basic-Mix 1
+R0192.pdf				Kasette R0192 Basic-Mix 2
+R0193.pdf				Kasette R0193 Basic-Mix 3
+-- weitere Texte etc, größtenteils vp
+asm87.txt				-> ASM87
+basic.txt
+beschreibungen.txt			Beschreibungen diverser kleiner Programme
+editor_assembler_edas.txt		
+f83code.txt				-> FORTH
+f83glossar.txt				-> FORTH
+f83kurzdoku.txt				-> FORTH
+f83words.txt				-> FORTH
+graf_basic_beispiele.txt		Beispiele für Basic mit Grafiktreiberzusatz
+Grafik-Z9001.txt			Beschreibung der Unterschiede der Grtafiktreiber
+r0112.txt				robotron Kassette R 0112	Grundkassette KC 87
+r0113.txt				robotron Kassette R 0113	Spracheingabemodul 
+r0121.txt				robotron Kassette R 0121	Assembler
+r0122.txt				robotron Kassette R 0122	IDAS
+TEXT1.TXT				Anleitung TEXT1
+wobugor.txt				Debugger -> SOFT
+

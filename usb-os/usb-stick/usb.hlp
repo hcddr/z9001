@@ -1,0 +1,21 @@
+<YELLOW>USB-OS (V. Pohlers 2016/2019)
+<WHITE>
+<YELLOW>Kommandos<WHITE>
+<RED>DOS	 <WHITE>Umschalten auf USB-OS
+<RED>CAOS	 <WHITE>-"- auf Kassetten-OS
+<RED>DIR<WHITE> <GREEN>[suchmuster]<WHITE> USB-Inhalt
+<RED>CD<WHITE> <GREEN>[dirname]<WHITE>     Verzeichniswechsel
+	 CD / root, CD .. eins rauf
+<RED>USB	 <WHITE>VDIP-Treiber Reinitialisieren
+<GREEN>USB FWV  <WHITE>Anzeige der Firmware-Version
+<GREEN>USB IDD  <WHITE>Anzeige Laufwerksinformation
+<GREEN>USB DIR<WHITE>  Anzeige des Verzeichnisses
+<GREEN>USB MKD dirname<WHITE>  Verzeichnis anlegen
+<GREEN>USB DLD dirname<WHITE>  Verzeichnis loeschen
+<GREEN>USB DLF filename<WHITE> Datei loeschen
+<GREEN>USB RD filename<WHITE>  (Text-)Datei anzeigen
+<GREEN>USB REN alt neu<WHITE>  Datei umbenennen
+<YELLOW>Zusatzkommandos
+<RED>MENU	 <WHITE>Auflisten aller Kommandos
+<RED>HELP <GREEN>[kdo]		<WHITE>kurze Hilfe
+<RED>SAVE <GREEN>aadr eadr sadr	<WHITE>Speichern

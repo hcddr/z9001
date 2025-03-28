@@ -1,0 +1,21 @@
+Paketinhalt
+=====================
+
+
+00usb-os.txt		Beschreibung. Sollte man lesen...
+vdipos.rom 		Der ROM fürs ROM-Modul (VDIP)
+ch376os.rom		Der ROM fürs ROM-Modul (CH376)
+usb-stick\		Inhalt auf einen FAT16/32-USB-Stick kopieren
+			bei SD-OS auf eine FAT16-SD-Karte (<= 2 GB!)
+
+Der Rest enthält die Quelldateien für das USB-OS-System
+Zum Assemblieren braucht man den Arnold-Assembler und Perl
+
+comfiles\		Quellcodes für angepasste Z9001-Programme
+system\			Quellcode des USB-OS-System
+modul.asm		Rahmenprogramm des USB-OS-System
+makefile		Makefile
+make.exe		make
+bin2kcc.pl		Perl-Programm zum Erzeugen der COM-Dateien
+mkdepend.pl		Perl-Programm zum Erzeugen der .depend-Datei
+p2adr.pl		Perl-Hilfsprogramm für den Assembler

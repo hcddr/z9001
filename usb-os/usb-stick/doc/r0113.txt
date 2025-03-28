@@ -1,0 +1,76 @@
+robotron Kassette R 0113	Spracheingabemodul 
+==================================================
+ 
+Kassette zum Spracheingabemodul 690 032.4
+
+Programme
+---------
+
+SPRACHE1 Wortlernen und Worterkennung für Spracheingabemodul
+SPRACHE2 Wortlernen und Worterkennung für Spracheingabemodul
+EPROM2A Treiber für Programmiermodul
+EPROM6A Treiber für Programmiermodul
+EPROMA2 Treiber für Programmiermodul
+
+Programmbeschreibungen
+----------------------
+
+SPRACHE1, SPRACHE2
+------------------
+
+Dateiname		SPRACHE1.COM, SPRACHE2.COM
+Laden in		OS
+Programmstandort	SPRACHE1: 6000h-6E8Fh (bzw. bis 7CFFH 
+			einschließlich max. Wortschatz)
+			SPRACHE2: 9800h-A68Fh (bzw. bis B50CH 
+			einschließlich max. Wortschatz)
+OS-Kommando		SPRACHE1, SPRACHE2
+
+Programm für Spracheingabemodul
+
+Das Programm SPRACHE1 (oder SPRACHE2) ermöglicht:
+
+- Laden und Abspeichern eines Wortschatzes
+- Lernen (ohne oder mit vorhandenem Wortschatz)
+- Korrekturen im Wortschatz (Umbenennen oder Löschen von Wortklassen)
+- Wiedererkennen von Worten
+
+Das Programm SPRACHE1 (bzw. SPRACHE2) enthält die Routine zum Suchen des 
+Erkennungsergebnisses. Das entsprechende Programm 1 oder 2 ist in den 
+Arbeitsspeicher zu laden. Nachdem über das Menü des SPRACHE-Programms der 
+gewünschte Wortschatz geladen wurde und ein Nachlernvorgang erfolgte, muß das 
+SPRACHE-Programm durch erneuten STOP-Tastendruck verlassen und in das 
+Betriebssystem zurückgekehrt werden. Von hier aus kann das Anwenderprogramm 
+gestartet werden.
+
+Dieses Programm dient zum Erkennen von Worten. Anwendungsprogramme, die die 
+Spracherkennung nutzen, liegen der Kassette nicht bei und müssen selbst 
+geschrieben werden.
+
+
+EPROM2A, EPROM6A, EPROMA2
+-------------------------
+
+Dateiname		EPROM2A.COM, EPROM6A.COM, EPROMA2.COM
+Laden in		OS
+Programmstandort	EPROM2A: 2A00h-2DA1h
+			EPROM6A: 6A00h-6DA1h
+			EPROMA2: A200h-A5A1h
+OS-Kommando		EPROM2A, EPROM6A, EPROMA2
+
+Die vollständige Beschreibung dieser Treiberprogramme ist der dem 
+Programmiermodul 690 023.6 beigelegten Dokumentation zu entnehmen.
+
+Folgende wesentliche Funktionen werden realisiert:
+
+READ 	Einlesen des EPROM-Inhaltes (auch teilweise) in den Arbeits-RAM des 
+	Kleincomputers, wobei der CRC-Prüfrest gebildet wird.
+PROG 	Programmieren eines EPROMs (auch teilweise) aus dem adressierbaren 
+	Speicherbereich des Kleincomputers mit vorhergehender Leerkontrolle 
+	des EPROMs. Bei Programmierfehler erfolgt Abbruch. Am Programmierende 
+	erfolgt die Ausschrift des CRC-Prüfrestes.
+END 	Rücksprung in das Betriebssystem des Kleincomputers.
+
+Alle Zustände werden durch entsprechenden Bildschirmdialog angezeigt. Durch das 
+Signal BEEP wird Programmier-Ende oder -Abbruch auch akustisch angezeigt.
+

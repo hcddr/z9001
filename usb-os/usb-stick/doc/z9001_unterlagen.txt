@@ -1,0 +1,1827 @@
+#------------------------------------------------------------------------------
+# Aus der Systembeschreibung
+#------------------------------------------------------------------------------
+
+CTC:	CTC0	80H und 84H : Kanal 0
+	CTC1	81H und 85H : Kanal 1
+	CTC2	82H und 86H : Kanal 2
+	CTC3	83H und 87H : Kanal 3
+
+	Kanal 2 und 3 : Realisierung der Systemuhr
+	Kanal 1 : frei für den Anwender
+		Eingang und Ausgang des Kanals sind auf den
+		E/A-Steckverbinder X7 herausgeführt
+	Kanal 0 : Kassette, akustischen Geber auf der Tastatur.
+
+; System-PIO ist PIO1
+PIO1:	DPIO1A	88H und 8CH Daten Kanal A	-- Border, Kass.Inp.
+	DPIO1B	89H und 8DH Daten Kanal B	-- User-Port X7
+	SPIO1A	8AH und 8EH Steuerung Kanal A
+	SPIO1B	8BH und 8FH Steuerung Kanal B	-- User-Port X7
+
+Kanal A wird zur internen Steuerung benutzt, wobei die
+Leitungen folgende Bedeutung haben:
+	A0, A1 : unbenutzt (für 16 Farben und 2. Zeichensatz)
+	A2 : 	VBART - Einstellung der Videobetriebsart
+		VBART = LOW : 24-Zeilen-Modus
+		VBART = HIGH : 20-Zeilen-Modus
+	A3, A4, A5 : Einstellung der Farbe für den Bildschirmrand (RGB)
+	A6 : Ansteuerung der "GRAPHIC"-LED auf der Tastatur
+		: A6 = LOW : LED aus
+	A7 : Freigabe des akustischen Gebers auf der Tastatur
+		A7 = HIGH : akustische Ausgabe (gleichzeitig muß
+		Kanal 0 vom CTC (21D) entsprechend initialisiert
+		sein.
+	ARDY : unbenutzt
+	ASTB : Eingabesignal von Kassetteninterface
+
+    +------+------+------+------+------+------+------+------+
+    | BEEP | GRAF |BORDER|BORDER|BORDER| 20Z  |  -   |  -   |
+    |      | LED  |  B   |  G   |  R   |      |      |      |
+    +------+------+------+------+------+------+------+------+
+
+Der Kanal B der ersten PIO (24D) ist vollständig zur E/A-Buchse
+X7 geführt und steht dem Anwender zur Verfügung.
+
+
+; Tastatur-PIO ist PIO2
+PIO2:	DPIOA 	90H und 94H Daten Kanal A	-- Tastatur Spalten
+	DPIOB 	91H und 95H Daten Kanal B	-- Tastatur Zeilen
+	SPIOA 	92H und 96H Steuerung Kanal A
+	SPIOB	93H und 97H Steuerung Kanal B
+
+Die zweite PIO (24E) wird komplett zur Ansteuerung der
+Tastatur sowie der Spielhebel, die parallel zur Tastatur
+geschaltet sind, benutzt.
+Die Tastaturabfrage wird folgendermaßen realisiert:
+
+PIO ist auf BIT Ein-/Ausgabe initialisiert,
+Kanal A auf Ausgabe, Kanal B auf Eingabe.
+Auf Kanal A wird 0 ausgegeben, d.h., alle Leitungen
+sind "LOW". Ist keine Taste gedrückt, so sind alle Leitungen
+von Kanal B auf Grund der Ziehwiderstände "HIGH". Wird eine
+Taste gedrückt, so ist eine Leitung von A mit einer Leitung
+von B verbunden, und es wird ein Interrupt ausgelöst, da eine
+Leitung von B LOW-Pegel führt. Jetzt werden die Kanäle uminitialisiert,
+auf B wird 0 ausgegeben und auf Kanal A führt jetzt nur die der gedrückten
+Taste entsprechende Leitung LOW-Pegel.
+
+laut OS:
+INITA
+	A/B Bit-E/A
+	A Ausgänge, init mit FF
+	B Eingänge
+INTP bei Tastendruck (DPIOB)
+	COUNT=0 	INTERRUPTZAEHLER
+	LAKEY=7FH	FUER ENTPRELLEN
+	CTC2 Timer start
+ICTC bei CTC2 
+	COUNT--
+	wenn count=0
+	
+GPIOD Tastaturmatrix abfragen
+	Ausgabe A 0, Zeilen nach B einlesen
+	
+	
+	
+	
+
+
+Die Ansteuerung der Spielhebel wird analog realisiert.
+
+Anstelle der Spielhebel kann auch mit der Tastatur gearbeitet
+werden, wobei folgende Tasten den Spielhebeln entsprechen:
+	0, 1, 2, 3, 4          : Spielhebel 2  (diese Tasten werden zusätzlich 
+						als Spielhebel 1 interpretiert)
+	left,right,down,up,ESC : Spielhebel 1
+
+
+
+Interruptpriorität der E/A-Bausteine:
+	PIO 1
+	PIO 2
+	CTC
+	externe E/A-Bausteine
+
+Informationscodierung im Farbattributspeicher:
+
+7 6 5 4 3 2 1 0
+              ROT
+            GRÜN Hintergrundfarbe
+          BLAU
+        frei (für 16 Farben)
+      ROT
+    GRÜN Vordergrundfarbe
+  BLAU
+BLINKEN (für 16 Farben)
+
+    +------+------+------+------+------+------+------+------+
+    |BLINK | INK  | INK  | INK  |  -   |PAPER |PAPER |PAPER |
+    |      |  B   |  G   |  R   |      |  B   |  G   |  R   |
+    +------+------+------+------+------+------+------+------+
+
+
+- BGR --------
+0 000 schwarz
+1 001 rot
+2 010 grün
+3 011 gelb
+4 100 blau
+5 101 purpur (violett)
+6 110 cyan (hellblau)
+7 111 weiss
+
+
+#------------------------------------------------------------------------------
+# VP
+#------------------------------------------------------------------------------
+
+Tastatur (lt. Stromlaufplan U. Zander)
+
+PIO2A, Port 90H
+
+  A0    A1    A2    A3    A4    A5    A6    A7
+  |     |     |     |     |     |     |     |
+ TI0   TI1   TI2   TI3   TI4   TI5   TI6   TI7
+  |     |     |     |     |     |     |     |
+-------------------------------------------------      PIO2B, Port 91H
+| S11 | S12 | S13 | S14 | S15 | S16 | S17 | S18 |--TO0-B0
+|   0 |   1 |   2 |   3 |   4 |   5 |   6 |   7 |
+-------------------------------------------------
+| S21 | S22 | S23 | S24 | S25 | S26 | S27 | S28 |--TO1-B1
+|   8 |   9 |   : |   ; |   , |   = |   . |   ? |
+-------------------------------------------------
+| S31 | S32 | S33 | S34 | S35 | S36 | S37 | S38 |--TO2-B2
+|   @ |   A |   B |   C |   D |   E |   F |   G |
+-------------------------------------------------
+| S41 | S42 | S43 | S44 | S45 | S46 | S47 | S48 |--TO3-B3
+|   H |   I |   J |   K |   L |   M |   N |   O |
+-------------------------------------------------
+| S51 | S52 | S53 | S54 | S55 | S56 | S57 | S58 |--TO4-B4
+|   P |   Q |   R |   S |   T |   U |   V |   W |
+-------------------------------------------------
+| S61 | S62 | S63 | S64 | S65 | S66 | S67 |(S68)|--TO5-B5
+|   X |   Y |   Z | tab |pause| ins |   ^ |     |
+-------------------------------------------------
+| S71 | S72 | S73 | S74 | S75 | S76 | S77 | S78 |--TO6-B6
+|left |right| down|  up | esc |enter|stop |space|
+-------------------------------------------------
+| S81 | S82 | S83 | S84 | S85 | S86 | S87 |(S88)|--TO7-B7
+|shift|color|contr|graph|list | run |shlck|     |
+-------------------------------------------------
+
+(alle! Leitungen liegen über 3,9kOhm an +5V)
+
+Kanal A ist auf BIT Ein-/Ausgabe initialisiert, Kanal B auf
+Ausgabe. Auf Kanal B wird 0 ausgegeben, d.h., alle Leitungen
+sind "LOW". Ist keine Taste gedrückt, so sind alle Leitungen
+von Kanal A auf Grund der Ziehwiderstände "HIGH". Wird eine
+Taste gedrückt, so ist eine Leitung von A mit einer Leitung
+von B verbunden, und es wird ein Interrupt ausgelöst, da eine
+Leitung von A LOW-Pegel führt. Jetzt werden die Kanäle uminitialisiert,
+die von A gelesene Information wird auf A wieder
+ausgegeben und auf Kanal B führt jetzt nur die der gedrückten
+Taste entsprechende Leitung LOW-Pegel.
+
+
+EA-Adressen Z9001
+
+Adresse Verwendung Details
+00-7Fh frei
+80-87 CTC
+88-8F PIO1
+90-97 PIO2 (Tastatur)
+98-A7 Musikmodul für KC87 als frei deklariert
+A8-B7 Druckermodule CTC A8-AB, SIO B0-B4
+B8-C7 frei
+C8-CF E/A-Modul C8-CB oder CC-CF (umschaltbar)
+D0-D7 Programmiermodul
+D8-DF frei
+E0-EF Spracheingabemodul
+F0-F7 frei
+F8-FF ADU-Modul FC, FD, F8-FB
+--
+04-07 CPM-RAM-Modul
+10-12 CPM-Floppy-Modul Rossendorf-Version
+98-A7 CPM-Floppy-Modul Robotron-Version
+B8-BA Grafikzusatz
+
+BASIC Farbspeicher binär Farbe
+1 0 000 schwarz
+2 1 001 rot
+3 2 010 grün
+4 3 011 gelb
+5 4 100 blau
+6 5 101 purpur (violett)
+7 6 110 cyan (hellblau)
+8 7 111 weiss
+
+System-OS
+---------
+
+chr(6) - Blinken ein/aus, chr(22) - Invers ein/aus
+
+Alle nach CHR$(6) ausgegebenen Zeichen erscheinen blinkend auf dem Bildschirm
+(für sie wird das Blinkbit im Farbspeicher gesetzt). Nach nochmaliger Ausgabe
+von CHR$(6) werden alle danach ausgegebenen Zeichen wieder normal dargestellt.
+Analoges gilt für CHR$(22), die Zeichen werden dann invers (mit vertauschten
+Vorder- und Hintergrundfarben) ausgegeben.
+
+Port 136 (s. S. 131)
+--------------------
+
+Über die PIO 1, Kanal A, Adresse 136=88h, sind der Farbcode für den
+Bildschirmrand, der 20/24-Zeilen-Modus und die Ansteuerung von Grafikmodus und
+Summerton (BEEP) codiert.
+
+Bit 7: Beep (1=ein)
+Bit 6: Grafikmodus (1=ein)
+Bit 5-3: Randfarbe (Border, s. o. Tabelle binär)
+Bit 2: 20/24-Zeilen (1=20 Zeilen, 0=24 Zeilen)
+Bit 1-0: ungenutzt (0)
+
+    +------+------+------+------+------+------+------+------+
+    | BEEP | GRAF |BORDER|BORDER|BORDER| 20Z  |  -   |  -   |
+    |      | LED  |  B   |  G   |  R   |      |      |      |
+    +------+------+------+------+------+------+------+------+
+
+Über die BORDER-Anweisung können die Bits 3 bis 5 gesetzt werden. Alle anderen
+Bits werden zurückgesetzt. Eine Umschaltung in den 20-Zeilen-Modus ist aber nur
+über eine entsprechende OUT-Anweisung realisierbar.
+
+
+
+User Port PIO1B, CTC (Anschluss X7)
+-----------------------------------
+
+CTC:	CTC1	81H und 85H : Kanal 1
+PIO1:	DPIO1B	89H und 8DH Daten Kanal B		137
+	SPIO1B	8BH und 8FH Steuerung Kanal B		139
+
+Der Kanal B der ersten PIO (24D) ist vollständig zur E/ABuchse
+X7 geführt und steht dem Anwender zur Verfügung.
+
+		A	B	C
+	---------------------------
+	1	0	0	CTC-C/TRG1
+	2	B0	B1	B2
+	3	B3	B4	B5
+	4	B6	B7	BRDY
+	5	(+5V)	BSTB	CTC-ZC/TO1
+
+
+Blick auf Buchse
+
+	 +----v-------------+
+	 |  C5 C4 C3 C2 C1  |
+	 |  B5 B4 B3 B2 B1  |
+	 |  A5 A4 A3 A2 A1  |
+	 +----^-------------+
+     IIIIIIIIIIIIIIIIIIIIIIIIIIII
+
+Ansprechen in BASIC:
+
+10 OUT 139,15: REM Byte-Ausgabe
+20 OUT 137,xx
+
+
+Zeichensatz
+-----------
+
+Die Zeichen 32=20h bis 127=7Fh entsprechen dem ASCII-Zeichensatz. Die 
+Grafikzeichen sind im Anhang zum Programmierhandbuch aufgeführt. Die Zeichen < 32 
+stimmen leider nicht mit dem erweiterten ASCII-Standard überein. Der Zeichensatz 
+enthält für Sonderzeichen keine Zeichen; diese erscheinen beim direkten 
+Beschreiben des Bildwiederholspeichers als Leerzeichen.
+
+Dezimal Hexadezimal Funktionstasten  CONTR-Tasten  Wirkung
+1 	01   		CONTR-A
+2 	02 CL LN 	CONTR-B
+3 	03 STOP 	CONTR-C
+4 	04   		CONTR-D
+5 (F) 	05   		CONTR-E Farbe Bildschirmrand einstellen
+6 (F) 	06   		CONTR-F Umschaltung auf Blinken
+7 	07   		CONTR-G Erzeugung eines Beep-Tons
+8 	08 cu left	CONTR-H
+9 	09 cu right	CONTR-I
+10 	0A cu down	CONTR-J
+11 	0B cu up 	CONTR-K
+12 	0C   		CONTR-L Löschen des Bildschirmes
+13 	0D ENTER   	CONTR-M
+14 (D) 	0E   		CONTR-N Bildschirminhalt drucken
+15 	0F   		CONTR-O
+16 (D) 	10   		CONTR-P Parallelausgabe auf Drucker
+17 	11   		CONTR-Q Tastaturkontrollton ein-/aus
+18 	12   		CONTR-R
+19 	13 PAUSE 	CONTR-S
+20 (F) 	14 COLOR 	CONTR-T
+21 (F) 	15 COLOR+SHIFT 	CONTR-U
+22 (F) 	16   		CONTR-V Umschaltung auf Invers
+23 (D) 	17   		CONTR-W Seitenvorschub am Drucker
+24 	18 tab right 	CONTR-X
+25 	19 tab left 	CONTR-Y
+26 	1A INS   	CONTR-Z
+27 	1B ESC
+28 	1C LIST
+29 	1D RUN
+30 	1E CONT
+31 	1F DEL
+
+
+(D) Wirkt nur bei angeschlossenem Drucker (d.h., der Code muss im Druckertreiber
+    verarbeitet werden!)
+(F) Wirkt nur bei eingebautem Ergänzungssatz "Farbe'.
+Die Tasten COLOR und COLOR+SHIFT sind im BASIC nur eingeschränkt nutzbar (siehe
+auch Abschnitt 4.16).
+
+
+Fehlermeldungen des Betriebssystems
+
+Fehlerausschrift  Fehler
+error 1  Eingabe eines unerlaubten Parameters
+error 2  fehlerhafte Eingabezeile
+error 3  Überschreitung des zulässigen Zahlenbereichs
+error 4  falsche Zuweisung eines E/A-Gerätes
+error 5  Eingabe eines falschen Zahlenformats
+error 6  Eingabe einer falschen Anweisung
+
+
+Zubehörübersicht
+
+Nummer Bezeichnung
+690001.0 BASIC-Modul
+690002.7 ROM-Modul
+690003.5 RAM-Modul
+690004.3 Musikmodul
+690005.1 Farb-Modul (zum Einbau in KC)
+690006.8 Druckermodul K6303 (TD40)
+690007.6 Spielhebelsatz (2 Stück)
+690009.2 ADU-Modul
+690010.7 EA-Modul
+690011.5 Grundkassette R 0111
+690016.4 Ergänzungssatz Farbe (für Fernseher)
+690017.2 Adapter
+690018.0 Zugentlastung
+690019.7 Spielhebeladapter
+690020.3 IDAS-Modul
+690021.1 Schreibmaschinenmodul f. S 6006 (V24A1-A3)
+690022.8 Editor-Assembler-Modul
+690023.6 Programmier-Modul
+690025.2 Druckermodul f. K6311 (V24A1-A3)
+690026.0 Programmkassette ASM R 0121
+690027.7 Programmkassette IDAS R 0122
+690032.4 Spracheingabe-Modul
+690033.2 PLOTTER-Grafik-Modul
+690035.7 Grafik-Zusatz
+
+900110.5 Z9001.10, KC85/1.10
+900111.3 Z9001.11, KC85/1.11
+900210.6 KC87.10, KC87.20, KC87.30
+900211.4 KC87.11, KC87.21, KC87.31
+
+
+#------------------------------------------------------------------------------
+aus dem OS-Handbuch:
+
+#------------------------------------------------------------------------------
+# Systemspeicher
+#------------------------------------------------------------------------------
+
+Adresse 	Befehl
+0000 		JMP WBOOT 	;Sprung zum Warmstart
+0003 		BER 1 		;frei
+0004 	IOBYT: 	DB 1 		;I/O-Byte zur Zuweisung log.Gerät phy. Gerät
+0005 		JMP BOS 	;Sprung zum BOS-Eintritt (für alle Systemrufe)
+0008 		BER 3 		;frei für RST 8
+000B 	SPSV: 	DA 0 		;Register für aktuellen Steck bei Eintritt in BOS
+000D 	BCSV: 	DA 0 		;Register für BC bei Eintritt in BOS
+000F 	ASV: 	DB 0 		;Register für A bei Eintritt in BOS
+0010 		BER 3 		;frei für RST 10H
+0013 	JOYR: 	DB 0 		;Datenpuffer für Spielbebel 1
+0014 	JOY1: 	DB 0 		;Datenpuffer für Spielhebel 2
+0015 	LISW: 	DB 0 		;Schalter für Hardcopy. 0 kein Copy, 1 Copy
+0016 	BSW: 	DB 0 		;Schalter für Kontrollton. 0 kein Kontrollton, 1 Kontrollton
+0017 	COLSW: 	DB 0 		;Merkzelle für Farbsteuercode
+0018 		BER 3 		;frei für RST 18H
+001B 	DMA: 	DA 80H 		;Zeiger auf Puffer für Kassetten-E/A
+001D 	HOUR: 	BER 1 		;Puffer für Stunden
+001E 	MIN: 	BER 1 		;Puffer für Minuten
+001F 	SEC: 	BER 1 		;Puffer für Sekunden
+0020 		BER 3 		;frei für RST 20H
+0023 	COUNT: 	DB 0 		;Zähler zur Tastaturentprellung und REPEAT-Funktion der Tastatur
+0024 	LAKEY:	DB 0 		;Merkzelle für letztes gültiges Zeichen von Tastatur
+0025 	KEYBU: 	DB 0 		;Tastaturpuffer
+0026 	SHLOC: 	DB 0 		;Schalter für SHIFT LOCK. 0 kein SHIFT LOCK, 1 SHIFT LOCK
+0027 	ATRIB: 	DB 2 		;aktuelles Farbattribut
+0028 		BER 3 		;frei für RST 28H
+002B 	CHARP: 	DB 1 		;aktuelle Spalte d. Cursors(1-40)
+002C 	LINEP: 	DB 1 		;aktuelle Zeile d. Cursors(1-24)
+002D 	CURS: 	DA 0EC00H 	;aktuelle physische Adresse des Cursors
+002F 	PU: 	BER 1 		;Hilfszelle (TIME + Status CONST)
+0030 		BER 3 		;frei für RST 30H
+0033 	WORKA: 	BER 1 		;Hilfszelle (ASGN)
+0034 	BUFFA: 	BER 1 		;Puffer für das Attribut des von Cursor überlagerten Zeichens
+0035 	BU: 	BER 1 		;Hilfszelle
+0036 	EOR: 	BER 2 		;Zeiger auf letzte für Anwender freie Adresse
+0038 		BER 3 		;frei für RST 38H
+003B 	P1ROL: 	DB 0 		;1. rollende Zeile - 1
+003C 	P2ROL: 	DB 25 		;letzte zu rollende Zeile + 1
+003D 	P3ROL: 	DB 0 		;1. zu rollende Spalte - 1
+003E 	P4ROL: 	DB 41 		;letzte zu rollende Spalte + 1
+003F 	BUFF: 	BER 1 		;Puffer für das vom Cursor überschriebene Zeichen
+0040 	PARBU: 	BER 2 		;Hilfszelle zur Parameterpufferung (wird nur von ALDEV genutzt)
+0042 		BER 26 		;frei für IDAS, DEBUGGER, usw.
+			;005A wird in BM608 BASIC.CSAVE auf 0 gesetzt!
+			;ZM, IDAS, EDAS nutzen diesen Bereich nicht 
+005C 	FCB: 	BER 36 		;Dateikontrollblock
+005C	FNAME: 	EQU FCB 	;Dateiname 8 Zeichen, ggf. mit 00 auffüllen
+0064	FTYP: 	EQU FCB+8 	;Dateityp 3 Zeichen, ggf. mit 00 auffüllen
+0069	PSUM: 	EQU FCB+13 	;Prüfsumme eines Datenblockes
+006A	ARB: 	EQU FCB+14 	;Hilfszelle für Kassettentreiber
+006B	BLNR: 	EQU FCB+15 	;Blocknummer
+006C	LBLNR: 	EQU FCB+16 	;gesuchte Blocknummer bei Lesen
+006D	AADR 	EQU FCB+17 	;Dateianfangsadresse
+006F	EADR 	EQU FCB+19 	;Dateiendeadresse
+0071	SADR 	EQU FCB+21 	;Startadresse, wenn Datei ein Maschinencodeprogramm ist
+0073	SBY: 	EQU FCB+23 	;Schutzbyte. 0 nicht geschützt, 1 System nach Laden der Datei vor WRITE geschützt
+0080 	CONBU: 	DB 80h 		;CCP-Eingabepuffer und Standardpuffer für Kassetten-E/A
+0081 		DB 0 		;aktuelle Länge der Eingabezeile
+0082 		BER 80
+00D2 		BER 46 		;frei
+0100 	INTLN: 	DB 0 		;interner Zeichenkettenpuffer
+0101 		BER 80
+0151 		BER 6FH
+01C0 	BOSSP: 	BER 40H 	;Beginn BOS-Stackbereich
+0200	CCPSP: 	EQU # 		;Beginn CCP- und Nutzerstackbereich
+0200	INTV: 	EQU # 		;Interruptadresstabelle
+
+
+Das CCP besitzt einen eigenen Stackbereich ab 200H in einer Länge von 40H. Dies 
+ist gleichzeitig der Stackbereich eines Anwenderprogrammes, sofern dieses nicht 
+einen eigenen Stack einrichtet. Die für den Anwender verfügbare Stacktiefe ist 
+dabei 3CH. Mit Eintritt in ein Anwenderprogramm ist SP = 1FCH. Auf Adresse 1FCH 
+steht die Adresse der Fehleranzeige (ERDIS), auf Adresse 1FEH die Adresse des 
+CCPs (GOCPM).
+Das BOS besitzt einen eigenen Stackbereich ab 1C0H.
+
+;Interrupttabelle
+0200 		DA IKACT 	;Kassette schreiben
+0202 		DA 0 		;frei für Anwender CTC Kanal 1
+0204 		DA ICTC 	;Entprellen Tastatur, Vorteiler für Systemuhr
+0206 		DA INUHR 	;Sekundentakt Systemuhr
+0208 		DA INTP 	;Tastaturinterrupt
+020A 		DA IKEP 	;Kassette lesen
+020C 		BER 74H 	;frei für Anwenderinterrupts
+
+;der folgende Speicherbereich ist durch den Nutzer für eigene Treiber verwendbar
+0280 	RTTYC 	BER 4 		;RAM TTY-Treiber für CONST
+0284 	RCRTC: 	BER 4 		;RAM CRT-Treiber für CONST
+0288 	RBATC: 	BER 4 		;RAM BAT-Treiber für CONST
+028C 	RUC: 	BER 4 		;RAM UC-Treiber für CONST
+0290 	PTTYR: 	BER 4 		;RAM TTY-Treiber für READER
+0294 	RRDR: 	BER 4 		;RAM RDR-Treiber für READER
+0298 	RUR1: 	BER 4 		;RAM UR1-Treiber für READER
+029C 	RUR2: 	BER 4 		;RAM UR2-Treiber für READER
+02A0 	RTTYP: 	BER 4 		;RAM TTY-Treiber für PUNCH
+02A4 	RPUN: 	BER 4 		;RAM PUN-Treiber für PUNCH
+02A8 	RUP1: 	BER 4 		;RAM UP1-Treiber für PUNCH
+02AC 	RUP2: 	BER 4 		;RAM UP2-Treiber für PUNCH
+02B0 	RTTYL: 	BER 4 		;RAM TTY-Treiber für LIST
+02B4 	RCRTL: 	BER 4 		;RAM CRT-Treiber für LIST
+02B8 	RLST: 	BER 4 		;RAM LST-Treiber für LIST
+02BC 	RUL: 	BER 4 		;RAM UL-Treiber für LIST
+02C0 	SYSR: 	BER 40H 	;reserviert für Systemerweiterung
+
+
+E800	Farbattributspeicher
+
+EC00	Bildspeicher
+
+Speicherbelegung im Zeichenspeicher:
+EFC0 	MAPPI: 	DB 0 		;Systembyte (Schreibschutz)
+EFC1 	MAPAR: 	BER 8 		;64-Bit-Register für Speicherkonfiguration
+				;ein Bit je 1k Speicher. 0 ROM bzw. geschützt, 1 RAM
+				;v.l.n.r !
+EFC1	0000..1FFF
+EFC2	2000..3FFF
+EFC3	4000..5FFF
+EFC4	6000..7FFF
+EFC5	8000..9FFF
+EFC6	A000..BFFF
+EFC7	C000..DFFF		0000.0000
+EFC8	E000..FFFF		0011.0000	Bit 5 ^= E800 (f. Cursor sichtbar) 
+;Adreßtabelle der Gerätetreiber
+EFC9 	ATTYC: 	DA -1 		;Adresse TTY-Treiber für CONST
+EFCB 	ACRTC: 	DA CRT 		;Adresse CRT-Treiber für CONST
+EFCD 	ABATC: 	DA BAT 		;Adresse BAT-Treiber für CONST
+EFCF 	AUC: 	DA -1 		;Adresse UC-Treiber für CONST
+EFD1 	ATTYR: 	DA -1 		;Adresse TTY-Treiber für READER
+EFD3 	ARDR: 	DA -1 		;Adresse RDR-Treiber für READER
+EFD5 	AUR1: 	DA -1 		;Adresse UR1-Treiber für READER
+EFD7 	AUR2: 	DA -1 		;Adresse UR2-Treiber für READER
+EFD9 	ATTYP: 	DA -1 		;Adresse TTY-Treiber für PUNCH
+EFDB 	APUN: 	DA -1 		;Adresse PUN-Treiber für PUNCH
+EFDD 	AUP1: 	DA -1 		;Adresse UP1-Treiber für PUNCH
+EFDF 	AUP2: 	DA -1 		;Adresse UP2-Treiber für PUNCH
+EFE1 	ATTYL: 	DA -1 		;Adresse TTY-Treiber für LIST
+EFE3 	ACRTL: 	DA CRT 		;Adresse CRT-Treiber für LIST
+EFE5 	ALST: 	DA -1 		;Adresse LST-Treiber für LIST
+EFE7 	AUL: 	DA -1 		;Adresse UL-Treiber für LIST
+;Zeichenkettenadreßtabelle
+EFE9 	TXCON: 	DA PHYDV+2 	;Adresse einer Zeichenkette des aktuellen CONST-Gerätes,
+				;Zeichenkette wird im ASGN-Kommando ausgegeben
+EFEB 	TXRDR: 	DA PHYDV 	;
+EFED 	TXPUN: 	DA PHYDV 	;entsprechend TXCON
+EFEF 	TXLST: 	DA PHYDV 	;
+
+
+EOR
+---
+
+Nach Einschalten ist EOR zufällig belegt (meist 00ff oder ff00), Nach Init ist EOR = BFFF
+Bei Reset (jp f000) werden 100h bytes ab EOR überschrieben 
+(F668h, LOESCHEN 100H BYTES AB LOG. RAM - ENDE)
+
+Der ZMA8 setzt EOR=a7ff.
+Der ZM30 setzt EOR=2fff.
+
+
+#------------------------------------------------------------------------------
+# Sprungverteiler OS
+#------------------------------------------------------------------------------
+
+F000 : C3 64 F6		RESET:	JP	INIT		;KALTSTART
+F003 : C3 AE F6			JP	WBOOT		;WARMSTART
+F006 : C3 56 F7		CSTS:	JP	CONST		;STATUS CONST
+F009 : C3 7F F7		CONSI:	JP	CONIN		;EINGABE ZEICHEN VON CONST
+F00C : C3 83 F7		CONSO:	JP	COOUT		;AUSGABE ZEICHEN ZU CONST
+F00F : C3 9E F7		LISTO:	JP	LIST		;AUSGABE ZEICHEN ZU LIST
+F012 : C3 AE F7		PUNO:	JP	PUNCH		;AUSGABE ZEICHEN ZU PUNCH
+F015 : C3 A8 F7		READI:	JP	READR		;EINGABE ZEICHEN VON READER
+F018 : C3 C4 F7		GETST:	JP	GSTIK		;ABFRAGE SPIELHEBEL
+F01B : C3 DE F5			JP	BOSER		;NICHT GENUTZT
+F01E : C3 0B F8		SETTI:	JP	STIME		;STELLEN UHRZEIT
+F021 : C3 FC F7		GETTI:	JP	GTIME		;ABFRAGE UHRZEIT
+F024 : C3 DF F7		SETDM:	JP	SDMA		;SETZEN ADR. KASSETTENPUFFER
+F027 : C3 34 F4		READS:	JP	READ		;BLOCKLESEN SEQUENTIELL
+F02A : C3 6F F4		WRITS:	JP	WRITE		;BLOCKSCHREIBEN SEQUENTIELL
+F02D : C3 A4 F7			JP	LLIST		;STATUS LIST
+F030 : C3 33 F7			JP	GCURS		;ABFRAGE PHYS. CURSORADRESSE
+F033 : C3 37 F7			JP	SCURS		;SETZEN PHYS. CURSORADRESSE
+F036 : C3 DE F5			JP	BOSER		;NICHT GENUTZT
+F039 : C3 D2 F7		GETIO:	JP	GIOBY		;ABFRAGE I/O-BYTE
+F03C : C3 D9 F7		SETIO:	JP	SIOBY		;SETZEN I/O-BYTE
+F03F : C3 E5 F7		GETM:	JP	GMEM		;LOGISCHER SPEICHERTEST
+F042 : C3 F4 F7		SETM:	JP	SMEM		;SETZEN SPEICHERKONFIGURATION
+
+#------------------------------------------------------------------------------
+# Tabelle der Systemrufe
+#------------------------------------------------------------------------------
+
+Rufnr. 	Name 	Funktion						Adr.
+00 00h	INIT 	Ausführung eines Kaltstartes				F664 
+01 01h	CONSI 	Eingabe eines Zeichens von CONST                        F009 
+02 02h	CONSO 	Ausgabe eines Zeichens zu CONST                         F00C 
+03 03h	READI 	Eingabe eines Zeichens von READ                         F015 
+04 04h	PUNO 	Ausgabe eines Zeichens zu PUNCH                         F012 
+05 05h	LISTO 	Ausgabe eines Zeichens zu LIST                          F00F 
+06 06h	GETST 	Abfrage der Spielbebel                                  F018 
+07 07h	GETIO 	Lesen I/O-Byte                                          F039 
+08 08h	SETIO 	Setzen I/O-Byte                                         F03C 
+09 09h	PRNST 	Ausgabe einer Zeichenkette zu CONST                     F3E2 
+10 0Ah	RCONB 	Eingabe einer Zeichenkette von CONST                    F365 
+11 0Bh	CSTS 	Abfrage Status CONST                                    F006 
+12 0Ch	RETVN 	Abfrage der Verionsnummer des Monitors                  F3F3 
+13 0Dh	OPENR 	Eröffnen Kassette lesen                                 F3F8 
+14 0Eh	CLOSR 	Abschließen Kassette lesen                              F42D 
+15 0Fh	OPENW 	Eröffnen Kassette schreiben                             F445 
+16 10h	CLOSW 	Abschließen Kassette schreiben                          F46A 
+17 11h	GETCU 	Abfrage logische und physische Cursoradresse            F73C 
+18 12h	SETCU 	Setzen logische Cursoradresse                           F73B 
+19 13h	BOSER 	nicht benutzt                                           F5DE 
+20 14h	READS 	Lesen eines Blockes von Kassette                        F027 
+21 15h	WRITS 	Schreiben eines Blockes auf Kassette                    F02A 
+22 16h	SETTI 	Stellen der Systemuhr                                   F01E 
+23 17h	GETTI 	Abfrage der Systemuhr                                   F021 
+24 18h	PRITI 	Ausgabe der Systemzeit als Zeichenkette                 F4A8 
+25 19h	INITA 	Initialisierung der Tastatur und der Systemuhr          FAE3 
+26 1Ah	SETDM 	Setzen der Pufferadresse für Kassette lesen/schreiben   F024 
+27 1Bh	GETM 	Abfrage der Speicherkonfiguration                       F03F 
+28 1Ch	SETM 	Setzen der Speicherkonfiguration                        F042 
+29 1Dh	DCU 	Löschen Cursor                                          F73E 
+30 1Eh	SCU 	Setzen Cursor                                           F73D 
+31 1Fh	COEXT 	Zeichenkette vorverarbeiten                             F5B9 
+32 20h	B0SER 	nicht genutzt                                           F5DE 
+33 21h	RRAND 	Lesen eines Blockes von Kassette (vgl. READS)           F4D8 
+
+
+
+
+2.2.1. Beschreibung der Systemrufe
+
+#------------------------------------------------------------------------------
+# INIT C=0
+#------------------------------------------------------------------------------
+
+Funktion:
+	- volle Initialisierung des Computers
+	- Übergang in den OS-Mode
+
+
+#------------------------------------------------------------------------------
+# CONSI C=1	fast wie CP/M, aber ohne autom. Echo
+#------------------------------------------------------------------------------
+
+Funktion:
+	- Eingabe eines Zeichen vom aktuellen CONST-Gerät
+	- kein automatisches Echo auf dem Bildschirm
+Return:
+	- A Zeichencode
+	- CY Fehlerstatus
+Beispiel:
+	;Warten auf Betätigung der ENTER-Taste
+		LD	C,1
+	M1:	CALL	5
+		JPC	FEHL	;Fehler bei Zeicheneingabe
+		CMP	0DH	;Code für ENTER
+		JRNZ	M1-#
+
+#------------------------------------------------------------------------------
+# CONSO C=2	= CP/M
+#------------------------------------------------------------------------------
+
+Funktion:
+	- Ausgabe eines Zeichens zum aktuellen CONST-Gerät
+Eingang:
+	- E Zeichencode
+Return:
+	- CY Fehlerstatus
+Beispiel:
+	;Löschen Bildschirm in Hintergrundfarbe blau
+		LD	C,2
+		LD	E,15	;Farbsteuercode Hintergrund
+		CALL	CBOS
+		LD	E,4	;Farbe BLAU
+		CALL	CBOS
+		LD	E,0CH	;Code für CLEAR SCREEN
+		CALL	CBOS
+		....
+	CBOS:	CALL 5
+		RNC		;kein Fehler
+	;Fehlerbehandlung
+		...
+
+
+#------------------------------------------------------------------------------
+# READI C=3
+#------------------------------------------------------------------------------
+
+Funktion:
+	- Eingabe eines Zeichens vom aktuellen READER-Gerät
+Return:
+	- A Zeichencode
+	- CY Fehlerstatus
+
+
+#------------------------------------------------------------------------------
+# PUNO C=4
+#------------------------------------------------------------------------------
+
+Funktion:
+	- Ausgabe eines Zeichens zum aktuellen PUNCH-Gerät
+Eingang:
+	- E Zeichencode
+Return:
+	- CY Fehlerstatus
+
+
+#------------------------------------------------------------------------------
+# LISTO C=5
+#------------------------------------------------------------------------------
+
+Funktion:
+	- Ausgabe eines Zeichens zum aktuellen LIST-Gerät
+Eingang:
+	- E Zeichencode
+Return:
+	- CY Fehlerstatus
+
+
+#------------------------------------------------------------------------------
+# GETST C=6	<> CP/M (hier direkte Konsolenein- und ausgabe)
+#------------------------------------------------------------------------------
+
+Funktion:
+	- Abfrage der Spielhebel
+Return:
+	- B Spielhebel 2
+	- C Spielhebel 1
+	- Bitbelegung des B- bzw. C-Registers:
+		Bit Richtung äquivalente Taste
+		Spielhebel 1 (nur für Spielhebel 1)
+		-----------------------------------
+		0 links 	cu links
+		1 rechts 	cu rechts
+		2 runter 	cu runter
+		3 hoch 		cu hoch
+		4 Aktionstaste 	ESC
+		beliebige Kombinationen sind möglich
+
+Beispiel:
+	;Warten auf Betätigung der Aktionstaste 1
+	M1: 	LD	C,6
+		CALL	5
+		LD	A,C
+		AND	10H 	;Ausblenden aller anderen Kombinationen
+		JRZ	M1-#
+
+
+
+#------------------------------------------------------------------------------
+# GETIO C=7	= CP/M
+#------------------------------------------------------------------------------
+
+Funktion:
+	- Abfrage des I/O-Bytes
+Return:
+	- A I/O-Byte
+
+
+#------------------------------------------------------------------------------
+# SETIO C=8	= CP/M
+#------------------------------------------------------------------------------
+
+Funktion:
+	- Setzen des I/O-Byte
+Eingang:
+	- E I/O-Byte
+
+
+#------------------------------------------------------------------------------
+# PRNST C=9	fast wie CP/M, aber Endekennzeichen 00 statt '$'
+#------------------------------------------------------------------------------
+
+Funktion:
+	- Ausgabe einer Zeichenkette zum aktuellen CONST-Gerät
+	- die Zeichenkette kann beliebige Steuercodes zur Zeichenausgabe enthalten (siehe 2.3.2.)
+	- das Ende der Zeichenkette ist ein Byte 00
+Eingang:
+	- DE Adresse der Zeichenkette
+Return:
+	- CY Fehlerstatus
+Beispiel:
+	;Löschen Bildschirm in Hintergrundfarbe blau
+	;Ausgabe einer Kopfzeile in der Farbe rot
+		LD	C,9
+		LD	DE,TEXT
+		CALL	5
+		....
+	;Zeichenkettendefinition
+	TEXT:	DB	15H	;Farbsteuercode Hintergrund
+		DB	4 	;Farbe BLAU
+		DB	0CH	;Code für CLEAR SCREEN
+		DB	14H	;Farbsteuercode Vordergrund
+		DB	1	;Farbe ROT
+		DB	'Kopfzeile'
+		DA	0A0DH	;CRLF
+		DB	0	;Ende der Zeichenkette
+
+
+#------------------------------------------------------------------------------
+# RCONB C=10	= CP/M
+#------------------------------------------------------------------------------
+
+Funktion:
+	- Eingabe einer Zeichenkette vom aktuellen CONST-Gerät
+	- die Zeichenkette wird in einem Pufferbereich abgelegt, dessen Länge vom Nutzer zu initialisieren ist
+	- das die Zeichenkette abschließende ENTER wird nicht im Puffer abgelegt
+	- die Zeichenkette wird vom BOS automatisch abgeschlossen, wenn das Pufferende erreicht wurde
+	  (kein versehentliches Überschreiben der folgenden Speicherbereiche)
+	- die Tasten DEL und m löschen das Zeichen vor dem Cursor
+	- die Taste CLLN löscht die gesamte Zeichenkette
+	- die Tasten n und p werden ignoriert
+	- das Zuschalten des Druckers (CTRL/P) ist möglich; die interne Codierung (10H) wird jedoch nicht in die Zeichenkette übernommen
+	- alle anderen Steuercodes sind verwendbar und werden in die Zeichenkette übernommen (siehe 2.3.2.)
+	- Pufferaufbau
+		LPU LZK 1.Z 2.Z 3.Z ........
+		LPU Länge des Puffers vom Nutzer initialisiert
+		LZK Länge der Zeichenkette (vom BOS aktualisiert)
+		1.Z 1. Zeichen der Zeichenkette
+		2.Z 2. Zeichen der Zeichenkette
+Eingang:
+	- DE Adresse des Zeichenpuffers
+Return:
+	- CY Fehlerstatus
+	- bei Eingabe von STOP wird die Zeichenkette abgebrochen, die Rückkehr erfolgt mit CY=1 und Fehlercode=0
+Beispiel:
+	;Anfordern einer Eingabe
+		LD	C,9
+		LD	DE,TEXT
+		CALL	CBOS	;Ausgabe der Anforderung
+		LD	C,10
+		LD	DE,PUFFE
+		LD	A,40
+		LD	(DE),A	;initialisieren max. Zeichenzahl
+		CALL	CBOS
+		JPC	STOP	;STOP-Taste gedrückt
+		INC	DE
+		LD	A,(DE)	;lesen eingegebene Zeichenzahl
+		OR	A
+		JPZ	LEER	;leere Zeichenkette (nur ENTER)
+	;Auswertung
+		....
+	CBOS:	CALL	5
+		RNC		;kein Fehler
+		OR	A
+		SCF
+		RZ		;Fehlerstatus durch STOP-Taste
+	;Fehlerbehandlung
+		....
+	;Definitionen
+	TEXT:	DA	0A0Dh 	;CRLF
+		DB	"Ihre Eingabe bitte"
+		DB	0
+	PUFFE:	BER 1		;Länge Puffer
+		BER 1		;Länge Zeichenkette
+		BER 80		;max. Zeichenzahl
+
+
+#------------------------------------------------------------------------------
+# CSTS C=11	fast CP/M, aber Rückgabe des Tastencodes statt 01h
+#------------------------------------------------------------------------------
+
+Funktion:
+	- Abfrage Status des aktuellen CONST-Gerätes
+Return:
+	- A Status
+		keine Taste betätigt A = 0
+		Taste betätigt A = Zeichencode
+	- CY Fehlerstatus
+
+
+#------------------------------------------------------------------------------
+# RETVN C=12
+#------------------------------------------------------------------------------
+
+Funktion:
+	- Abfrage der Versionsnummer des Monitors (für eventuelle Modifikationen des Monitors)
+Return:
+	- BC Versionsnummer
+
+
+#------------------------------------------------------------------------------
+# OPENR C=13
+#------------------------------------------------------------------------------
+
+Funktion:
+	- Ausgabe der Ausschrift 'start tape'
+	- Lesen Block 0 einer Datei von Kassette
+	- Vergleich gelesener Dateiname mit gesuchtem Dateinamen
+	- bei Namensgleichheit übernehmen der gelesenen Dateiparameter in den FCB (siehe 2.3.4.)
+	- Ausgabe eines Leerzeichens zum aktuellen CONST-Gerät
+	- Kassettenpuffer ist die aktuelle DMA-Adresse (siehe Ruf 26)
+Eingang:
+	- Name und Typ der gewünschten Datei im FCB
+	- DMA (1BH) Adresse Kassettenpuffer für Block 0
+Return:
+	- aktualisierte Dateiparameter im FCB (Anfangsadresse, Endadresse, Startadresse, Schutzbyte)
+	- LBLNR (6CH) nächste zu lesende Blocknummer (1)
+	- CY Fehlerstatus
+
+
+#------------------------------------------------------------------------------
+# CLOSR C=14
+#------------------------------------------------------------------------------
+
+Funktion:
+	- beenden Kassette lesen
+	- mit diesem Ruf wird kein Block von der Kassette gelesen
+Return:
+	- BC Adresse der aktuellen Dateiparameter (Anfangsadresse, Endadresse, Startadresse, Schutzbyte)
+
+
+#------------------------------------------------------------------------------
+# OPENW C=15
+#------------------------------------------------------------------------------
+
+Funktion:
+	- Ausgabe der Ausschrift 'start tape'
+	- Ausgabe von Block 0 auf Kassette
+Eingang:
+	- Name Typ und Dateiparameter im FCB (von Nutzer zu initialisieren) (siehe 2.3.4.)
+Return:
+	- A Nummer des geschriebenen Blocks (0)
+	- BLNR Blocknummer des nächsten Blocks (1)
+	- CY Fehlerstatus
+
+
+#------------------------------------------------------------------------------
+# CLOSW C=16
+#------------------------------------------------------------------------------
+
+Funktion:
+	- Ausgabe des letzten Blockes einer Datei auf Kassette
+Return:
+	- A Nummer des geschriebenen Blockes (FF)
+	- BLNR die Merkzelle der Blocknummer hat den Wert 0
+	- CY Fehlerstatus
+
+
+#------------------------------------------------------------------------------
+# GETCU C=17
+#------------------------------------------------------------------------------
+
+Funktion:
+	- gleichzeitige Abfrage der logischen und physischen Cursoradresse
+Return:
+	- D Zeile des Cursors (1-24)
+	- E Spalte des Cursors (1-40)
+	- BC physische Cursoradresse
+	- CY Fehlerstatus
+Hinweis:
+	- bei Änderung des Monitors mit Verlegung des BOS-Stackbereichs durch 
+  	  den Nutzer ist dieser Ruf nicht mehr verwendbar
+
+
+#------------------------------------------------------------------------------
+# SETCU C=18
+#------------------------------------------------------------------------------
+
+Funktion:
+	- Setzen des Cursors durch eine logische Adressierung
+Eingang:
+	- D Zeile (1-24)
+	- E Spalte (1-40)
+Return:
+	- CY Fehlerstatus
+
+
+#------------------------------------------------------------------------------
+# READS C=20
+#------------------------------------------------------------------------------
+
+Funktion:
+	- Lesen eines Blockes einer Datei von der Kassette
+	- Ausgabe eines Leerzeichens zum aktuellen CONST-Gerät
+Eingang:
+	- LBLNR (6CH) zu lesende Blocknummer
+	- DMA (1BH) Adresse, auf welcher der Block abgelegt wird
+Return:
+	- A Kennzeichen für letzten Block der Datei (EOF)
+		kein EOF 0
+		EOF 1
+	- LBLNR LBLNR neu = LBLNR alt + 1
+	- DMA DMA neu = DMA alt + 80H
+	- CY Fehlerstatus
+	- BLNR die wirklich gelesene Blocknummer (auch im Fehlerfall)
+Hinweis:
+	- das Lesen kann an beliebiger Stelle der Datei beginnen
+	- solange die gelesene Blocknummer kleiner ist als die gesuchte, liest das Programm weiter
+	- ist die gelesene Blocknummer größer, kehrt das Programm mit Fehler 'record not found' zurück
+	- wird der letzte Block erkannt, so wird dieser Block eingelesen und das Programm kehrt mit A=1 (EOF) zurück
+Beispiel:
+	;einfaches Programm zum Lesen einer Datei
+	;der FCB (5CH) wurde bereits mit dem Namen der gewünschten Datei belegt
+		LD	DE,80H	;Standard-Kassettenpuffer
+		LD	C,26	;Ruf SETDM
+		CALL	CBOS
+		LD	C,13	;Ruf OPENR
+		CALL	CBOS
+		LD	DE,(ANFAD)	;gelesene Anfangsadresse der Datei (6DH)
+		LD	C,26	;nach DMA
+		CALL	CBOS
+		LD	C,20
+	M1:	CALL	CBOS
+		OR	A
+		JRZ	M1-#	;weiterlesen bis EOF
+	;Endebehandlung
+		....
+		CBOS	CALL 5
+		RNC		;kein Fehler
+	;Fehlerbehandlung
+		....
+
+
+#------------------------------------------------------------------------------
+# WRITS C=21
+#------------------------------------------------------------------------------
+
+Funktion:
+	- Schreiben eines Blockes einer Datei auf Kassette
+Eingang:
+	- BLNR (6BH) Nummer des zu schreibenden Blockes
+	- DMA (1BH) Speicheradresse, ab der zu schreiben ist
+Return:
+	- A Nummer des geschriebenen Blockes
+	- BLNR BLNR neu = BLNR alt + 1
+	- DMA DMA neu = DMA alt + 80H
+
+
+#------------------------------------------------------------------------------
+# SETTI C=22
+#------------------------------------------------------------------------------
+
+Funktion:
+	- Stellen der internen Uhr
+Eingang:
+	- A Stunde
+	- D Minute
+	- E Sekunde
+Hinweis:
+	- die Uhr wird für die Dauer von Kassettenlese- und Kassettenschreiboperationen unterbrochen
+
+
+#------------------------------------------------------------------------------
+# GETTI C=23
+#------------------------------------------------------------------------------
+
+Funktion:
+	- Abfrage des aktuellen Standes der internen Uhr
+Return:
+	- A Stunde
+	- D Minute
+	- E Sekunde
+
+
+#------------------------------------------------------------------------------
+# PRITI C=24
+#------------------------------------------------------------------------------
+
+Funktion:
+	- Ausgabe des aktuellen Standes der internen Uhr als Zeichenkette
+	- die Zeichenkette ist 8 Bytes lang und nicht durch ein Byte 0 abgeschlossen
+	- Form der Zeichenkette Stunde: Minute: Sekunde
+Eingang:
+	- DE Adresse des Speicherbereiches für die Zeichenkette (Adresse kann auch im Bildwiederholspeicher liegen)
+Beispiel:
+	;Zeitanzeige während des Tastaturpollings
+	;
+	;Hauptprogramm
+		....
+		CALL	EINGZ	;Eingabe eines Zeichens
+		....
+	;
+	;Zeicheneingaberoutine
+	EINGZ:	LD	C,24
+		LD	DE,POS	;Bildschirmposition der Zeitausgabe
+		CALL	5
+		LD	C,11	;Sys.-Ruf CSTS
+		CALL	5
+		OR	A
+		JRZ	EINGZ-#	;noch keine Taste betätigt
+		LD	C,1
+		JMP	5	;Zeichen abholen
+
+Beispiel 2:
+	;Zeitanzeige durch Nutzung des Sekundeninterruptes des CTC
+	;Nutzer dieses Programms müssen gewährleisten, daß die Adressen 100H..10AH nicht durch ihr
+	;Programm verwendet werden
+	;(durch Ruf 24 überschrieben)
+	;lnitialisierung
+	INITO:	LD	HL,(206H)	;Adresse Interrupt CTC 3
+		LD	(INTAD),HL
+		LD	HL,TOUT		;Startadresse der Zeitausgabe
+		DI
+		LD	(206H),HL
+		EI
+		RET
+	INTAD:	DA	0
+	;Zeitausgabe
+	TOUT:	PUSH	BC
+		PUSH	DE
+		PUSH	HL
+		LD	HL,TOUT1
+		PUSH	HL		;Rückkehradresse bereitstellen
+		LD	HL,(INTAB)
+		JMP	(HL)		;Ansprung der Uhrinterruptroutine
+	TOUT1:	LD	DE,POS
+		LD	C,24
+		CALL	5
+		POP	HL
+		POP	DE
+		POP	BC
+		RET
+
+
+#------------------------------------------------------------------------------
+# C=25	INITA
+#------------------------------------------------------------------------------
+
+Funktion:
+	- Initialisierung der Tastatur
+	- Initialisierung des Sekundentaktes der internen Uhr (keine Initialisierung der Uhrzeit)
+
+
+#------------------------------------------------------------------------------
+# C=26	SETDM
+#------------------------------------------------------------------------------
+
+Funktion:
+	- Setzen der Pufferadresse für Kassette lesen und schreiben
+Eingang:
+	- DE Adresse des Kassettenpuffers
+
+
+#------------------------------------------------------------------------------
+# C=27	GETM
+#------------------------------------------------------------------------------
+
+Funktion:
+	- Abfrage der Speicherkonfiguration
+	- logischer Speichertest (Speicher ist in 1k Blöcken konfigurierbar)
+Eingang:
+	- DE zu testende Adresse
+Return:
+	- A Speicherstatus des 1k Bereiches, welcher die zu testende Adresse beinhaltet
+		1 RAM beliebig nutzbar
+		0 ROM oder kein Speicher oder
+		RAM bei Verwendung von Systemrufen
+		Schutz vor Überschreiben und Kopieren mittels Kassetten-E/A
+Beispiel:
+	;Test auf vorhandenen Farbzusatzmodul
+		LD	DE,0E800H	 ;Adresse des Farbattributspeichers
+		LD	C,27
+		CALL	5
+		OR	A
+		JPNZ	FARBE
+		JMP	SW ;nur schwarz/weiß
+Hinweis:
+	- nach RESET oder Systemruf 0 ist die logische Speicherkonfiguration der physischen gleich
+	- ein Test der Adresse 1000H liefert das gleiche Ergebnis wie der Test der Adresse 13FFH
+	- in beiden Fällen wird der Bereich 1000H bis 13FFH getestet
+
+
+#------------------------------------------------------------------------------
+# C=28	SETM
+#------------------------------------------------------------------------------
+
+Funktion:
+Eingang:
+	- DE Adresse
+	- A Status
+		1 frei
+		0 geschützt
+Beispiel:
+	;Schutz eines Programm es vor Überschreiben durch Nachladen von Kassette
+	PANF:	LD	HL,PANF
+		LD	DE,400H
+		LD	BE,PEND
+		XOR	A	;Status geschützt
+	M1:	EX	DE,HL
+		PUSH	BC
+		LD	C,28
+		CALL	5
+		POP	BC
+		EX	DE,HL
+		ADD	HL,DE	;nächste Adresse bereitstellen
+		PUSH	HL
+		SBC	HL,BC
+		POP	HL
+		JRC	M1-#	;Adresse <=PEND, weiter
+		....
+	PEND:	EQU	#
+
+
+#------------------------------------------------------------------------------
+# C=29	DCU
+#------------------------------------------------------------------------------
+DCU
+Funktion:
+	- Löschen des Cursors auf dem aktuellen CONST-Gerät
+Hinweis:
+	- jede Zeichenausgabe bringt den Cursor sofort wieder zu Anzeige
+
+
+#------------------------------------------------------------------------------
+# C=30	SCU
+#------------------------------------------------------------------------------
+
+Funktion:
+	- Anzeige des Cursors auf dem aktuellen CONST-Gerät
+Return:
+	- BC physische Cursoradresse
+
+
+#------------------------------------------------------------------------------
+# C=31	COEXT
+#------------------------------------------------------------------------------
+
+Funktion:
+	- Vorverarbeiten einer eingegebenen Zeichenkette
+	- Entfernen aller Steuercodes aus der Zeichenkette
+	- Anfügen eines abschließenden Bytes 00
+Eingang:
+	- DE Adresse des Zeichenkettenpuffers (Pufferaufbau analog Systemruf 10)
+Return:
+	- neue Zeichenkettenlänge und Zeichenkette im Zeichenkettenpuffer
+	- CY Zeichenkettenstatus
+		1 zu bearbeitende oder resultierende Zeichenkette hat die Länge 0
+		0 sonst
+Beispiel:
+	;Eingabe und Vorverarbeitung einer Parameterzeile
+		LD	DE,ZKPU	;Zeichenkettenpuffer
+		LD	C,10	;Eingabe Zeichenkette
+		CALL	CBOS
+		LD	C,31
+		CALL	5
+		JPC	NOPAR	;keine Parameter, Zeile war leer
+	;Parameteranalyse
+		....
+	CBOS:	CALL 5
+		RNC		;kein Fehler
+		OR	A
+		JRNZ	FAUSW-#	;Fehlerauswertung
+		INC	DE	;STOP wurde gegeben
+		LD	(DE), A	;löschen Puffer
+		DEC	DE
+		RET
+
+
+#------------------------------------------------------------------------------
+# C=33	RRAND
+#------------------------------------------------------------------------------
+
+Funktion:
+	- Lesen eines einzelnen Blockes einer Datei
+	- keine Veränderung von LBLNR und DMA (vgl. Systemruf 20)
+Eingang:
+	- LBLNR (6CH) zu lesende Blocknummer
+	- DMA (1BH) Adresse auf welcher der Block abgelegt wird
+Return:
+	- A Kennzeichen für letzten Block der Datei (EOF)
+		kein EOF 0
+		EOF 1
+	- CY Fehlerstatus
+	- BLNR (6BH) die wirklich gelesene Blocknummer (auch im Fehlerfall)
+Hinweis:
+	- das Lesen kann an beliebiger Stelle der Datei beginnen
+	- solange die gelesene Blocknummer kleiner ist als die gesuchte, liest das Programm weiter
+	- ist die gelesene Blocknummer größer, so kehrt das Programm mit Fehler 'record not found' zurück
+	- wird der letzte Block erkannt, so wird dieser Block eingelesen und das Programm kehrt mit A=1 (EOF) zurück
+
+
+
+2.2.3. Fehlerbehandlung
+
+Der Monitor des Computers Z 9001 besitzt eine eigene Fehlerbehandlung. Diese
+wird bei Verwendung von Systemrufen aktiviert und gibt auf das aktuelle CONST-
+Gerät Fehlermeldungen aus. Ein Fehlerzustand wird durch das gesetzte Cy-Flag
+angezeigt. Zusätzlich enthält das A-Register in diesem Fall einen speziellen
+Fehlercode zur näheren Bestimmung des Fehlers. Fehlerzustand und Fehlercode
+werden dem Nutzer durch BOS übergeben.
+
+Tabelle der Fehlercodes:
+Fehler- Fehlermeldung Fehlerursache
+code
+-------------------------------------------------------------------------------------------------------------------------------------
+00 ------	dieser Code dient nur als Warnung(vgl. Sys.-Ruf 10)
+01 error 1	Parameterfehler (Eingabe eines unerlaubten Parameters)
+02 error 2 	Eingabefehler (fehlerhafte Eingabezeile)
+03 error 3 	Parameter außerhalb zulässiger Grenzen (Überschreitung des zulässigen Zahlenbereichs)
+04 error 4 	Fehler bei Gerätezuweisung (falsche Zuweisung eines E/A-Gerätes)
+05 frei für Erweiterung	(OS-SAVE: Eingabe eines falschen Zahlenformats)
+06 frei für Erweiterung (OS-SAVE: Eingabe einer falschen Anweisung)
+07 BOS-error: OS unzulässiger Systemruf
+08 BOS-error: CONST Fehler im Gerät CONST
+   BOS-error: READER Fehler im Gerät READER
+   BOS-error: PUNCH Fehler im Gerät PUNCH
+   BOS-error: LIST Fehler im Gerät LIST
+09 BOS-error: memory protected Speicherbereich ist geschützt
+10 BOS-error: end of memory logisches Speicherende erreicht
+11 BOS-error: record not found gelesene Blocknummer zu groß
+12 BOS-error: bad record Lesefehler
+13 BOS-error: file not found falscher Dateiname wurde gelesen
+
+
+2.3. BASIC INPUT/OUTPUT SYSTEM (BIOS)
+
+2.3.1. Überblick
+
+Im Monitor des Z 9001 besteht für den Anwender die Möglichkeit, verschiedene
+Systemprogramme unter Umgehung des BOS direkt aufzurufen. Bei Verwendung dieser
+Direktrufe werden keine Register gerettet und keine Fehlermeldungen ausgegeben.
+Die Direktrufe belasten den Stack des Anwenders. Bestimmte Direktrufe erwarten
+Parameter oder übergeben Parameter an den Anwender.
+Eingabeparameter:
+	- Wortparameter im BC - Register
+	- Byteparameter im C - Register
+Ausgabeparameter:
+	- Wortparameter Im BC - Register
+	- Byteparameter im A - Register
+Ein Fehler bei der Behandlung eines Direktrufes wird durch das gesetzte CY-Flag
+und einen Fehlercode im A - Register angezeigt (siehe 2.2.3.). Der Aufruf
+erfolgt über eine Sprungtabelle ab F000H.
+
+BIOS-Sprungtabelle
+Adresse Funktion
+-------------------------------------------------------------------------------------------------------------------------------
+F000	JMP INIT	Kaltstart (RESET)
+F003	JMP WBOOT	Warmstart (Teilinitialisierung)
+F006	JMP CONST	Abfrage Status CONST
+			Return: A - Status
+				0 keine Taste sonst Zeichencode
+F009	JMP CONIN	Eingabe Zeichen von CONST
+			Return: A - Zeichen
+F00C	JMP COOUT	Ausgabe Zeichen zu CONST
+			Eingang: C - Zeichen
+F00F	JMP LIST	Ausgabe Zeichen zu LIST
+			Eingang: C - Zeichen
+F012	JMP PUNCH	Ausgabe Zeichen zu PUNCH
+			Eingang: C - Zeichen
+F015	JMP READER	Eingabe Zeichen von READER
+			Return: A - Zeichen
+F018	JMP GSTIK	Abfrage Spielhebel
+			Return: C - Spielhebel 1
+				B - Spielhebel 2
+F01B	JMP BOSER	nicht genutzt
+F01E	JMP STIME	Stellen Systemuhr
+			Eingang: A - Stunde
+				C - Minute
+				B - Sekunde
+F021	JMP GTIME	Abfrage Systemuhr
+			Return: A - Stunde
+				C - Minute
+				B - Sekunde
+F024	JMP SDMA	Setzen Adresse Kassettenpuffer
+			Eingang BC - Adresse
+F027	JMP READ	Lesen eines Blockes von Kassette
+			Eingang: LBLNR - gewünschte Blocknummer
+			Return: LBLNR neu = LBLNR alt + 1
+				DMA neu = DMA alt + 80H
+F02A	JMP WRITE	Schreiben eines Blockes auf Kassette
+			Eingang: BLNR - zu schreibender Block
+			Return: BLNR neu = BLNR alt + 1
+				DMA neu = DMA alt + 80H
+F02D	JMP LLIST	Abfrage Status LIST
+			Return: A - Status
+F030	JMP GCURS	Abfrage physische Cursoradresse
+			Return: BC - Adresse
+F033	JMP SCURS	Setzen physische Cursoradresse
+			Eingang BC - Adresse
+F036	JMP BOSER	nicht genutzt
+F039	JMP GIOBY	Abfrage I/O-Byte
+			Return: A - I/O-Byte
+F03C	JMP SIOBY	Setzen I/O-Byte
+			Eingang: C - I/O-Byte
+F03F	JMP GMEM	Abfrage logische Speicherkonfiguration
+			Eingang: BC - Adresse
+			Return: A - Status
+				1 RAM
+				0 sonst
+F042	JMP SMEM	Setzen logische Speicherkonfiguration
+			Eingang: BC - Adresse
+				A - Status
+				1 RAM
+				0 sonst
+
+Hinweis:
+Direktrufe sollten nur für Programme genutzt werden, die mit dem installierten
+Monitor ohne Systemerweiterung arbeiten.
+
+
+2.3.2. Spezielle Steuercodes
+
+Der Computer Z 9001 ist in der Lage, spezielle Steuercodes zu erzeugen und zu
+verarbeiten. Diese dienen insbesondere der Farbsteuerung des Bildschirms. Die
+ordnungsgemäße Arbeit des Computers mit diesen Steuercodes ist jedoch nur bei
+Verwendung der im Monitor integrierten Standardtreiber für Tastatur und
+Bildschirm gewährleistet. Die folgende Tabelle gibt einen Überblick über alle
+verwend24 baren Steuercodes des Z 9001. Ist bei der Beschreibung der Funktion
+der Wirkungsbereich des Steuercodes nicht explizit angegeben, so sind diese
+Codes im OS-Mode, im Systemruf 2, 9 und 10 gleichermaßen verwendbar.
+
+Hexcode Funkt.- CTRL- Funktion
+taste taste
+----------------------------------------------------------------------------------------------------------------------------------
+01		CTRL/A
+02	CLLN	CTRL/B	Sys.-Ruf 10 und OS-Mode: Löschen aller eingegebenen Zeichen
+03	STOP	CTRL/C	Sys.-Ruf 10: Abbruch der Eingabe
+			OS-Mode: Durchführen eines Warmstarts
+04		CTRL/D
+05 (F)		CTRL/E	nächstes Zeichen Ist Code für Bildschirmrandfarbe
+06 (F)		CTRL/F	Blinken EIN/AUS für alle folgenden Zeichen
+07		CTRL/G	Ausgabe eines Summertones
+08	< 	CTRL/H	Sys.-Ruf 2 und 9: Cursor nach links ohne Zeichenlöschen
+			Sys.-Ruf 10 und OS-Mode: Löschen des letzten Zeichens
+09	> 	CTRL/I	Cursor nach rechts ohne Zeichenlöschen
+0A	v 	CTRL/J	Sys.-Ruf 2 und 9: Cursor runter ohne Zeichenlöschen Bildschirm rollt aufwärts
+0B	^ 	CTRL/K	Sys.-Ruf 2 und 9: Cursor hoch ohne Zeichenlöschen Bildschirm rollt abwärts
+0C		CTRL/L	Bildschirm löschen
+0D	ENTER	CTRL/M	Sys.-Ruf 2 und 9: Cursor an den Anfang der Zeile ohne Zeichenlöschen
+			Sys.-Ruf 10 und OS-Mode: Zeilenabschluß und Ausgabe CRLF
+0E		CTRL/N
+0F		CTRL/O
+10		CTRL/P	Parallelausgabe auf LIST-Gerät EIN/AUS (LIST-Gerät muß vorher zugewiesen werden)
+11		CTRL/Q	Kontrollton EIN/AUS
+12		CTRL/R
+13	PAUSE	CTRL/S
+14 (F)	COLOR	CTRL/T	nächstes Zeichen ist Code für Vordergrundfarbe
+15 (F)	COLOR+SHIFT CTRL/U	nächstes Zeichen ist Code für Hintergrundfarbe
+16 (F)		CTRL/V	Inversdarstellung aller folgenden Zeichen
+17		CTRL/W
+18		CTRL/X
+19		CTRL/Y
+1A	INS
+1B	ESC
+1C	LIST
+1D	RUN
+1E	CONT
+1F	DEL
+
+(F) Wirkt nur bei eingebautem Farbmodul
+
+Die Tasten SHIFT, SHLOK, CTRL und GRAFIC erzeugen keine externen Codes. Die internen Farbcodes
+sind 0 (schwarz), 1 (rot), ... und 7 (weiß).
+
+
+2.2.3. Das I/O-Byte
+
+Das I/O-Byte dient zur Verbindung von logischen und physischen Geräten. Für
+jedes der 4 logischen Geräte sind 4 physische Geräte wählbar. Die Zuschaltung
+eines dieser Geräte erfolgt über Änderung des I/O-Bytes. Zuvor müssen alle zu
+verwendenden Treiber zugewiesen und initialisiert werden. Das I/O-Byte ist in 4
+Bereiche zu je 2 Bits unterteilt. Jeder Bereich, der einem logischen Gerät
+zugeordnet ist, kann einen Wert von 0 bis 3 beinhalten und damit logisches und
+physisches Gerät verbinden.
+
+Aufbau des I/O-Bytes:
+	Bit         7 6  5 4    3 2   1 0
+	Log. Gerät LIST PUNCH READER CONST
+
+Vom Monitor werden folgende Belegungen realisiert
+CONST: 	1 CRT ist aktiviert
+	2 BAT ist aktiviert
+LIST: 	1 CRT ist aktiviert
+
+Die Treiberadressen der jeweiligen physischen Geräte liegen auf den Adressen
+EFC9H bis EFE8H (siehe 1.2.2.).
+
+
+2.3.4. Der FCB
+
+Der FCB wird zur Beschreibung von Dateien auf einem externen Speicher (Kassette)
+verwendet. Vor jedem Auslagern einer Datei muß der FCB initialisiert werden. Mit
+dem Systemruf 15 (OPENW) wird dieser FCB als Block 0 auf Kassette geschrieben,
+um die Datei bei erneutem Einlesen eindeutig identifizieren zu können. Zum
+Einlesen ist der Systemruf 13 (OPENR) zu verwenden. Die Anfangsadresse des FCBs
+ist 5CH.
+
+Aufbau des FCBs:
+Adresse	Inhalt		Bemerkung
+--------------------------------------------------------------------------------------------------------------------------------
+5CH	Dateiname	8 Zeichen mit Buchstaben beginnend ggf. mit 00 auffüllen
+64H	Dateityp	3 Zeichen mit Buchstaben beginnend ggf. mit 00 auffüllen
+67H			- frei für Erweiterungen
+68H			- frei für Erweiterungen
+69H	PSUM		Blockprüfsumme
+6AH	ARB		interne Arbeitszelle
+6BH	BLNR		Nummer zu schreibender Block oder Nummer gelesener Block
+6CH	LBLNR		Nummer zu lesender Block
+6DH	AADR		Anfangsadresse der Datei
+6FH	EADR		Endadresse der Datei
+71H	SADR		Startadresse eines Programms
+73H	SBY		Schutzbyte
+Hinweise:
+	- vor OEPNW sind durch den Anwender Dateiname, Dateityp, Anfangsadresse, Endadresse,
+	  Startadresse und Schutzbyte zu initialisieren
+	- die Startadresse einer Datendatei oder eines nicht selbst startenden Programmes auf FFFFH setzen
+	  (kein versehentliches Starten bei Einlesen im OS-Mode, da Sprung auf RET-Befehl)
+	- vor OPENR sind Dateiname und Dateityp zu initialisieren
+	- nach OPENR sind Anfangsadresse, Endadresse, Startadresse und Schutzbyte durch die von
+	  Kassette gelesenen aktualisiert (nicht bei 'file not found')
+	- wird eine Datei mit Schutzbyte = 1 eingelesen, ist kein Schreiben auf Kassette mehr möglich
+
+
+2.3.5. Kassettenaufzeichnung
+
+Die Aufzeichnung von Programmen und Daten auf Kassette erfolgt in geblockter
+Form zu je 128 Bytes. Die Übertragungsrate beträgt etwa 1800 Baud. Zur
+Aufzeichnung werden 3 unterschiedliche Frequenzen verwendet.
+
+	0 - Bit : 2500 Hz
+	1 - Bit : 1250 Hz
+	Trennzeichen : 625 Hz
+
+Jedes Zeichen wird durch eine volle Periode aufgezeichnet.
+
+a) Dateiaufbau:
+	Block 0 Dateikopf
+	Inhalt ist der komplette FCB (siehe 2.3.4.)
+	Block 1, ..., n Daten der Datei
+	Block FFH letzter Datenblock der Datei
+	Endeblock
+
+b) Blockaufbau:
+	Vorton Folge von 1 - Bit mit abschließendem Trennzeichen
+	Block 0: 6000
+	sonst 160
+	Blocknummer 1 Byte
+	Daten 128 Bytes
+	Prüfsumme 1 Byte (durch Addition aller Datenbytes gewonnen)
+
+c) Byteaufbau:
+	Information 8 Zeichen
+	Trennzeichen 1 Zeichen
+
+
+3. Zusätzliche Treiber
+
+Der Monitor des Z 9001 bietet dem Anwender über das ASGN-Kommando die
+Möglichkeit, den logischen Geräten jeweils 4 physische Geräte mit beliebigen
+Treiberroutinen zuzuweisen. Um die Zusammenarbeit mit allen anderen
+Systemkomponenten zu gewährleisten, sind dabei besondere Randbedingungen zu
+beachten.
+
+Treibereingangsparameter:
+	- A Kommando (siehe 3.2.) (für CONST, READER, LIST)
+	- C Zeichen (bei Kommando AUSGABE)
+	- DE Adresse bei Cursorkommandos
+Treiberausgangsparameter:
+	- A Zeichen (bei Kommando EINGABE)
+	- CY Fehlerstatus
+	- HL,DE Adresse bei Cursorkommandos
+Hinweis:
+	Vordergrundregister müssen bei Eintritt in das Treiberprogramm nicht gerettet 
+	werden (erfolgt bereits im BOS)
+
+
+3.1. Treiberinitialisierung
+
+Die Initialisierung sollte grundsätzlich über das ASGN-Kommando erfolgen. Eine
+automatische Initialisierung über die Nutzung des Kommandos (siehe 2.1.2.) und
+Direktzugriff auf entsprechende Systemzellen ist zu vermeiden.
+
+Der Aufruf der Initialisierung im ASGN-Kommando erfolgt in der gleichen Weise
+wie der Start eines Anwenderprogrammes. Dabei kann es sich sowohl um ein
+transientes Kommando, als auch um ein Programm auf Kassette handeln. Ladbare
+Treiberprogramme auf Kassette werden durch das ASGNKommando selbständig
+eingelesen und zur Initialisierung gestartet. Derartige Programme sind in der
+Initialisierung mittels geeigneter RELOCATING-Routinen an das Ende des logischen
+RAM-Bereiches zu verschieben. Notwendiger Arbeitsspeicher ist gleichfalls dort
+einzurichten. Nach dem Verschieben ist der Zeiger des logischen RAM-Endes EOR
+(36H) auf eine Adresse vor dem Treiberprogramm zu stellen. Für jede
+Treiberroutine eines physischen Gerätes stehen im System-RAM (ab 280H) 4 Bytes
+Speicher zur Verfügung.
+
+Die Treiberinitialisierung muß der ASGN-Routine folgende Parameter übergeben:
+	- CY Fehlerstatus nach Initialisierung
+	- H logische Gerätenummer
+		0 CONST
+		2 READER
+		4 PUNCH
+		6 LIST
+	- L physische Gerätenummer (0, 1 .... 3)
+	- BC Adresse der E/A-Routine
+	- DE Adresse einer Zeichenkette (wird nach der Zuweisung durch ASGN angezeigt)
+Beispiel:
+	;PROM-Transientkommandoprogramm zur Initialisierung eines Druckers als TTY-Gerät
+		JMP	INIT
+		DB	"DRUCKER "
+		DA	0
+	INIT:	LD	HL,(EOR)	;Adresse end of RAM (36H)
+		LD	DE,RAME-RAMA	;benötigter Arbeitsspeicher
+		SBC	HL,DE
+		LD	(EOR),HL	;neue log. RAM-Ende
+		INC	HL
+		LD	(RTTYL),HL	;Zeiger auf Arbeitsspeicher (2B0H)
+	;Hardwareinitialisierung
+		....
+		LD	H,6		;log. Gerätenummer (LIST)
+		LD	L,0		;phy. Gerätenummer (TTY)
+		LD	BC,OUTZ		;Adresse der Zeichenausgabe
+		LD	DE,TEXT
+		OR	A		;kein Fehler
+		RET
+	;
+	FEHL:	SCF			;Fehler
+		RET
+	;
+	;Zeichenausgabe
+	OUTZ:	....
+	;
+	;RAM-Definitionen
+	RAMA:	....
+		....
+	RAME:	EQU #
+Hinweis:
+	- TTY-Treiber (L=0) können beliebigen logischen Geräten zugewiesen werden
+	- CRT-Treiber (L=1) können CONST und LIST zugewiesen werden
+	- alle anderen nur dem im H-Register angegebenen logischen Gerät (sonst 
+	  Fehlermeldung im ASGN-Kommando)
+
+
+3.2. Besonderheiten der Treiber für CONST
+
+An die Treiber der für CONST möglichen Geräte (TTY, CRT, BAT, UC) werden
+besondere Anforderungen gestellt, da sie Routinen zur Eingabe, Ausgabe,
+Statusabfrage und Cursorsteuerung beinhalten müssen. Dem Treiber wird die zu
+erfüllende Aufgabe durch spezielle Kommandocodes im A - Register übergeben.
+
+Kommandocodetabelle:
+Code	Funktion
+----------------------------------------------------------------------------------------------------------------------------------
+00	Abfrage Status
+	Return:
+		A Status
+		0 kein Zeichen bei Eingabegerät, nicht bereit bei Ausgabegerät
+		sonst Zeichen liegt an bei Eingabegerät,
+		(im installierten CRT-Treiber wird der Zeichencode übergeben)
+01	Eingabe Zeichen
+	Return:
+		A Zeichen
+02	Ausgabe Zeichen
+	Eingang:
+		C Zeichen
+03	Cursor löschen
+04	Cursor anzeigen
+	Return:
+		HL physische Cursoradresse
+05	Abfrage logische und physische Cursoradresse
+	Return:
+		HL physische Cursoradresse
+		DE logische Cursoradresse
+06	Setzen Cursor auf logische Adresse
+	Eingang:
+		DE logische Cursoradresse
+07	Abfrage physische Cursoradresse
+	Return:
+		HL physische Cursoradresse
+08	Setzen Cursor auf physische Adresse
+	Eingang:
+		DE physische Cursoradresse
+FF	Initialisieren/Rücksetzen des Gerätes
+
+
+Hinweis:
+	- werden verschiedene Kommandos durch den Anwender nicht benötigt, kann dafür
+	  ein Sprung zum Fehlerausgang des Treibers programmiert werden
+	- korrespondierende System- und Direktrufe sind dann nicht mehr verwendbar
+
+Beispiel:
+	;Eingangsverteiler für CRT-Treiber mit allen Funktionen
+		INC	A
+		JPZ	RESET	;lnitialisieren/Rücksetzen Gerät
+		DEC	A
+		JPZ	STAT	;Status
+		DEC	A
+		JPZ	EING	;Eingabe
+		DEC	A
+		JPZ	AUSG	;Ausgabe
+		DEC	A
+		JPZ	LCUR	;Löschen Cursor
+		DEC	A
+		JPZ	ACUR	;Anzeige Cursor
+		DEC	A
+		JPZ	ADRLC	;Abfrage log. und phy. Cursoradresse
+		DEC	A
+		JPZ	SLOGC	;Setzen Cursor auf log. Adresse
+		DEC	A
+		JPZ	ADRPC	;Abfrage phy. Cursoradresse
+		DEC	A
+		JPZ	SPHYC	;Setzen Cursor auf phy. Adresse
+	FEHL:	SCF		;unzulässiges Kommando
+		RET		;Fehlerausgang
+
+
+3.3. Besonderheiten der Treiber für READER und LIST
+
+Soll ein READER-Gerät Im Zusammenhang mit dem BATCH-Mode von CONST betrieben
+werden, so müssen im Treiber für das READER-Gerät (RDR, UR1, UR2) die Kommandos
+Eingabe, Statusabfrage und Initialisierung programmiert sein. Bei Treibern für
+das LIST-Gerät müssen die Kommandos Ausgabe, Statusabfrage und Initialisierung
+in jedem Falle programmiert werden.
+
+
+#------------------------------------------------------------------------------
+# Module
+#------------------------------------------------------------------------------
+
+RAM-Modul Schalterstellungen
+
+4000-7FFF	verboten	verboten	8000-BFFF
+
++-------+	+-------+	+-------+	+-------+
+| X     |       |     X |       | X     |       |     X |
+|-------|       |-------|       |-------|       |-------|
+| X     |       | X     |       |     X |       |     X |
++-------+	+-------+	+-------+	+-------+
+
+
+
+ROM-Modul Schalterstellungen
+
+verboten	4000-67FF	8000-A7FF	C000-E7FF
+
++-------+	+-------+	+-------+	+-------+
+| X     |       |     X |       | X     |       |     X |
+|-------|       |-------|       |-------|       |-------|
+| X     |       | X     |       |     X |       |     X |
++-------+	+-------+	+-------+	+-------+
+
+ROM-Anordung
+
+ +--------------------+
+ |   ROM3  ROM4  ROM5 |
+ |                    |
+ |         ROM1  ROM2 |
+ |                    |
+ +--------------------+
+   IIIIIIIIIIIIIIIIII
+
+Signal /ROMDI zw. X1:9B und X1:1B --> Abschaltung interner ROM
+
+
+Drucker-Modul
+
+B800-BFFF	ROM aus		verboten	verboten
+
++---+           +---+		+---+		+---+
+|X| |           | | |           | |X|		|X|X|
+| | |           | | |           | | |		| | |
+| |X|           |X|X|           |X| |		| | |
++---+           +---+           +---+		+---+
+
+
+E/A-Modul
+
+Port C8h	Port CCh
+
++---+		+---+
+| | |		|X|X|
+| | |		| | |
+|X|X|		| | |
++---+		+---+
+
+Anschlüsse entsprechen dem User-Port (ohne CTC und +5V)
+
+
+192K-Modul
+
+ +--------------------+
+ |  s1   s6 s7        |		s1	4000 RAM on = sw/unten
+ |  s2                |		s2	6000 RAM on = sw/unten
+ |  s3                |		s3	8000 RAM on = sw/unten
+ |  s4                |		s4	A000 RAM on = sw/unten
+ |     s5             |		s5	KC87 BASIC off = sw/unten
+ +--------------------+		s6	C000-DFFF Modul on = sw/links
+   IIIIIIIIIIIIIIIIII           s7	E000-E7FF Modul on = sw/links
+
+
+
+RAF 2008
+							Std. Z9001
+JP1 offen 1. Karte 	geschlossen 2. Karte		offen
+JP2 offen 80h		geschlossen 20h			geschlossen
+
+Standard: Adresse 20h, Laufwerk P, Treiber RAF2X20P
+
+#------------------------------------------------------------------------------
+# Programmstart
+#------------------------------------------------------------------------------
+
+Bei Programmstart hat HL = Wert Startadr. (jp xxx im Header)
+SP = 01FC, Returnadressen auf Stack sind ERDIS und GOCPM (F5EA F089)
+
+Die Kommandozeile steht in CONBU (Längein CONBU+1; abgeschlossen mit 00-Byte)
+Der Programmname wurde bereits mit Leerzeichen überschrieben.
+Üblicherweise werden die Parameter nacheinander mit GVAL ermittelt/geholt
+
+Das Programm sollte mit Cy=0 enden (kein Fehler)
+oder Cy=1 und A=Fehlernummer (zulässige Fehlernummern s. 2.2.3. Fehlerbehandlung)
+Alternativ Sprung zu Adr. 0 (WBOOT)
+
+#------------------------------------------------------------------------------
+# Speicherbelegung wichtige Programme
+#------------------------------------------------------------------------------
+
+ZM30		3000-3DFF	setzt EOR=2FFF
+ZMA8		A800-B5FF	setzt EOR=A7FF
+GRAFP		8D60-A7FF	BASIC-Grafiktreiber
+GRPLOT		9800-A7FF	BASIC-Grafiktreiber
+CRT80P		B000-B7FF
+Druckertreiber 	B800-BFFF	z.B. V24A3
+USB		B800-BCFF
+DOSX		BD00-BFFF	(upper BIOS-Teil, zusätzlich Shadow-RAM)
+-
+CALL5DBG	7000-71FF
+
+#------------------------------------------------------------------------------
+# JKEMU
+#------------------------------------------------------------------------------
+
+		JKCEMU
+Z9001-Taste	Emuliert mittels
+
+Zeilenanfang	Control-Links
+Zeilenende	Control-Rechts
+ESC		Escape
+INS		Einfg
+DEL		Entf oder Shift-Einfg
+LIST		F1
+RUN		F2
+STOP		F3
+PAUSE		F4
+CONT		F5 oder Shift-F4
+CL-LN		F6 oder Shift-Escape
+COLOR		F7
+GRAPHIC		F8

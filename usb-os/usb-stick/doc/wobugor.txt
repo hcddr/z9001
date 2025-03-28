@@ -1,0 +1,168 @@
+WOBUGOR (DEBUGGER/REASSEMLBER/MONITOR)
+
+- 7300-7FE9,FFFF
+- von Dr. Reinhard Wobst/Dresden
+
+^20/^24 Umschalten auf 20/24 Zeilen; dabei wird Bildschirm gelöscht
+
+C       Speicher- und Bandverwaltungsprogramm
+
+        fordert Eingabe mittels "?"
+                - alle Eingaben analog wie im OS-Modus
+                  (nutzt Eingaberoutine GETMS (F354CH))
+                - Adr. hex ein-vierstellig; keine Syntaxprüfung
+                - <STOP> Rücksprung zum OS bzw. zu C
+
+        J adr   Sprung zu adr (entspricht CALL; bei RET Return zu C)
+
+        L adr   Hex- und Alphalisten ab adr; Steuerzeichen '.'
+                        <ENTER> weiter
+                        <STOP>  Abbruch
+
+        W adr. byte byte byte ...
+                - Schreiben in Speicher ab Adr.
+                - nach adrmuß Punkt folgen
+                - Bytes 2stellig hexa angeben
+                        <ENTER> weiter
+                        <STOP>  Abbruch
+
+                Bsp:    > C
+                        ? W 300. 0A 0D 31324 4 <ENTER>
+                        ? 2233 4 4 <ENTER>
+                        ? <STOP>
+                        ? L 300
+                        0300  0A 0D 31 32 44 22 33 44 ...
+
+        S from,until,to
+                Speicherbereich verschieben von bis auf
+                Bereich können sich überlappen
+
+        T name: aadr,eadr,sadr
+                - Ausgabe Speicherbereich auf Band mit Startadr. sadr
+                - genau 1 Leerzeichen zw. T und Name!
+
+        V       Verify/Listen und Prüfen von Bandaufzeichnungen
+                - als Fileanfang Block 0 (MC) oder 1 (BASIC); Ausg. Name+Adr.
+                - bei Lesefehlern "bad record"+BlockNr.; ohne anzuhalten!
+                -       <STOP>  Abbruch
+
+TRACE/TRACES
+        Debugger: Stück- o. schrittweises Abarbeiten von MC
+        und/oder Reassemblierung; bei Verwendung von TRACES
+        mit Symboltabellen
+
+        - Haltepunktsteuerung durch Interrupts
+          bei Halt Anzeige aller Register außer Zweitregistersatz
+        - bei TRACES benutzt Reassembler vom ASMW erstellte Symbol-
+          tabelle ab 1720H
+        - Int. kommen von CTC #1 (81H)          nicht benutzen!
+          Intvektor f. CTC nicht verändern!
+          Programmabschnitte mit DI können nicht verfolgt werden!
+          bei Halt RAM ab 81H geändert (bei <ENTER> nur 81H)
+          Ausführungszeit von Pgm. verlangsamt sich um Faktor 50
+          Systemuhr steht; läuft erst nach RESET wieder an (vorsichtshalber
+          erst nach Abbruch von TRACE geben
+
+        - Start: Eingabe einer Startadr. f. Debugger, Reass.
+          Kommandoebene "*"  (nutzt GETMS analog C)
+
+        <STOP>  Abbruch von TRACE (RST 0)
+
+        <ENTER> Abbarbeitung eines einzelnen Befehls (bei LDIR u.a. wird
+                nach jedem Schritt unterbrochen!). Trace hält nach Befehlen
+                und gibt ihn reassembliert aus (STEP-Betrieb)
+
+        +n      Abarbeitung von n Befehlsschritten, sonst wie <ENTER>
+                n = 0 entpricht n = 1
+
+        adr     Sprung zum Reassembler mit angegebener Adr. als Start
+                adr = 0 entspricht <ENTER>!
+
+        R       Sprung zum Reassembler; die zuletzt eingestellte Adr.
+                wird als Start interpretiert
+
+        @ label die angegebene Marke wird in der Symboltabelle (ab 1720H)
+                gesucht; auch bei Start mit TRACE. Wenn gefunden, so Start
+                Reassembler ab label-adr.; sonst keine Funktion
+
+        C       Aufruf von C. Wird von C aus ASMW gestartet, so Veränderung
+                der Schattenregister beachten!
+
+
+Reassembler (nur Tastendruck!)
+
+        @       Rücksprung zu TRACE
+
+        ^       Sprung zu Datenmode; ab zuletzt angezeigter Adr. werden Bytes
+                alphanum. und hexa dargestellt (Steuerzeichen "_")
+                Kommandos: ^       Anzeigen nächstes Byte
+                           <Rest>  zurück zum Reassembler ab zuletzt angezeigter
+                                   Adresse
+
+        <ESC>   zuletzt angezeigte Adr. wird als Breakpoint gesetzt. Pgmstart
+
+        <Rest>  Resassemblieren nächster Befehl
+
+- Weitere Einzelheiten siehe Bedienbuch! -
+
+
+
+Bespiel 1: Programm verfolgen (wurde gerade mit ASMW übersetzt)
+
+        - Eingabe TRACES und Startadr.
+          <ENTER>               Anzeige und Ausführung 1. Befehl; Registeranzeige
+          <ENTER>
+          ...
+
+        - akt. Befehl ist CALL; UP soll aber nicht verfolgt werden
+          -> 2 Möglichkeiten (a besser)
+
+          a) Kommando R; Call-Befehl wird nochmals angezeigt
+             <ENTER>    nächster Befehl wird angezeigt
+             <ESC>      Halt erst nach UP
+
+          b) Adr. des UP aus Call entnehmen; eingeben, Sprung zum Reassembler;
+             <ESC>, Halt nach RETURN
+
+        - nur bestimmtes UP soll verfolgt werden
+
+          Eingabe von "@Name d. UP"; Sprung zum Reass; <ESC>
+
+        - Arbeitszellen kontrollieren
+
+          a) Kommando C und Eingabe der Adresse zum Listen (L adr)
+
+          b) Arbeitszelle über @name ansprechen -> Sprung zum Reassembler
+             <^> (Anzeige des Inhaltes); irgend eine andere Taste
+             <@> Rückkehr zu TRACE
+
+
+Beispiel 2: Programm reassemblieren
+
+        - Eingabe TRACE; falls Symboltabelle vorhanden TRACES
+          Startadr. eingeben
+          R
+          Weiterschalten mit <ENTER>
+
+        - neue Adr: ^ und nach "*" Adr. eingeben bzw. @label
+
+        - Abbruch: @ und <STOP>
+
+
+Beispiel 3: Reassemblieren mit Symboltabelle aufbauen
+
+        - mit C eine 0 in 1720H eintragen (evtl. vorhandene Symboltabelle
+          löschen)
+
+        - Start TRACES, Startadr., R
+
+        - Setzen einer Marke: 'C'; 'J400' (Start ASMW); (falls ASMW oben
+          gestartet) R,G,C; Eingabe von 'label:EQU adr', dann <ENTER=
+          Leerzeile; Sprung zum Kommandomodus von ASMW; E,<STOP>,R
+
+          die entsprechende Adr. des Befehls bzw. im Befehl wurde durch
+          "label" ersetzt. Verfahren kann beliebig oft wiederholt werden;
+          sicherer ist allerdings EDIT (2. Startadr. nach 400H) zu rufen
+          und die EQU-Anweisung jedesmal neu einzuführen, Neuübersetzung
+
+          

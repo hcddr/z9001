@@ -1,0 +1,46 @@
+SD-CARD-OS Version 1.4h oder höher
+
+Ablage auf SD-Card im KCC-Format (Header-Block muss explizit geschrieben werden!), nicht als TAP!
+
+
+FX-Kommandos
+------------
+
+f0 close file	
+f1 open read
+	send 0f1h, 12 Byte Dateiname DOS-Format (8.3), aufgefüllt mit 0-Bytes, incl. Punkt!
+	read 1 byte (result): 	00 - Datei wurde geöffnet
+			0fe - Fehler
+f2 read block
+	send f2h
+	read 1 byte (counter):	Anz. Bytes (0, <128, 128)
+			normal 128 Bytes (1 record), bei Dateiende 0 oder Anzahl < 128 (wenn kein KC-File)
+			00 -> "FF"-Block
+	read counter*bytes
+f3 open write
+	send 0f1h, 12 Byte Dateiname DOS-Format (8.3), aufgefüllt mit 0-Bytes, incl. Punkt!
+	read 1 byte (result): 	00 - Datei wurde geöffnet
+			0fe - Fehler
+f4 write block
+	send f4h
+	send 128 bytes
+
+f5 echo (test kdo)
+	send f5h
+	read: f5h
+	send byte
+	read: same byte
+
+f6 change dir
+	send 0f6h, 8 Byte Dirname, aufgefüllt mit 0-Bytes
+	read 1 byte (result): 	00 - Datei wurde geöffnet
+			01 - Fehler
+	
+f7 list dir
+	send 0f7h
+	read Attr (D- Dir, F-File) + 12 Zeichen ("8.3")
+	Ausgabe formatiert 8.3, mit Leerzeichen aufgefüllt
+	Ende bei 00
+
+f8 init SD
+	reset MMC/SD

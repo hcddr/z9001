@@ -1,0 +1,2393 @@
+Aus: Kernighan/Ritchie, The C Programming language,
+     Prentice Hall 1978, pp.179-212
+
+Dieses Manual dient lediglich als Bezugspunkt fuer die ex-
+akte Sprachdefinition nach Kernighan/Ritchie und ist nicht
+zum Erlernen der Sprache geeignet. Es weicht in vielen De-
+tails von der deutschen Uebersetzung des Buches ab.
+
+                             R.Wobst
+
+        =================================
+        Appendix A:    C REFERENCE MANUAL
+        =================================
+
+
+1. Introduction
+===============
+
+This manual describes the C language on the PDP-11, the
+Honeywell 6000, the IBM System/370, and the Interdata 8/32.
+Where differences exist, it concentrates on the PDP-11,
+but tries to point out implementation details. With few ex-
+ceptions, these dependencies follow directly from the un-
+derlying properties of the hardware; the various compilers
+are generally quite compatible.
+
+
+2. Lexical conventions
+======================
+
+There are six classes of tokens: identifiers, keywords,
+constants, strings, operators, and other separators.
+Blanks, tabs, newlines, and comments (collectively, "white
+space") as described below are ignored except as they serve
+to separate tokens. Some white space is required to sepa-
+rate otherwise adjacent identifiers, keywords, and con-
+stants.
+
+If the input stream has been parsed into tokens up to a gi-
+ven character, the next token is taken to include the lon-
+gest string of charactes which could possibly constitute a
+token.
+
+
+
+2.1 Comments
+____________
+
+
+The characters /* introuce a comment, which terminates with
+the characters */. Comments do not nest.
+
+
+
+2.2 Identifiers (Names)
+_______________________
+
+
+An identifier is a sequence of letters and digits; the
+first character must be a letter. The underscore _ counts
+as a letter.
+Upper and lower case letters are different. No more than
+the first eight characters are significant, although more
+may be used.
+External identifiers, which are used by various assemblers
+and loaders, are more restricted:
+
+DEC PDP-11         7 characters, 2 cases
+Honeywell 6000     6 characters, 1 case
+IBM 360/370        7 characters, 1 case
+Interdata 8/32     8 characters, 2 cases
+
+
+2.3 Keywords
+____________
+
+
+The following identifiers are reserved for use as keywords,
+and may not be used otherwise:
+
+         int      extern    else
+         char     register  for
+         float    typedef   do
+         double   static    while
+         struct   goto      switch
+         union    return    case
+         long     sizeof    default
+         short    break     entry
+         unsigned continue
+         auto     if
+
+The entry keyword is not currently implemented by any com-
+piler but is reserved for future use. Some implementations
+also reserve the words fortran and asm.
+
+
+
+2.4 Constants
+_____________
+
+
+There are several kinds of constants, as listed below.
+Hardware characteristics which affect sizes are summarized
+in @2.6 .
+
+2.4.1 Integer constants
+.......................
+
+An integer constant consisting of a sequence of digits is
+taken to be octal if it begins with 0 (digit zero), deci-
+mal otherwise. The digits 8 and 9 have octal value 10 and
+11 respectively. A sequence of digits preceded by 0x or
+0X (digit zero) is taken to be a hexadecimal integer. The
+hexadecimal digits include a or A through f or F with
+values 10 to 15. A decimal constant whose value exceeds
+the largest signed machine integer is taken to be long; an
+octal or hex constant which exceeds the largest unsigned
+machine integer is likewise taken to be long.
+
+
+2.4.2 Explicit long constants
+.............................
+
+A decimal, octal, or hexadecimal integer constant immedia-
+tely followed by l (letter ell) or L is a long constant. As
+discussed below, on some machines integer and long values
+may be considered identical.
+
+
+2.4.3 Character constants
+.........................
+
+A character constant is a character enclosed in single
+quotes, as in 'x'. The value of a character constant is the
+numerical value of the character in the machine's character
+set.
+Certain non-graphic characters, the single quote ' and the
+backslash \, may be represented according to the following
+table of escape sequences:
+
+         newline         NL (LF)  \n
+         horizontal tab  HT       \t
+         backspace       BS       \b
+         carriage return CR       \r
+         formfeed        FF       \f
+         backslash       \        \\
+         single quote    '        \'
+         bit pattern     ddd      \ddd
+
+The escape \ddd consists of the backslash followed by 1,2,
+or 3 octal digits which are taken to specify the value of
+the desired character. A special case of this construction
+is \0 (not followed by a digit), which indicates the cha-
+racter NUL. If the character following a backslash is not
+one of those specified, the backslash is ignored.
+
+
+2.4.4 Floating constants
+........................
+
+A floating constant consists of an integer part, a decimal
+point, a fraction part, an e or E, and an optionally sig-
+ned integer exponent. The integer and fraction parts both
+consist of a sequence of digits. Either the integer part
+or the fraction part (not both) may be missing; either the
+decimal point or the e and the exponent (not both) may be
+missing. Every floating constant is taken to be double-pre-
+cision.
+
+
+
+2.5 Strings
+-----------
+
+A string is a sequence of characters surrounded by double
+quotes, as in "...". A string has type "array of charac-
+ters" and storage class static (see @4 below) and is ini-
+tialized with the given characters. All strings, even when
+written identically, are distinct. The compiler places a
+null byte \0 at the end of each string so that programs
+which scan the strings can find its end. In a string, the
+double quote character " must be preceded by a \; in addi-
+tion, the same escapes as described for character constants
+may be used. Finally, a \ and an immediately following new-
+line are ignored.
+
+
+
+
+2.6 Hardware characteristics
+----------------------------
+
+The following table summarizes certain hardware properties
+which vary from machine to machine. Although these affect
+program portability, in practice they are less of a problem
+than might be thought a priori.
+
+-----------------------------------------------------------
+       DEC PDP-11  Honeywell 6000  IBM 370  Interdata 8/32
+
+       ASCII       ASCII           EBCDIC   ASCII
+char    8 bits      9 bits          8 bits   8 bits
+int    16          36              32       32
+short  16          36              16       16
+long   32          36              32       32
+float  32          36              32       32
+double 64          72              64       64
+range  +-10.e+-38  +-10.e+-38     +-10e+-76 +-10.e+-76
+
+-----------------------------------------------------------
+
+For these four machines, floating point numbers have 8 bit
+exponents.
+
+
+
+3. Syntax notation
+==================
+
+In the syntax notation used in this manual, syntactic cate-
+gories are indicates by italic type (here: `italic` -R.W.),
+and literal words and characters in bold type (here:
+$bold$ -R.W.).
+Alternative categories are listed on separate lines. An op-
+tional terminal or non-terminal symbol is indicated by the
+subscript "opt", so that
+  {`expression`   }
+               opt
+indicates an optional expression enclosed in braces. The
+syntax is summarized in @18.
+
+
+
+4. What's a name?
+=================
+
+C bases the interpretation of an identifier upon two attri-
+butes of the identifier: its `storage class` and its
+`type`. The storage class determines the location and life-
+time of the storage associated with an identifier; the type
+determines the meaning of the values found in the identi-
+fier's storage.
+There are four declarable storage classes: automatic, sta-
+tic, external, and register. Automatic variables are local
+to each invocation of a block (@9.2), and are discarded up-
+on exit from the block; static variables are local to a
+block, but retain their values upon reentry to a block even
+after control has left the block; external variables exist
+and retain their values throughout the execution of the en-
+tire program, and may be used for communication between
+functions, even separately compiled functions. Register va-
+riables are (if possible) stored in the fast registers of
+the machine; like automatic variables they are local to
+each block and disappear on exit from the block.
+
+C supports several fundamental types of objects:
+
+Objects declared as characters ($char$) are large enough to
+store any member of the implementation's character set, and
+if a genuine character from that character set is stored in
+a character variable, its value is equivalent to the inte-
+ger code for that character. Other quantities may be stored
+into character variables, but the implementation is ma-
+chine-dependent.
+
+Up to three sizes of integer, declared $short int$, $int$,
+and $long int$, are available. Longer integers provide no
+less storage than shorter ones, but the implementation may
+make either short integers, or long integers, or both,
+equivalent to plain integers. "Plain" integers have the na-
+tural size suggested by the host machine architecture; the
+other sizes are provided to meet special needs.
+
+Unsigned integers, declared $unsigned$, obey the laws of
+arithmetic modulo 2 power n where n is the number of bits
+in the representation. (On the PDP-11, unsigned long quan-
+tities are not supported.)
+
+Single-precision floating point ($float$) and double-preci-
+sion floating point ($double$) may be synonymous in some
+implementations.
+
+Because objects of the foregoing types can usefully be in-
+terpreted as numbers, they will be referred to as `arithme-
+tic` types. Types $char$ and $int$ of all sizes will col-
+lectively be called `integral` types. $float$ and $double$
+will collectively be called `floating` types.
+
+Besides the fundamental arithmetic types there is a concep-
+tually infinite class of derived types constructed from the
+fundamental types in the following ways:
+  `arrays` of objects of most types;
+  `functions` which return objects of a given type;
+  `pointers` to objects of a given type;
+  `structures` containing a sequence of objects of various
+               types;
+  `unions` capable of containing any one of several objects
+           of various types.
+In general these methods of constructing objects can be
+applied recursively.
+
+
+
+5. Objects and lvalues
+======================
+
+An `object` is a manipulatable region of storage; an
+`lvalue` is an expression referring to an object. An ob-
+vious example of an lvalue expression is an identifier.
+There are operators which yield lvalues: for example, if
+E is an expression of pointer type, then *E is an lvalue
+expression referring to the object to which E points. The
+name "lvalue" comes from the assignment expression E1 = E2
+in which the left operand E1 must be an lvalue expression.
+The discussion of each operator below indicates whether it
+expects lvalue operands and whether it yields an lvalue.
+
+
+
+6.Conversions
+=============
+
+A number of operators may, depending on their operands,
+cause conversion of the value of an operand from one type
+to another. This section explaines the result to be expec-
+ted from such conversions. @6.6 summarizes the conversions
+demanded by most ordinary operators; it will be supplemen-
+ted as required by the discussion of each operator.
+
+
+6.1 Characters and integers
+---------------------------
+
+A character or a short integer may be used wherever an in-
+teger may be used. In all cases the value is converted to
+an integer. Conversion of a shorter integer to a longer al-
+ways involves sign extension; integers are signed quanti-
+ties. Whether or not sign-extension occurs for characters
+is machine dependent, but it is guaranteed that a member of
+the standard character set is non-negative. Of the machines
+treated by this manual, only the PDP-11 sing-extends. On
+the PDP-11, character variables range in value from -128 to
+127; the characters of the ASCII alphabet are all positive.
+A character constant specified with an octal escape
+suffers sign extension and may appear negative; for exam-
+ple, '\377' has the value -1.
+
+When a longer integer is converted to a shorter or to a
+$char$, it is truncated on the left; excess bits are simply
+discarded.
+
+
+6.2 Float and double
+--------------------
+
+All floating arithmetic in C is carried out in double pre-
+cision; whenever a $float$ appears in an expression it is
+lengthened to $double$ by zero-padding its fraction. When
+a $double$ must be converted to $float$, for example by an
+assignment, the $double$ is rounded before truncation to
+$float$ length.
+
+
+6.3 Floating and integral
+-------------------------
+
+Conversions of floating values to integral type tend to be
+rather machine-dependent; in particular the direction of
+truncation of negative numbers varies from machine to ma-
+chine. The result is undefined if the value will not fit in
+the space provided.
+Conversions of integral values to floating type are well
+behaved. Some loss of precision occurs if the destination
+lacks sufficient bits.
+
+
+6.4 Pointers and integers
+-------------------------
+
+An integer or long integer may be added to or subtracted
+from a pointer; in such a case the first is converted as
+specified in the discussion of the addition operator.
+
+Two pointers to objects of the same type may be subtracted;
+in this case the result is converted to an integer as spe-
+cified in the discussion of the subtraction operator.
+
+
+6.5 Unsigned
+------------
+
+Whenever an unsigned integer and a plain integer are combi-
+ned, the plain integer is converted to unsigned and the re-
+sult is unsigned. The value is the least unsigned integer
+congruent to the signed integer (modulo 2 power wordsize).
+In a 2's complement representation, this conversion is con-
+ceptual and there is no actual change in the bit pattern.
+
+When an unsigned integer is converted to $long$, the value
+of the result is the same as that of the unsigned integer.
+Thus the conversion amounts to padding with zeros on the
+left.
+
+
+6.6 Arithmetic conversions
+--------------------------
+
+A great many operators cause conversions and yield result
+types in a similar way. This pattern will be called the
+"usual arithmetic conversions".
+
+  First, any operands of type $char$ or @short$ are conver-
+  ted to $int$, and any of type $float$ are converted to
+  $double$.
+  Then, if either operand is $double$, the other is conver-
+  ted to $double$ and that is the type of the result.
+  Otherwise, if either operand is $long$, the other is con-
+  verted to $long$ and that is the type of the result.
+  Otherwise, if either operand is $unsigned$, the other is
+  converted to $unsigned$ and that is the type of the re-
+  sult.
+  Otherwise, both operand must be $int$, and that is the
+  type of the result.
+
+
+
+7. Expressions
+==============
+
+The precedence of expression operators is the same as the
+order of the major subsections of this section, highest
+precedence first. Thus, for example, the expressions re-
+ferred to as the operands of + (@7.4) are those expres-
+sions defined in @@7.1-7.3 Within each subsection, the ope-
+rators have the same precedence. Left- or right-associati-
+vity is specified in each subsection for the operators dis-
+cussed therein. The precedence and associativity of all the
+expression operators is summarized in the grammar of @18.
+
+Otherwise the order of evaluation of expressions is undefi-
+ned. In particular the compiler considers itself free to
+compute subexpressions in the order it believes most effi-
+cient, even if the subexpressions involve side effects. The
+order in which side effects take place is unspecified. Ex-
+pressions involving a commutative and associative operator
+(*,+,&,|,^) may be rearranged arbitrarily, even in the
+precense of parentheses; to force a particular order of
+evaluation an explicit temporary must be used.
+
+The handling of overflow and divide check in expression
+evaluation is machine-dependent. All existing implementa-
+tions of C ignore integer overflows; treatment of division
+by 0, and all floating-point exceptions, varies between ma-
+chines, and is usually adjustable by a library function.
+
+
+7.1 Primary expressions
+-----------------------
+
+Primary expressions involving .,->, subscripting, and func-
+tion calls group left to right.
+
+  `primary-expression`:
+    `identifier`
+    `constant`
+    `string`
+    (`expression`)
+    `primary-expression` [`expression`]
+    `primary-expression` (`expression-list`   )
+                                           opt
+    `primary-lvalue` . `identifier`
+    `primary-expression` -> `identifier`
+
+  `expression-list`:
+     `expression`
+     `expression-list` , `expression`
+
+An identifier is a primary expression, provided it has been
+suitable declared as discussed below. Its type is specified
+by its declaration. If the type of the identifier is "array
+of ...", however, then the value of the identifier-expres-
+sion is a pointer to the first object in the array, and the
+type of the expression is "pointer to ...". Moreover, an
+array identifier is not an lvalue expression. Likewise, an
+identifier which is declared "function returning ...", when
+used except in the function-name position of a call, is
+converted to "pointer to function returning ...".
+A constant is a primary expression. Its type may be $int$,
+$long$, or $double$ depending on its form. Character con-
+stants have type $int$; floating constants are $double$.
+
+A string is a primary expression. Its type is originally
+"array of $char$"; but following the same rule given above
+for identifiers, this is modified to "pointer to $char$",
+and the result is a pointer to the first character in the
+string. (There is an exception in certain initializers; see
+@8.6).
+
+A paranthesized expression is a primary expression whose
+type and value are identical to those of the unadorned ex-
+pression. The presence of parentheses does not affect whe-
+ther the expression is an lvalue.
+
+A primary expression followed by an expression in square
+brackets is a primary expression. The intuitive meaning is
+that of a subscript. Usually, the primary expression has
+type "pointer to ...", the subscript expression is $int$,
+and the type of the result is "...". The expression E1[E2]
+is identical (by definition) to *((E1)+(E2)). All the clues
+needed to understand this notation are contained in this
+section together with the discussions in @@7.1, 7.2, and
+7.4 on identifiers, *, and + respectively; @14.3 below sum-
+marizes the implications.
+
+A function call is a primary expression followed by paren-
+theses containing a possibly empty, comma-separated list of
+expressions which constitute the actual arguments to the
+function. The primary expression must be of type "function
+returning ...", and the result of the function call is of
+type "...". As indicated below, a hitherto unseen identi-
+fier followed immediately by a left parenthesis is contex-
+tually declared to represent a function returning an inte-
+ger; thus in the most common case, integer-valued functions
+need not be declared.
+
+Any actual arguments of type $float$ are converted to
+$double$ before the call; any of type $char$ or $short$ are
+converted to $int$; and as usual, array names are conver-
+ted to pointers. No other conversions are performed auto-
+matically; in particular, the compiler does not compare the
+types of actual arguments with those of formal arguments.
+If conversion is needed, use a cast; see $7.2, 8.7 .
+
+In preparing for the call to a function, a copy is made of
+each actual parameter; thus, all argument-passing in C is
+strictly by value. A function may change values of its for-
+mal parameters, but these changes cannot affect the values
+of the actual parameters. On the other hand, it is possible
+to pass a pointer on the understanding that the function
+may change the value of the object to which the pointer
+points. An array name is a pointer expression. The order of
+evaluation of arguments is undefined by language; take note
+that the various compilers differ.
+
+Recursive calls to any function are permitted.
+
+A primary expression followed by a dot followed by an iden-
+tifier is an expression. The first expression must be an
+lvalue naming a structure or a union, and the identifier
+must name a member of the structure or union. The result is
+an lvalue referring to the named member of the structure or
+union.
+
+A primary expression followed by an arrow (built from a -
+and a >) followed by an identifier is an expression. The
+first expression must be a pointer to a structure or a
+union and the identifier must name a member of that struc-
+ture or union. The result is an lvalue referring to the
+named member of the structure or union to which the pointer
+expression points.
+
+Thus the expression E1->MOS is the same as (*E1).MOS.
+Structures and unions are discussed in @8.5 . The rule gi-
+ven here for the use of structures and unions are not en-
+forced strictly, in order to allow an excape from the ty-
+ping mechanism. See @14.1 .
+
+
+7.2 Unary operators
+-------------------
+
+Expressions with unary operators group right-to-left.
+
+   `unary-expression`:
+      *`expression`
+      &`lvalue`
+      -`expression`
+      !`expression`
+      ~`expression`
+      ++`lvalue`
+      --`lvalue`
+      `lvalue`++
+      `lvalue`--
+      (`type-name`) `expression`
+      $sizeof$ `expression`
+      $sizeof$ (`type-name`)
+
+The unary * operator means `indirection`: the expression
+must be a pointer, and the result is an lvalue referring to
+the object to which the expression points. If the type of
+the expression is "pointer to ...", the type of the result
+is "...".
+
+The result of the unary & operator is a pointer to the ob-
+ject referred to by the lvalue. If the type of the lvalue
+is "...", the type of the result is "pointer to ..." .
+
+The result of the unary - operator is the negative of its
+operand. The usual arithmetic conversions are performed.
+The negative of an unsigned quantity is computed by sub-
+tracting its value from 2 power n, where n is the number
+of bits in an int.
+There is no unary + operator.
+
+The result of the logical negation operator ! is 1 if the
+value of its operand is 0, 0 if the value of its operand is
+non-zero. The type of the result is $int$. It is applicable
+to any arithmetic type or to pointers.
+
+The ~ operator yields the one's complement of its operand.
+The usual arithmetic conversions are performed.
+The type of the operand must be integral.
+
+The object referred to by the lvalue operand of prefix ++
+is incremented. The value is the new value of the operand,
+but it is not an lvalue. The expression ++x is equivalent
+to x+=1. See the discussions of addition (@7.4) and assign-
+ment operators (@7.14) for information on conversions.
+
+The lvalue oprand of prefix -- is decremented analogously
+to the prefix ++ operator.
+
+When postfix ++ is applied to an lvalue the result is the
+value of the object referred to by an lvalue. After the re-
+sult is noted, the object is incremented in the same manner
+as for the prefix ++ operator. The type of the result is
+the same as the type of the lvalue expression.
+
+When a postfix -- is applied to an lvalue the result is the
+value of the object referred to by the lvalue. After the
+result is noted, the object is decremented in the same man-
+ner as for the prefix -- operator. The type of the result
+is the same as the type of the lvalue expression.
+
+An expression preceded by the parenthesized name of a data
+type causes conversion of the value of the expression to
+the named type. This construction is called a `cast`. Type
+names are described in @8.7 .
+
+The $sizeof$ operator yields the size, in bytes, of its
+operand. (A `byte` is undefined by the language except in
+terms of the value of $sizeof$. However, in all existing
+implementations a byte is the space required to hold a
+$char$.) When applied to an array, the result is the total
+number of bytes in the array. The size is determined from
+the declarations of the objects in the expression. This ex-
+pression is semantically an integer constant and may be
+used anywhere a constant is required. Its major use is in
+communication with routines like storage allocators and
+I/O systems.
+
+The $sizeof$ operator may also be applied to a parenthesi-
+zed type name. In that case it yields the size, in bytes,
+of an object of the indicated type.
+
+The construction sizeof(`type`) is taken to be a unit, so
+the expression sizeof(`type`)-2 is the same as
+(sizeof(`type`)) - 2.
+
+7.3 Multiplicative operators
+----------------------------
+
+The multiplicative operators *,/, and % group left-to-
+right. The usual arithmetic conversions are performed.
+
+  `mulitplicative-expression`:
+     `expression` * `expression`
+     `expression` / `expression`
+     `expression` % `expression`
+
+The binary * operator indicates multiplication. The * ope-
+rator is associative and expressions with several multipli-
+cations at the same level may be rearranged by the compi-
+ler.
+
+The binary / operator indicates division. When positive in-
+tegers are divided truncation is towards 0, but the form of
+truncation is machine-dependent if either operand is nega-
+tive. On all machines covered by the manual, the remainder
+has the same sign as the dividend. It is always true that
+(a/b)*b + a%b is equal to a (if b is not 0).
+
+The binary % operator yields the remainder from the divi-
+sion of the first expression by the second. The usual
+arithmetic conversions are performed. The operands must not
+be $float$.
+
+
+7.4 Additive operators
+----------------------
+
+The additive operators + and - group left-to-right. The
+usual arithmetic conversions are performed. There are some
+additional type possibilities for each operator.
+
+  `additive-expression`:
+    `expression` + `expression`
+    `expression` - `expression`
+
+The result of the + operator is the sum of the operands. A
+pointer to an object in an array and a value of an integral
+type may be added. The latter is in all cases converted to
+an addres offset by multiplying it by the length of the ob-
+ject to which the pointer points. The result is a pointer
+of the same type as the original pointer, and which points
+to another object in the same array, approriately offset
+from the original object. Thus is P is a pointer to an ob-
+ject in an array, the expression P+1 is a pointer to the
+next object in the array.
+
+No further type combinations are allowed for pointers.
+
+The + operator is associative and expressions with several
+additions at the same level may be rearranged by the compi-
+ler.
+
+The result of the - operator is the difference of the ope-
+rands. The usual arithmetic conversions are performed. Ad-
+ditionally, a value of any integral type may be subtracted
+from a pointer, and then the same conversions as for addi-
+tion apply.
+
+If two pointers to objects of the same type are subtracted,
+the result is converted (by division to the length of the
+object) to an $int$ representing the number of objects se-
+parating the pointed-to objects. This conversion will in
+general give unexpected results unless the pointers point
+to objects in the same array, since pointers, even to ob-
+jects of the same type, do not necessarily differ by a mul-
+tiple of the object-length.
+
+
+7.5 Shift operators
+-------------------
+
+The shift operators << and >> group left-to-right. Both
+perform the usual arithmetic conversions of their operands,
+each of which must be integral. Then the right operand is
+converted to $int$; the type of the result is that of the
+left operand. The result is undefined if the right operand
+is negative, or greater than or equal to the length of the
+object in bits.
+
+  `shift-expression`:
+     `expression` << `expression`
+     `expression` >> `expression`
+
+The value of E1<<E2 is E1 (interpreted as a bit pattern)
+left-shifted E2 bits; vacated bits are 0-filled. The value
+of E1>>E2 is E1 right-shifted E2 bit positions. The right
+shift is guaranteed to be logical (0-fill) if E1 is unsig-
+ned; otherwise it may be (and is, on the the PDP-11) arith-
+metic (fill by a copy of the sign bit).
+
+
+7.6 Relational operators
+------------------------
+
+The relational operators group left-to-right, but this fact
+is not very useful; a<b<c does not mean what it seems to.
+
+  `relational-expression`:
+     `expression` < `expression`
+     `expression` > `expression`
+     `expression` <= `expression`
+     `expression` >= `expression`
+
+The operators < (less than), > (greater than), <= (less
+than or equal to) and >= (greater than or equal to) all
+yield 0 if the specified relation is false and 1 if it is
+true. The type of the result is $int$. The usual arithmetic
+conversions are performed. Two pointers may be compared;
+the result depends on the relative locations in the address
+space of the pointed-to objects. Pointer comparison is por-
+table only when the pointers point to objects in the same
+array.
+
+
+7.7 Equality operators
+----------------------
+
+   `equality-expression`:
+      `expression` == `expression`
+      `expression` != `expression`
+
+The == (equal to) and the != (not equal to) operators are
+exactly analogous to the relational operators except for
+their lower precedence. (Thus a<b == c<d is 1 whenever a<b
+and c<d have the same truth-value).
+
+A pointer may be compared to an integer, but the result is
+machine dependent unless the integer is the constant 0. A
+pointer to which 0 has been assigned is guaranteed not to
+point to any object, and will appear to be equal to 0; in
+conventional usage, such a pointer is considered to be
+null.
+
+
+7.8 Bitwise AND operator
+------------------------
+
+  `and-expression`:
+     `expression` & `expression`
+
+The & operator is associative and expressions involving &
+may be rearranged. The usual arithmetic conversions are
+performed; the result is the bitwise AND function of the
+operands. The operator applies only to integral operands.
+
+
+7.9 Bitwise exclusive OR operator
+---------------------------------
+
+  `exclusive-or-expression`:
+     `expression` ^ `expression`
+
+The ^ operator is associative and expressions involving ^
+may be rearranged. The usual arithmetic conversions are
+performed; the result is the bitwise exclusive OR function
+of the operands. The operator applies only to integral
+operands.
+
+
+7.10 Bitwise inclusive OR operator
+----------------------------------
+
+  `inclusive-or-expression`:
+     `expression` | `expression`
+
+The | operator is associative and expressions involving |
+may be rearranged. The usual arithmetic conversions are
+performed; the result is the bitwise inclusive OR function
+of the operands. The operator applies only to integral
+operands.
+
+
+7.11 Logical AND operator
+-------------------------
+
+  `logical-and-expression`:
+     `expression` && `expression`
+
+The && operator groups left-to-right. It returns 1 if both
+its operands are non-zero, 0 otherwise. Unlike &, && gua-
+rantees left-to-right evaluation; moreover the second ope-
+rand is not evaluated if the first operand is 0.
+
+The operands need not have the same type, but each must
+have one of the fundamental types or be a pointer. The re-
+sult is always $int$.
+
+
+7.11 Logical OR operator
+------------------------
+
+  `logical-or-expression`:
+     `expression` || `expression`
+
+The || operator groups left-to-right. It returns 1 if ei-
+ther of its operands is non-zero, 0 otherwise. Unlike |, ||
+guarantees left-to-right evaluation; moreover, the second
+operand is not evaluated if the value of the first operand
+is non-zero.
+The operands need not have the same type, but each must
+have one of the fundamental types or be a pointer. The re-
+sult is always $int$.
+
+
+7.13 Conditional operator
+-------------------------
+
+  `conditional-expression`:
+     `expression` ? `expression` : `expression`
+
+Conditional expressions group left-to-right. The first ex-
+pression is evaluated and if it is non-zero, the result is
+the value of the second expression, otherwise that of third
+expression. If possible, the usual arithmetic conversions
+are performed to bring the second and third expressions to
+a common type; otherwise, if both are pointers of the same
+type, the result has the common type; otherwise, one must
+be a pointer and the other the constant 0, and the result
+has the type of the pointer. Only one of the second and the
+third expressions is evaluated.
+
+
+7.14 Assignment operators
+-------------------------
+
+There are a number of assignment operators, all of which
+group right-to-left. All require an lvalue as their left
+operand, and the type of an assignment expression is that
+of its left operand. The value is the value stored in the
+left operand after the assignment has taken place. The two
+parts of a compound assignment operator are separate to-
+kens.
+
+  `assignment-expression`:
+     `lvalue` = `expression`
+     `lvalue` += `expression`
+     `lvalue` -= `expression`
+     `lvalue` *= `expression`
+     `lvalue` /= `expression`
+     `lvalue` %= `expression`
+     `lvalue` >>= `expression`
+     `lvalue` <<= `expression`
+     `lvalue` &= `expression`
+     `lvalue` ^= `expression`
+     `lvalue` |= `expression`
+
+In the simple assignment with =, the value of the expres-
+sion replaces that of the object referred to by the lvalue.
+If both operands have arithmetic type, the right operand is
+converted to the type of the left preparatory to the as-
+signment.
+
+The behaviour of an expression of the form E1 `op`=E2 may
+be inferred by taking it as equivalent to
+E1 = E2 `op` (E2);  however, E1 is evaluated only once. In
++= and -=, the left operand may be a pointer, in which case
+the (integral) right operand is converted as explained in
+@7.4; all right operands and all non-pointer left operands
+must have arithmetic type.
+
+The compilers currently allow a pointer to be assigned to
+an integer, an integer to a pointer, and a pointer to a
+pointer of another type. The assignment is a pure copy ope-
+ration, with no conversion. This usage is nonportable, and
+may produce pointers which cause addressing exceptions when
+used. However, it is guaranteed that assignment of the con-
+stant 0 to a pointer will produce a null pointer distin-
+guishable from a pointer to any object.
+
+
+7.15 Comma operator
+-------------------
+
+  `comma-expression`:
+     `expression` , `expression`
+
+A pair of expressions separated by a comma is evaluated
+left-to-right and the value of the left expression is dis-
+carded. The type and value of the result are the type and
+value of the right operand. This operator groups left-to-
+right. In contexts where comma is given a special meaning,
+for example in a list of actual arguments to functions
+(@7.1) and lists of initializers (@8.6), the comma operator
+as described in this section can only appear in parenthe-
+ses; for example,
+
+  f(a, (t=3, t+2), c)
+
+has three arguments, the second of which has the value 5.
+
+
+
+
+8. Declarations
+===============
+
+
+Declarations are used to specify the interpretation which C
+gives to each identifier; they do not necessarily reserve
+storage associated with the identifier. Declarations have
+the form
+
+  `declaration`:
+     `decl-specifiers` `declarator-list`   ;
+                                        opt
+
+The declarators in the declarator-list contain the identi-
+fiers being declared. The decl-specifiers consist of a se-
+quence of type and storage class specifiers.
+
+  `decl-specifiers`:
+     `type-specifiers` `decl-specifiers`
+                                        opt
+     `sc-specifier` `decl-specifiers`
+                                     opt
+
+The list must be self-consistent in a way described below.
+
+
+8.1 Storage class specifiers
+----------------------------
+
+The sc-specifiers are:
+
+   `sc-specifier`:
+      auto
+      static
+      extern
+      register
+      typedef
+
+The $typedef$ specifier does not reserve storage and is
+called a "storage class specifier" only for syntactic con-
+venience; it is discussed in @8.8 . The meanings of the va-
+rious storage classes were discussed in @4.
+
+The $auto$, $static$, and $register$ declarations also ser-
+ve as definitions in that they cause an appropriate amount
+of storage to be reserved. In the $extern$ case there must
+be an external definition (@10) for the given identifiers
+somewhere outside the function in which they are declared.
+
+A $register$ declaration is best thought of as an $auto$
+declaration, together with a hint to the compiler that the
+variables declared will be heavily used. Only the first few
+such declarations are effective. Moreover, only variables
+of certain types will be storaged in registers; on the
+PDP-11, they are $int$, $char$, or pointer. One other re-
+striction applies to register variables: the address-of
+operator & cannot be applied to them. Smaller, faster pro-
+grams can be expected if register declarations are used
+appropriately, but future improvement in code generation
+may render them unnecessary.
+
+At most one sc-specifier may be given in a declaration. If
+the sc-specifier is missing from a declaration, it is taken
+to be $auto$ inside a function, $extern$ outside. Excep-
+tion: functions are never automatic.
+
+
+8.2 Type specifiers
+-------------------
+
+The type specifiers are
+
+  `type-specifier`:
+     char
+     short
+     int
+     long
+     unsigned
+     float
+     double
+     `struct-or-union-specifier`
+     `typedef-name`
+
+The words $long$, $short$, and $unsigned$ may be thought of
+as adjectives; the following combinations are acceptable.
+
+  short int
+  long int
+  unsigned int
+  long float
+
+The meaning of the last is the same as $double$. Otherwise,
+at most one type-specifier may be given in a declaration.
+If the type-specifier is missing from a declaration, it is
+taken to be $int$.
+
+Specifiers for structures and unions are discussed in @8.5;
+declarations with $typedef$ names are discussed in @8.8 .
+
+
+8.3 Declarators
+---------------
+
+The declarator-list appearing in a declaration is a comma-
+separated sequence of declarators, each of which may have
+an initializer.
+
+  `declarator-list`:
+     `init-declarator`
+     `init-declarator` , `declarator-list`
+
+  `init-declarator`:
+     `declarator` `initializer`
+                               opt
+
+Initializers are discussed in @8.6 . Th specifiers in the
+declaration indicate the type and storage class of objects
+to which the declarators refer. Declarators have the syn-
+tax:
+
+  `declarator`:
+     `identifier`
+     (`declarator`)
+     * `declarator`
+     `declarator` ()
+     `declarator` [`constant-expression`   ]
+                                        opt
+
+The grouping is the same as in expressions.
+
+
+8.4 Meaning of declarators
+--------------------------
+
+Each declarator is taken to be an assertion that when a
+construction of the same form as the declarator appears in
+an expression, it yields an object of the indicated type
+and storage class. Each declarator contains exactly one
+identifier; it is this identifier that is declared.
+
+If an unadorned identifier appears as a declarator, then
+it has the type indicated by the specifier heading the de-
+claration.
+
+A declarator in parentheses is identical to the unadorned
+declarator, but he binding of complex declarations may be
+altered by parentheses. See examples below.
+
+Now imagine a declaration
+
+   T D1
+
+where T is a type-specifier (like $int$, etc.) and D1 is a
+declarator. Suppose this declaration makes the identifier
+have type "...T", where "..." is empty if D1 is just a
+plain identifier (so that the type of x in "int x" is just
+int). Then if D1 has the form
+
+   * D
+
+the type of the contained identifier is "... pointer to T".
+If D1 has the form
+
+   D()
+
+then the contained identifier has the type "...function re-
+turning T".
+If D1 has the form
+
+   D [`constant-expression`]
+
+or
+
+   D []
+
+then the contained identifier has type "... array of T". In
+the first case the constant expression is an expression
+whose value is determinable at compile time, and whose type
+is $int$. (Constant expression are defined precisely in
+@15.) When several "array of" specifications are adjacent,
+a multi-dimensional array is created; the constant expres-
+sions which specify the bounds of the arrays may be missing
+only for the first member of the sequence. This elision is
+useful when the array is external and the actual defini-
+tion, which allocates storage, is given elsewhere. The
+first constant-expression may also be omitted when the de-
+clarator is followed by initialization. In this case the
+size is calculated from the number of initial elements sup-
+plied.
+
+An array may be constructed from one of the basic types,
+from a pointer, from a structure or union, or from another
+array (to generate a multi-dimensional array).
+
+Not all the possibilities allowed by the syntax above are
+actually permitted. The restrictions are as follows: func-
+tions may not return arrays, structures, unions or func-
+tions, although they may return pointers to such things;
+there are no arrays of functions, although there may be ar-
+rays of pointers to functions. Likewise a structure or
+union may not contain a function, but it may contain a
+pointer to a function.
+
+As an example, the declaration
+
+  int i, *ip, f(), *fip(), (*pfi)();
+
+declares an integer i, a pointer ip to an integer, a func-
+tion f returning an integer, a function fip returning a
+pointer to an integer, and a pointer pfi to a function
+which returns an integer. It is especially useful to com-
+pare the last two. The binding of *fip() is *(fip()), so
+that the declaration suggest, and the same construction in
+an expression requires, the calling of a function fip, and
+then using indirection through the (pointer) result to
+yield an integer. In the declarator (*pfi)(), the extra pa-
+retheses are necessary, as they are also in an expression,
+to indicate that indirection through a pointer to a func-
+tion yields a function, which is then called; it returns
+an integer.
+
+As another example,
+
+  float fa[17], *afp[17];
+
+declares an array of $float$ numbers and an array of poin-
+ters to $float$ numbers.
+
+Finally,
+
+  static int x3d[3][5][7];
+
+declares a static three-dimensional array of integers, with
+rank 3*5*7. In complete detail, x3d is an array of three
+items; each item is an array of five arrays; each of the
+latter arrays is an array of seven integers. Any of the ex-
+pressions x3d, x3d[i], x3d[i][j], x3d[i][j][k] may reason-
+ably appear in an expression. The first three have type
+"array", the last has type $int$.
+
+
+8.5 Structure and union declarations
+------------------------------------
+
+A structure is an object consisting of a sequence of named
+members. Each member may have any type. A union is an ob-
+ject which may, at a given time, contain any one of several
+members. Structure and union specifiers have the same form.
+
+  `struct-or-union-specifier`:
+     `struct-or-union` {`struct-decl-list`}
+     `struct-or-union` `identifier` {`struct-decl-list`}
+     `struct-or-union` `identifier`
+
+  `struct-or-union`:
+     struct
+     union
+
+The struct-decl-list is a sequence of declarations for the
+members of the structure of union:
+
+  `struct-decl-list`:
+    `struct-declaration`
+    `struct-declaration` `struct-decl-list`
+
+  `struct-declaration`:
+    `type-specifier` `struct-declarator-list` ;
+
+  `struct-declarator-list`:
+    `struct-declarator`
+    `struct-declarator` , `struct-declarator-list`
+
+In the usual case, a struct-declarator is just a declarator
+for a member of a structure or union. A structure member
+may also consist of a specifier number of bits. Such a mem-
+ber is also called a `field`; its lenght is set off from
+the field name by a colon.
+
+  `struct-declarator`:
+    `declarator`
+    `declarator` : `constant-expression`
+                 : `constant-expression`
+
+Within a structure, the objects declared have addresses
+which increase as their declarations are read
+left-to-right. Each non-field member of a structure begins
+on an addressing boundary appropriate to its type; there-
+fore, there may be unnamed holes in a structure. Field mem-
+bers are packed into machine integers; they do not straddle
+words. A field which does not fit into the space remaining
+in a word is put into the next word. No field may be wider
+than a word. Fields are assigned right-to-left on the
+PDP-11, left-to-right on other machines.
+
+A struct-declarator with no declarator, only a colon and a
+width, indicates an unnamed field useful for padding to
+conform to externally-imposed layouts. As a special case,
+an unnamed field with a width 0 specifies alignment of the
+next field at a word boundary. The "next field" presumably
+is a field, not an ordinary structure member, because in
+the latter case the alignment would have been automatic.
+
+The language does not restrict the typesof things that are
+declared as fields, but implementations
+are not required to
+support any but integer fields. Moreover, even $int$ fields
+may be considered to be unsigned. On the PDP-11, fields are
+not signed and have only integer values. In all implementa-
+tions, there are no arrays of fields, and the address-of
+operator & may not be applied to them, so that there are no
+pointers to fields.
+
+A union may be thought of as a structure all of whose mem-
+bers begin at offset 0 and whose size is sufficient to con-
+tain any of its members. At most one of the members can be
+stored in a union at any time.
+
+A structure or union specifier of the second form, that is,
+one of
+
+  struct `identifier` {`struct-decl-list`}
+  union `constant-expression`
+                 : `constant-expression`
+
+declares the identifier to be the `structure tag` (or union
+tag) of the structure specified by the list. A subsequent
+declaration may then use the third form of specifier, on of
+
+  struct `identifier`
+  union`identifier`
+
+Structure tags allow definition of self-referential struc-
+tures; they also permit the long part of the declaration
+to be given once and used several times. It is illegal to
+declare a structure or union which contains an instance of
+itself, but a structure or union may contain a pointer to
+an instance of itself.
+
+The names of members and tags may be the same as ordinary
+variables. However, names of tags and members must be mu-
+tually distinct.
+
+Two structures may share a common initial sequence of mem-
+bers; that is, the same member may apper in two different
+structures if it has the same type in both and if all pre-
+vious members are the same in both. (Actually, the compiler
+checks only that a name in two different structures has the
+same type and offset in both, but if preceding members dif-
+fer the construction is nonportable.)
+
+A simple example of a structure declaration is
+
+  struct tnode {
+           char tword[20];
+           int count;
+           struct tnode *left;
+           struct tnode *right;
+  };
+
+which contains an array of 20 characters, an integer, and
+two pointers to similar structures. Once this declaration
+has been given, the declaration
+
+  struct tnode s, *sp;
+
+declares s to be a structure of the given sort and sp to be
+a pointer to a structure of the given sort. With these de-
+clarations, the expression
+
+  sp -> count
+
+refers to the count field of the structure to which sp
+points;
+
+  s.left
+
+refers to the left subtree pointer of the structure s; and
+
+  s.right -> tword[20]
+
+refers to the first character of the tword member of the
+right subtree of s.
+
+8.6 Initialization
+------------------
+
+A declarator may specify an initial value for the identi-
+fier being declared. The initializer is preceded by =, and
+consists of an expression or a list of values nested in
+braces.
+
+  `initializer`:
+     = expression
+     = {`initializer-list`}
+     = {`initializer-list` ,}
+
+  `initializer-list`:
+     expression
+     `initializer-list` , `initializer-list`
+     {`initializer-list`}
+
+All the expressions in an initializer for a static or ex-
+ternal variable must be constant expressions, which are
+described in @15, or expressions which reduce to the add-
+ress of a previously declared variable, possibly offset by
+a constant expression. Automatic or register variables may
+be initialized by arbitrary expressions involving con-
+stants, and previously declared variables and functions.
+
+Static and external variables which are not initialized are
+guaranteed to start off as 0; automatic and register vari-
+ables which are not initialized are guaranteed to start off
+as garbage.
+
+When an initializer applies to a `scalar` (a pointer or an
+object of arithmetic type), it consists of a single expres-
+sion, perhaps in braces. The initial value of the object is
+taken from the expression; the same conversions as for as-
+signment are performed.
+
+When the declared variable is an `aggregate` (a structure
+or array) then the initializer consists of a brace-enclo-
+sed, comma-separated list of initializers for the members
+of the aggregate, written in increasing subscript or member
+order. If the aggregate contains subaggregates, this rule
+applies recursively to the members of the aggregate. If
+there are fewer initializers in the list than there are
+members of the aggregate, then the aggregate is padded with
+0's. It is not permitted to initialize unions or automatic
+aggregates.
+
+Braces may be elided as follows. If the initializer begins
+with a left brace, then the succeeding comma-separated list
+of intializers initializes the members of the aggregate; it
+is erroneous for there to be more initializers than mem-
+bers. If, however, the initializer does not begin with a
+left brace, then only enough elements from the list are ta-
+ken to account for the members of the aggregate; any remai-
+ning members are left to initialize the next member of the
+aggregate of which the current aggregate is a part.
+
+A final abbreviation allows a $char$ array to be initiali-
+zed by a string. In this case succesive characters of the
+string initialize the members of the array.
+For example,
+
+  int x[] = {1,3,5};
+
+declares and initializes x as a 1-dimensional array which
+has three members, since no size was specified and there
+are three initializers.
+
+  float y[4][3] = {
+     {1,3,5},
+     {2,4,6},
+     {3,5,7},
+  };
+
+is a completely-bracketed initialization; 1,3, and 5 ini-
+tialize the first row of the array y[0], namely y[0][0],
+y[0][1], and y[0][2]. Likewise the next two lines initia-
+lize y[1] and y[2]. The initializer ends early and there-
+fore y[3] is initialized with 0. Precisely the same effect
+could habe been achieved by
+
+  float y[4][3] = {
+     1,3,5,2,4,6,3,5,7
+  };
+
+The initializer for y begins with a left brace, but that
+for y[0] does not, therefore 3 elements from the list are
+used. Likewise the next three are taken succesively for
+y[1] and y[2]. Also,
+
+  float y[4][3] = {
+    {1}, {2}, {3}, {4}
+  };
+
+initializes the first column of y (regarded as a two-dimen-
+sional array) and leaves the rest 0.
+
+Finally,
+
+  char msg[] = "Syntax error on line %s\n";
+
+shows a character array whose members are initialized with
+a string.
+
+
+
+8.7 Type names
+--------------
+
+In two contexts (to specify type conversions explicitely by
+means of a cast, and as an argument of $sizeof$) it is de-
+sired to supply the name of a data type. This is accompli-
+shed using a "type name", which in essence is a declaration
+for an object of that type which omits the name of the
+object.
+
+  `type-name`:
+     `type-specifier` `abstract-declarator`
+
+  `abstract-declarator`:
+     `empty`
+     (`abstract-declarator`)
+     *`abstract-declarator`
+     `abstract-declarator`()
+     `abstract-declarator` [`constant-expression`   ]
+                                                 opt
+
+To avoid ambiguity, in the construction
+
+  (`abstract-declarator`)
+
+the abstract-declarator is required to be non-empty. Under
+this restriction, it is possible to identify uniquely the
+location in the abstract-declarator where the identifier
+would appear if the construction were a declarator in a de-
+claration. The named type is then the same as the type of
+the hypothetical identifier. For example,
+
+  int
+  int *
+  int * [3]
+  int (*)[3]
+  int *()
+  int (*)()
+
+name respectively the types "integer", pointer to integer",
+"array of 3 pointers to integers", pointer to an array of
+3 integers",  "function returning pointer to integer", and
+"pointer to function returning an integer".
+
+
+
+8.8 Typedef
+-----------
+
+Declarations whose "storage class" is $typedef$ do not de-
+fine storage, but instead define identifier which can be
+used later as if they were type keywords naming fundamental
+or derived types.
+
+  `type-name`:
+     `identifier`
+
+Within the scope of a declaration involving $typedef$, each
+identifier appearing as part of any declarator therein be-
+come syntactically equivalent to the type keyword naming
+the type associated with the identifier in the way descri-
+bed in @8.4 . For example, after
+
+  typedef int MILES, *KLICKSP;
+  typedef struct {double re,im;} complex;
+
+the constructions
+
+  MILES distance;
+  extern KLICKSP metricp;
+  complex z,*zp;
+
+are all legal declaration;the type of $distance$ is $int$,
+that of $metricp$ is "pointer to int", and that of $z$ is
+the specified structure, $zp$ is a pointer to such a struc-
+ture.
+
+$typedef$ does not introduce brand new types, only synonyms
+for types which could be specified in another way. Thus in
+the example above $distance$ is considered to have exactly
+the same type as any other $int$ object.
+
+
+
+
+9. Statements
+=============
+
+Except as indicated, statements are executed in sequence.
+
+
+9.1 Expression statement
+------------------------
+
+Most statements are expression statements, which have the
+form
+
+  `expression`;
+
+Usually expression statements are assignments or function
+calls.
+
+
+9.2 Compound statements, or block
+---------------------------------
+
+So that several statements can be used where one is expec-
+ted, the compound statement (also, and equivalently, called
+"blocks") is provided:
+
+  `compound-statement`:
+     {`declaration-list`    `statement-list`   }
+                        opt                 opt
+
+  `declaration-list`:
+     `declaration`
+     `declaration` `declaration-list`
+
+  `statement-list`:
+     `statement`
+     `statement` `statement-list`
+
+If any of the identifiers in the declaration-list were pre-
+viously declared, the outer declaration is pushed down for
+the duration of the block, after which it resumes its
+force.
+
+Any intializations of $auto$ or $register$ variables are
+performed each time the block is entered at the top. It is
+currently possible (but a bad practice) to transfer into a
+block; in that case the initializations are not performed.
+Initializations of $static$ variables are performed only
+once when the program begins execution. Inside a block,
+$extern$ declarations do not reserve storage so initiali-
+zation is not permitted.
+
+
+9.3 Conditional statement
+-------------------------
+
+The two form of the conditional statement are
+
+  if (`expression`) `statement`
+  if (`expression`) `statement` else `statement`
+
+In both cases the expression is evaluated and if it is non-
+zero, the first substatement is executed. In the second
+case the second substatement is executed if the expression
+is 0. As usual the "else" ambiguity is resolved by connec-
+ting an $else$ with the last encountered else-less if.
+
+
+9.4 While statement
+-------------------
+
+The $while$ statement has the form
+
+  while (`expression`) `statement`
+
+The substatement is executed repeatedly so long as the
+value of the expression remains non-zero. The test takes
+place before each execution of the statement.
+
+
+9.5 Do statement
+----------------
+
+The $do$ statement has the form
+
+  do `statement` while (`expression`) ;
+
+The substatement is executed repeatedly until the value of
+the expression becomes zero. The test takes place after
+each execution of the statement.
+
+
+9.6 For statement
+-----------------
+
+The $for$ statement has the form
+
+  for (`expression-1`   ; `expression-2`   ;
+                     opt                opt
+                   `expression-3`   ) `statement`
+                                 opt
+
+This statement is equivalent to
+
+  `expression-1;
+  while (`expression-2`) {
+    `statement`
+    `expression-3`;
+  }
+
+Thus the first expression specifies initialization for the
+loop; the second specifies a test, made before each itera-
+tion, such that the loop is exited when the expresion be-
+comes 0; the third expression often specifies an incremen-
+tation which is performed after each iteration.
+
+Any or all of the expressions may be dropped. A missing
+`expression-2` makes the implied $while$ clause equivalent
+to $while(1)$; other missing expressions are simply dropped
+from the expansion above.
+
+
+9.7 Switch statement
+--------------------
+
+The $switch$ statement causes control to be transfered to
+one of several statements depending on the value of an ex-
+pression. It has the form
+
+  switch (`expression`) `statement`
+
+The usual arithmetic conversion is performed on the expres-
+sion, but the result must be $int$. The statement is typi-
+cally compound. Any statement within the statement may be
+labeled with one or more case prefixes as follows:
+
+  case `constant-expression`:
+
+where the constant expression must be $int$. No two of the
+case constants in the same switch may have the same value.
+Constant expressions are precisely defined in @15.
+
+There may also be at most one statement prefix of the form
+
+  default:
+
+When the $switch$ statement is executed, its expression is
+evaluated and compared with each case constant. If one of
+the case constants is equal to the value of the expression,
+control is passed to the statement following the matched
+case prefix. If no case constant matches the expression,
+and if there is a $default$ prefix, control passes to the
+prefixed statement. If no case matches and if there is no
+$default$ then none of the statements in the switch is exe-
+cuted.
+
+$case$ and $default$ prefixes in themselves do not alter
+the flow of control, which continues unimpeded across such
+prefixes. To exit from a switch, see $break$, @9.8 .
+
+Usually the statement that is the subject of a switch is
+compound. Declarations may appear at the head of this
+statement, but initializations of automatic or register
+variables are ineffective.
+
+
+9.8 Break statement
+-------------------
+
+The statement
+
+  break;
+
+causes termination of the smallest enclosing $while$, $do$,
+$for$, or $switch$ statement; control passes to the state-
+ment following the terminated statement.
+
+
+9.9 Continue statement
+----------------------
+
+The statement
+
+  continue;
+
+causes control to pass to the loop-continuation of the
+smallest enclosing $while$, $do$, or $for$ statement; that
+is to the end of the loop. More precisely, in each of the
+statements
+
+  while (...) {    do {          for (...) {
+   ...              ...            ...
+  contin:;         contin:;      contin:;
+  }                } while(...); }
+
+a $continue$ is equivalent to $goto contin$. (Following the
+$contin:$ is a null statement, @9.13.)
+
+
+9.10 Return statement
+---------------------
+
+A function returns to its caller by means of the $return$
+statement, which has one of the forms
+
+  return;
+  return `expression`;
+
+In the first case the returned value is undefined. In the
+second case, the value of the expression is returned to the
+caller of the function. If required, the expression is con-
+verted, as if by assignment, to the type of the function in
+which it appears. Flowing off the end of a function is
+equivalent to a return with no returned value.
+
+
+9.11 Goto statement
+-------------------
+
+Control may be transferred unconditionally by means of the
+statement
+
+  goto `identifier`;
+
+The identifier must be a label (@9.12) located in the cur-
+rent function.
+
+
+9.12 Labeled statement
+----------------------
+
+Any statement may be preceded by label prefixes of the form
+
+ `identifier`:
+
+which serve to declare the identifier as a label. The only
+use of a label is as a target of a $goto$. The scope of a
+label is the current function, excluding any sub-blocks in
+which the same identifier has been redeclared. See @11.
+
+
+9.13 Null statement
+-------------------
+
+The null statement has the form
+
+   ;
+
+A null statement is useful to carry a label just before
+the } of a compound statement or to supply a null body to a
+looping statement such as $while$.
+
+
+
+10. External definitions
+========================
+
+A C program consists of a sequence of external definitions.
+An external definition declares an identifier to have stor-
+age class $extern$ (by default) or perhaps $static$, and a
+specified type. The type-specifier (@8.2) may also be emp-
+ty, in which case the type is taken to be $int$. The scope
+of external definitions persists to the end of the file in
+which they are declared just as the effect of declarations
+persists to the end of a block. The syntax of external de-
+finitions is the same as that of all declarations, except
+that only at this level may the code for functions be
+given.
+
+
+10.1 External function definitions
+----------------------------------
+
+Function definitions have the form
+
+  `function-definition`:
+     `decl-specifiers`    `function-declarator`
+                      opt
+                                   `function-body`
+
+The only sc-specifiers allowed among the decl-specifiers
+are $extern$ or $static$; see @11.2 for the distinction
+between them. A function declarator is similar to a decla-
+rator for a "function returning ..." except that it lists
+the formal parameters of the function being defined.
+
+  `function-declarator`:
+     `declarator` ( `parameter-list`   )
+                                    opt
+
+  `parameter-list`:
+     `identifier`
+     `identifier`,`parameter-list`
+
+The function-body has the form
+
+  `function-body`:
+     `declaration-list` `compound-statement`
+
+The identifiers in the parameter list, and only those iden-
+tifiers, may be declared in the declaration list. Any iden-
+tifiers whose type is not given are taken to be $int$. The
+only storage class which may be specified is $register$; if
+it is specified, the corresponding actual parameter will be
+copied, if possible, into a register at the outset of the
+function.
+
+A simple example of a complete function definition is
+
+  int max(a, b, c)
+  int a, b, c;
+  {
+     int m;
+
+     m = (a>b) ? a : b;
+     return ((m>c) ? m : c);
+  }
+
+Here $int$ is the type-specifier; $max(a,b,c)$ is the func-
+tion-declarator; $int a,b,c;$ is the declaration-list for
+the formal parameters; {...} is the block giving the code
+for the statement.
+
+C converts all $float$ actual parameters to $double$, so
+formal parameters declared $float$ have their declaration
+adjusted to read $double$. Also, since a reference to an
+array in any context (in particular as an actual parameter)
+is taken to mean a pointer to the first element of the
+array, declarations of formal parameters declared "array
+of ..." are adjusted to read "pointer to ...". Finally, be-
+cause structures, unions, and functions cannot be passed to
+a function, it is useless to declare a formal parameter to
+be a structure, union or function (pointers to such objects
+are of course permitted).
+
+
+10.2 External data definitions
+------------------------------
+
+An external data definition has the form
+
+  `data-definition`:
+     `declaration`
+
+The storage class of such data may be $extern$ (which is
+the default) or $static$, but not $auto$ or $register$.
+
+
+
+11. Scope rules
+===============
+
+A C program need not all be compiled at the same time: the
+source text of the program may be kept in several files,
+and precompiled routines may be loaded from libraries. Com-
+munication among the functions of a program may be carried
+out both through explicit calls and through manipulation of
+external data.
+
+Therefore, there are two kinds of scope to consider: first,
+what may be called the `lexical scope` of an identifier,
+which is essentially the region  of a program during which
+it may be used without drawing "undefined identifier" diag-
+nostics; and second, the scope associated with external
+identifiers, which is characterized by the rule that refe-
+rences to the same external identifier are references to
+the same object.
+
+
+11.1 Lexical scope
+------------------
+
+The lexical scope of identifiers declared in external defi-
+nitions persists from the definition through the end of the
+source file in which they appear. The lexical scope of
+identifiers which are formal parameters persists through
+the function with which they are associated. The lexical
+scope of labels is the whole of the function in which they
+appear.
+
+Because all references to the same external identifier re-
+fer to the same object (see @11.2) the compiler checks all
+declarations of the same external identifier for compatibi-
+lity; in effect their scope is increased to the whole file
+in which they appear.
+
+In all cases, however, if an identifier is explicitely de-
+clared at the head of a block, including the block consti-
+tuting a function, any declaration of that identifier out-
+side the block is suspended until the end of the block.
+
+Remember also (@8.5) that identifiers associated with or-
+dinary variables on the one hand and those associated with
+structure and union members and tags on the other form two
+disjoint classes which do not conflict. Members and tags
+follow the same scope rules as other identifiers. $typedef$
+names are in the same class as ordinary identifiers. They
+may be redeclared in inner blocks, but an explicit type
+must be given in the inner declaration:
+
+  typedef float distance;
+  ...
+  {
+   auto int distance;
+   ...
+
+The $int$ must be present in the second declaration, or it
+would be taken to be a declaration with no declarators and
+type $distance$.
+(It is agreed that the ice is thin here.)
+
+
+11.2 Scope of externals
+-----------------------
+
+If a function refers to an identifier declared to be $ex-
+tern$, then somewhere among the files or libraries consti-
+tuting the complete program there must be an external defi-
+nition for the identifier. All functions in a given program
+which refer to the same external identifier refer to the
+same object, so care must be taken that the type and size
+specified in the definition are compatible with those spe-
+cified by each function which references the data.
+
+The appearance of the $extern$ keyword in an external defi-
+nition indicates that storage for the identifiers being de-
+clared will be allocated in another file. Thus in a multi-
+file program, an external data definition without the $ex-
+tern$ specifier must appear in exactly one of the files.
+Any other files which wish to give an external definition
+for the identifier must inlcude the $extern$ in the defini-
+tion. The identifier can be initialized only in the decla-
+ration where storage is allocated.
+
+Identifiers declared $static$ at the top level in external
+definitions are not visible in other files. Functions may
+be declared $static$.
+
+
+
+12. Compiler control lines
+==========================
+
+The C compiler contains a preprocessor capable of macro
+substitution, conditional compilation, and inclusion of na-
+med files. Lines beginning with # communicate with this
+preprocessor. These lines have syntax independent of the
+rest of the language; they may appear anywhere and have ef-
+fect which lasts (independent of scope) until the end of
+the source program file.
+
+
+12.1 Token replacement
+----------------------
+
+A compiler-control line of the form
+
+  #define `identifier` `token-string`
+
+(note: no trailing semicolon) causes the preprocessor to
+replace subsequent instances of the identifier with the gi-
+ven string of tokens. A line of form
+
+  #define `identifier`(`identifier`,...,`identifier`)
+                           `token-string`
+
+where there is no space between the first identifier and
+the (, is a macro definition with arguments. Subsequent in-
+stances of the first identifier followed by a (, a sequence
+of tokens delimited by commas, and a ) are replaced by the
+token string in the definition. Each occurence of an
+identifier mentioned in the formal parameter list of the
+definition is replaced by the corresponding token string
+from the call. The actual arguments in the call are token
+strings separated by commas; however commas in quoted
+strings or protected by parentheses do not separate argu-
+ments. The number of formal and actual parameters must be
+the same. Text inside a string or a character constant is
+not subject to replacement.
+
+In both forms the replacement string is rescanned for more
+defined identifiers. In both forms a long definition may be
+continued on another line by writing \ at the end of the
+line to be continued.
+
+This facility is most valuable for definition of "manifest
+constants", as in
+
+  #define TABSIZE 100
+
+  int table[TABSIZE];
+
+A control line of the form
+
+  #undef `identifier`
+
+causes the identifier's preprocessor definition to be for-
+gotten.
+
+
+12.2 File inclusion
+-------------------
+
+A compiler control line of the form
+
+  #include "`filename`"
+
+causes the replacement of that line by the entire contents
+of the file `filename`. The named file is searched for
+first in the directory of the original source file, and
+then in a sequence of standard places. Alternatively, a
+control line of the form
+
+  #include <`filename`>
+
+searched only the standard places, and not the directory of
+the source file.
+
+#include's may be nested.
+
+
+12.3 Conditional compilation
+----------------------------
+
+A compiler control line of the form
+
+  #if `constant-expression`
+
+checks whether the constant expression (see @15) evaluates
+to non-zero. A control line of the form
+
+#ifdef `identifier`
+
+checks whether the identifier is currently defined in the
+preprocessor; that is, whether it has ben subject of a #de-
+fine control line. A control line of the form
+
+  #ifndef `identifier`
+
+checks whether the identifier is currently undefined in the
+preprocessor.
+
+All three forms are followed by an arbitrary number of li-
+nes, possibly containing a control line
+
+#else
+
+and then by a control line
+
+#endif
+
+If the checked condition is true then any lines between
+$#else$ and $#endif$ are ignored. If the check condition
+is false then any lines between the test and an $#else$ or,
+lacking an $#else$, the $#endif$, are ignored.
+
+These constructions may be nested.
+
+
+12.4 Line control
+-----------------
+
+For benefit of the other preprocessors which generate C
+programs, a line of the form
+
+  #line `constant` `identifier`
+
+causes the compiler to believe, for purposes of error diag-
+nostics, that the line number of the next source line is
+given by the constant and the current input file is named
+by the identifier. If the identifier is absent the remem-
+bered file name does not change.
+
+
+
+13. Implicit declarations
+=========================
+
+It is not always necessary to specify both the storage
+class and the type of identifiers in a declaration. The
+storage class is supplied by the context in external defi-
+nitions and in declarations of formal parameters and struc-
+ture members. In a declaration inside a function, if a sto-
+rage class but no type is given, the identifier is assumed
+to be $int$; if a type but no storage class is indicated,
+the identifier is assumed to be $auto$. An exception to the
+latter rule is made for functions, since $auto$ functions
+are meaningless (C being incapable of compiling code into
+the stack); if the type of an identifier is "fucntion re-
+turning ...", it is implicitly declared to be $extern$.
+
+In an expression, an identifier followed by ( and not al-
+ready declared is contextually declared to be "function re-
+turning $int$".
+
+14. Types revisited
+===================
+
+This section summarizes the operations which can be perfor-
+med on objects of certain types.
+
+
+14.1 Structures and unions
+--------------------------
+
+There are only two things that can be done with a structure
+or union: name one of its members (by means of the . opera-
+tor); or take its address (by unary &). Other operators,
+such as assigning from or to it or passing it as a parame-
+ter, draw an error message. In the future, it is expected
+that these operations, but not necessarily others, will be
+allowed.
+
+@7.1 says that in a direct or indirect structure reference
+(with . or ->) the name on the right must be a member of
+the structure named or pointed to by the expression on the
+left. To allow an escape from the typing rules, this re-
+striction is not firmly enforced by the compiler. In fact,
+any lvalue is allowed before ., and that lvalue is then as-
+sumed to have the form of the structure of which the name
+on the right is a member. Also, the expression before a ->
+is required only to be a pointer or an integer. If a poin-
+ter, it is assumed to point to a structure of which the na-
+me on the right is a member. If an integer, it is taken to
+be the absolute address, in machine storage units, of the
+appropriate structure.
+
+Such constructions are non-portable.
+
+
+14.2 Functions
+--------------
+
+There are only two things that can be done with a func-
+tion: call it, or take its address. If the name of a func-
+tion appears in an expression not in the function-name po-
+sition of a call, a pointer to the function is generated.
+Thus, to pass one function to another, one might say
+
+  int f();
+  ...
+  g(f);
+
+Then the definition of g might read
+
+  g(funcp)
+  int (*funcp)();
+  {
+   ...
+   (*funcp)();
+   ...
+  }
+
+Notice that f must be declared explicitely in the calling
+routine since its appearance in g(f) was not followed by (.
+
+
+14.3 Arrays, pointers, and subscripting
+---------------------------------------
+
+Every time an identifier of array type appears in an ex-
+pression, it is converted into a pointer to the first mem-
+ber of the array. Because of this conversion, arrays are
+not lvalues. By definition, the subscript operator [] is
+interpreted in such a way that E1[E2] is identical to
+*((E1)+(E2)). Because of the conversion rules which apply
+to +, if E1 is an array and E2 an integer, then E1[E2] re-
+fers to the E2-th member of E1. Therefore, despite its
+asymmetric appearance, subscripting is a commutative opera-
+tion.
+
+A consistent rule is followed in the case of multi-dimen-
+sional arrays. If E is an n-dimensional array of rank
+i*j*...*k, then E appearing in an expression is converted
+to a pointer to an (n-1)-dimensional array with rank
+j*...*k. If the * operator, either explicitely or implicit-
+ly as a result of subscripting, is applied to this pointer,
+the result is the pointed-to (n-1)-dimensional array, which
+itself is immediately converted into a pointer.
+
+For example, consider
+
+  int x[3][5];
+
+Here x is a 3*5 array of integers. When x appears in an ex-
+pression, it is converted to a pointer to (the first of
+three) 5-membered array of integers. In the expression
+x[i], which is equivalent to *(x+i), x is first converted
+to a pointer as described; then i is converted to the type
+of x, which involves multiplying i by the length the object
+to which the pointer points, namely 5 integer objects. The
+results are added and indirection applied to yield an array
+(of 5 integers) which in turn is converted to a pointer to
+the first of the integers. If there is another subscript
+the same argument applies again; this time the result is an
+integer.
+
+It follows from all this that arrays in C are stored row-
+wise (last subscript varies fastest) and that the first
+subscript in the declaration helps determine the amount of
+storage consumed by an array but plays no other part in
+subscript calculations.
+
+
+14.4 Explicit pointer conversions
+---------------------------------
+
+Certain conversions involving pointers are permitted but
+have implementation-dependent aspects. They are all speci-
+fied by means of an explicit type-conversion operator,
+@@7.2 and 8.7 .
+
+A pointer may be converted to any of the integral types
+large enough to hold it. Whether an $int$ or $long@ is re-
+quired is machine dependent. The mapping function is also
+machine dependent, but it is intended to be unsurprising to
+those who know the addressing structure of the machine. De-
+tails for some particular machines are given below.
+
+An object of integral type may be explicitely converted to
+a pointer. The mapping always carries an integer converted
+from a pointer back to the same pointer, but it is other-
+wise machine dependent.
+
+A pointer to one type may be converted to a pointer to ano-
+ther type. The resulting pointer may cause addressing ex-
+ceptions upon use if the subject pointer does not refer to
+an object suitable aligned in storage. It is guaranteed
+that a pointer to an object of a given size may be conver-
+ted to a pointer to an object of a smaller size and back
+again without change.
+
+For example, a storage-allocation routine might accept a
+size (in bytes) of an object to allocate, and return a
+$char$ pointer; it might be used in this way.
+
+  extern char *alloc();
+  double *dp;
+
+  dp = (double*) alloc(sizeof(double));
+  *dp = 22.0/7.0;
+
+$alloc$ must ensure (in a machine-dependend way) that its 
+return value is suitable for conversion to a pointer to
+$double$; then the  u s e  of the function is portable.
+
+The pointer representation on the PDP-11 corresponds to a
+16-bit integer and is measured in bytes. $chars$ have no
+alignment requirements; everything else must have an even
+address.
+
+On the Honeywell 6OOO, a pointer corresponds to a 36-bit
+integer; the word part is in the left 18 bits, and the two
+bits that select the character in a word just to their
+right. Thus $char$ pointers are measured in units of 2**16
+bytes; everything else is measured in units of 2**18 machi-
+ne words. $double$ quantities and aggregates containing
+them must lie on an even word address (0 mod 2**19).
+
+The IBM 37O and the Interdata 8/32 are similar. On both,
+addresses are measured in bytes; elementare objects must be
+aligned on a boundary equal to their length, so pointers to
+$short$ must be O mod 2, to $int$ and $float$ O mod 4, and
+to $double$ 0 mod 8. Aggregates are aligned on the stric-
+test boundary required by any of their constituents.
+
+
+
+15. Constant expressions
+========================
+
+In several places C requires expressions which evaluate to
+a constant: after $case$, as array bounds, and in initiali-
+zers. In the first two cases, the expresion can involve on-
+ly integer constants, character constants, and $sizeof$ ex-
+ressions, possibly connected by the binary operators
+
+  +  -  *  /  %  |  ^  <<  >>  ==  !=  <  >  <=  >=
+
+or by the unary operators
+
+  -  ~
+
+or by the ternary operator
+
+  ?  :
+
+Parentheses can be used for grouping, but not for function
+calls.
+
+More latitude is permitted for initializers; besides con-
+stant expressions as discussed above, one can also apply
+the unary & operator to external or static objects, and to
+external or static arrays subscripted with a constant ex-
+pression. The unary & operator can also be applied implici-
+tely by appearance of unsubscripted arrays and functions.
+The basic rule is that initializers must evaluate either
+to a constant or to the address of a previously declared
+external or static object plus or minus a constant.
+
+
+
+16. Portability considerations
+==============================
+
+Certain parts of C are inherently machine dependent. The
+following list of potential trouble spots is not meant to
+be all-_inclusive, but to point out the main ones.
+
+Purely hardware issues like word size and the properties of
+floating point arithmetic and integer division have proven
+in practice to be not much of a problem. Other facets of
+the hardware are reflected in differing implementations.
+Some of these, particular sign extension (converting a ne-
+gative character into a negative integer) and the order in
+which bytes are placed in a word, are a nuisance that must
+be carefully watched. Most of the others are only minor
+problems.
+
+The number of $register$ variables that can actually be
+placed in registers varies from machine to machine, as does
+the set of valid types. Nonetheless, the compilers all do
+things properly for their own machine; excess or invalid
+$register$ declarations are ignored.
+
+Some difficulties arise only when dubious coding practices
+are used. It is exceedingly unwise to write programs that
+depend on any of these properties.
+
+The order of evaluation of function arguments is not speci-
+fied by the language. It is right to left on the PDP-11,
+left to right on the others. The order in which side ef-
+fects take place is also unspecified.
+
+Since character constants are really objects of type $int$,
+multi-character constants are permitted. The specific im-
+plementation is very machine dependent, however, because
+the order in which characters are assigned to a word varies
+from one machine to another.
+
+Fields are assigned to words and characters to integers
+right-to-left on the PDP-11 and left-to-right on other ma-
+chines. These differences are invisible to isolated pro-
+grams which do not indulge in type punning (for example, by
+converting an $int$ pointer to a $char$ pointer and inspec-
+ting the pointed-to storage), but must be accounted for
+when conforming to externally-imposed storage layouts.
+
+The language accepted by the various compilers differs in
+minor details. Most notably, the current PDP-11 compiler
+will not initialize structures containing bitfields, and
+does not accept a few assignment operators in certain con-
+texts where the value of the assignment is used.
+
+
+        **************************
+
+
+17.: Anachronisms (nicht mehr aktuell)
+
+18.: Zusammenfassung der im Text angefuehrten Syntaxdefi-
+     nitionen.

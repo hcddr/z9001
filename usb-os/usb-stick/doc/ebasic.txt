@@ -1,0 +1,62 @@
+Extended BASIC		Jörg Peuschle ??
+==============
+
+300-3FFF	Programm 
+
+4000 ff 	Buffer f. 2. Bildschirm
+4800 ff		RAM-Programm (ab 4801)
+
+
+OS-Kommandos EBASIC, REBASIC
+
+
+26stellige Artithmetik
+
+basiert auf RAMBASIC R0111
+
+
+EBASIC-Befehle:
+
+CLM
+SETCU		Cursor zeigen
+DELCU		Cursor verstecken
+LOCATE		LOCATE X,Y 	Cursor positionieren		0,0 = links oben
+EXCHANGE	Wechsel zw. zwei Bildschirmseiten, auch mit <ESC>
+TIME		TIME X,Y	Koordinaten der Uhr
+SOUND		nicht implementiert
+MODE
+&nnn		nicht implementiert
+%nnnn		nicht implementiert
+MLOAD
+SAVE
+
+ADD
+SUB
+MUL
+DIV		DIV(A$,B$)
+ESQR
+EPI		ex. PI
+EABS
+EINT
+NEG
+ESGN
+ESIN
+ECOS
+ETAN
+EATN
+ELN		nicht implementiert
+EEXP		nicht implementiert
+SET		Zahl in Zeichehkette
+BACK$ 		Zeichenkette in Zahl
+
+
+?BACK$(EPI)
+ 3.14159265358979323846264338
+
+A$=EPI
+B$=SET("1234567890") 
+?BACK$(MUL(B$,EPI))
+ 3.878509413581851E+9
+ 
+                  
+ 

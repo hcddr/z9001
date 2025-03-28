@@ -1,0 +1,457 @@
+#------------------------------------------------------------------------------
+# USB-System VDIP V. Pohlers 02.2019 - 08.2020
+# 10.2024 R. Hecht CH376-USB
+# 01.2025 SD-OS Kingsteners SD-Modul am Userport 
+#------------------------------------------------------------------------------
+
+Nutzung eines USB-VDIP-Moduls oder eines CH376-Moduls am Z9001 / KC87
+oder Kingsteners SD-Modul am Userport 
+
+
+Das OS des Z9001 wird so erweitert, dass die Routinen zum Speichern und Laden 
+auf bzw. von Kassette nun mit USB-Stick arbeiten. Technisch erfolgt dies durch
+"Umbiegen" der CALL 5 - Routinen.
+
+Inhalt
+======
+
+	USB-Modul
+	SD-Modul
+	ROM-Modul
+	JKCEMU
+	USB-Stick
+	Nutzung
+	Kommandos
+	BASIC
+	Assembler
+	Historie
+
+
+
+USB-Modul VDIP
+==============
+
+Portadresse: 	DC-DF
+
+Es wird ein beliebiges VDIP-USB-Modul benötigt. Die Schaltung nach Mario Leubner
+ist auf allen Modulen gleich!
+
+Unter
+http://hc-ddr.hucki.net/wiki/doku.php/z9001/module_sonstige/gide_usb
+findet man im Abschnitt Hardware eine Beschreibung und in den nachfolgenden
+Abschnitten Hinweise zu den nutzbaren VDIP-Modulen VDIP1 und V2DIP.
+
+Es funktionieren
+
+- GIDE+USB+RTC-Modul von W.Harwardt
+- Z1013-USB-Modul von Matthias H./MHC "Lötspitze"
+
+
+USB-Modul CH376
+===============
+
+Portadresse: 	28-29
+
+Es wird ein CH376-Modul benötigt. 
+
+https://hc-ddr.hucki.net/wiki/doku.php/z9001/module_sonstige/usbmodul
+
+
+SD-Modul
+=========
+
+Userport
+
+Benötigt wird ein SD-Modul nach "Kingstener" am User-Port
+sowie eine passende SD-Karte FAT16-formatiert (<= 2 GB!)
+
+https://hc-ddr.hucki.net/wiki/doku.php/z9001/erweiterungen/sdcard2
+
+Ein Betrieb ohne ROM-Modul ist möglich. (load87 + SDOS.COM)
+
+
+ROM-Modul
+=========
+
+Adresse:	C000-CFFF	(4k, 2x 2K-EPROMs)
+		D000-DFFF	4k optional f. SYSINFO0
+RAM-Speicher:	-
+
+Das Paket enthält einen ROM-Inhalt VDIPOS.ROM bzw. CH376OS.ROM bzw. SDOSC0.ROM
+(ehemals MODUL.ROM). Dieser ist auf zwei EPROMs zu
+brennen und in einem 10K-ROM-Modul auf Adresse C000 zu stecken.
+Es kann auch ein Schalt-ROM o.a. ROM-Modul genutzt werden.
+
+Der ROM enthält die Kommandos zum Laden, Speichern, Starten, Menü etc.
+Die Beschreibung folgt weiter unten im Abschnitt Komandos.
+
+
+Signal /ROMDI (X1:9B) Abschaltung interner ROM:
+	Z9001: 	offen
+	KC87: 	an Masse
+
+
+JKCEMU
+======
+
+Zur Emulation im JKCEMU muss folgende Konfiguration eingestellt sein:
+- Z9001 oder KC87
+- Speichermodule: 16K ROM Modul (C000-E7FF), Inhalt des ROM-Moduls: VDIPOS.ROM
+  RAM-Speicher (optional): Die beiden 16K-Module oder das 64K-Modul
+- Erweiterungen: USB-Anschluss (Vinculum VDIP Modul)
+Unter Extra/USB-Anschluss ist das Verzeichnis usb-stick\ auszuwählen. Der Haken
+bei Schreibschutz (Nur-Lese-Modus) ist zu entfernen.
+- Drucker: V24-Druckermodul emulieren. Dann im Emulator "P" starten. Das ist 
+ein reiner ASCII-Druckertreiber, Grafikzeichen werden als '*' ausgegeben.
+Parallelausgabe auf "Drucker" mit Strg-P ein-/ausschalten, Hardcopy mit Strg-N.
+
+
+USB-Stick
+=========
+
+Es kann ein beliebiger USB-Stick genommen werden.
+Er muss FAT16 oder FAT32 formatiert sein.
+Unterverzeichnisse sind zulässig; mit dem Kommando USB CD xxx wird in das Verzeichnis 
+gewechselt.
+
+Dateinamen
+----------
+
+Dateinamen für den Z9001 dürfen nur 8 Zeichen Name und 3 Zeichen Dateityp lang sein.
+Nicht erlaubt sind die Sonderzeichen . , : +, Kleinbuchstaben und Leerzeichen
+d.h., orig. Programmnamen wie R+DEMO1 sind nicht erlaubt, das Programm muss umbenannt werden.
+Achtung: Für Kommandos (COM-Dateien) gelten die Einschränkungen des Z9001-OS.
+Der Dateiname muss mit einem Buchstaben beginnen.
+
+Dateien 
+-------
+
+Im Ordner "usb-stick" gibt es getestete Programme. Die Dateien aus dem Ordner
+"usb-stick" werden auf den USB-Stick kopiert. Der Einfachheit halber sind die
+Dateien ins Root-Verzeichnis des USB-Sticks zu kopieren, man kann aber auch ein
+Unterverzeichnis nutzen, muss dann aber immer erst mit CD dorthin wechseln.
+
+Die Programme werden auf dem USB-Stick im KCC-Format, aber mit anderer Endung, 
+abgelegt, d.h.:
+
+- Blöcke a 128 Byte, ohne Blocknummern. Der erste Block enthält bei COM-Dateien
+  Dateiname, Dateityp, Anfangsadresse, Endadresse, Startadresse. 
+  Bei BASIC-Dateien stehen 3 Byte Typ, 8 Byte Programmname am Anfang.
+- Dateitypen
+COM	OS-Programm
+TXT	Text-Datei, z.B. vom Assembler-Editor EDIT, vom IDAS
+	aber auch von der Textverarbeitung TEXT1 
+TX2	Text-Datei der Textverarbeitung SCRIPT
+ZBS	alle Basic-Dateien, auch Felder u.a.!
+
+- Dateien vom Emulator
+*.KCC umbenennen in *.COM (bzw. die "richtige" Endung nutzen, z.B. bei Textdateien)
+BASIC-Programme bekommen die Endung *.ZBS (wie unter CP/M)
+Sie müssen 11 Byte Typ + Name am Anfang haben (Unterschied zum KC85/3 !!!)
+
+!!TAP-Dateien gehen nicht!! Diese müssen erst ins KCC-Format umgewandelt werden!!
+
+
+
+Nutzung
+=======
+
+Nach dem Einschalten sollte sich der Z9001 so melden (VDIP-Version):
+
+robotron  Z 9001
+
+EOS
+Ver 03.69VDAPF On-Line:
+Disk Detected P2
+No Upgrade
+D:\>
+>
+
+Mögliche Probleme:
+Gibt es keine Ausgabe EOS, ist das ROM-Modul nicht in Ordnung.
+Es ist dann zu prüfen, ob das /ROMDI-Signal korrekt verdrahtet ist
+(X1:9B Z9001 offen, KC87 an Masse).
+Wurde kein USB-Modul gefunden, erscheint die Fehlermeldung
+>Kein USB-Modul!
+
+Erscheint eine Meldung obiger Art, sollte alles funktionieren.
+Mit
+>DIR
+kann man sich den Inhalt des USB-Sticks anzeigen lassen.
+
+Mit
+>USB
+wird ein neu gesteckter USB-Stick angemeldet.
+
+
+Nun kann wie gewohnt gearbeitet werden. Als Beispiel soll Basic gestartet
+werden:
+
+>BASIC 
+
+Wird ein Kommando im Speicher gefunden, wird es direkt gestartet. Wird es nicht
+gefunden, wird versucht, es vom externen Speicher nachzuladen. Im Kassettenmodus
+schreibt der Z9001 dann "start tape". Im USB-Modus entfällt das, es wird gleich
+geladen. Der Cursor wandert wie gewohnt bei jedem Block ein Zeichen weiter.
+Danach startet Basic automatisch.
+
+Wird das Kommando dagegen nicht gefunden, gibt es Ausschrift
+
+"BOS-error: file not found"
+
+Mit STOP bzw. Ctrl-C muss die Suche abgebrochen werden.
+
+
+
+Kommandos
+=========
+
+Es gibt ein paar spezielle Kommandos zur Arbeit mit USB. 
+Das wichtigste Kommando ist USB. Mit diesem Kommando wird der USB-Stick
+reinitialisiert, werden Verzeichnisse angelegt u.a.m.
+
+USB 			USB-Stick reaktivieren
+
+DIR <such>		Anzeige USB-Inhalt
+			Es kann ein Suchstring angegeben werden, z.B. COM oder E*A
+			Dann werden nur passende Dateien und Verzeichnisse aufgelistet
+			gelb	DIR-Verzeichnisse
+			Grün	COM-Dateien (unter OS ladbar und startbar
+			weiß	ZBS-Dateien (BASIC-Programme)
+			cyan	sonstige Dateien (Text, ...)
+
+CD <verzeichnis>	Verzeichniswechsel
+			Ohne Parameter werden alle Verzeichnisnamen aufgelistet
+			CD / 	ins Wurzelverzeichnis wechseln
+			CD ..	ein Verzeichnis zurück
+
+Weitere USB-Kommandos
+USB CD <verzeichnis> 	Verzeichnis wechseln
+USB CD / 		ins Wurzelverzeichnis wechseln
+USB CD .. 		ein Verzeichnis zurück
+USB DIR 		Verzeichnisanzeige
+USB DLD <verzeichnis> 	Delete Dir, Verzeichnis löschen
+USB MKD <verzeichnis> 	Make Dir, Verzeichnis anlegen
+USB DLF <dateiname> 	Delete File, Datei löschen
+USB FS 			Free Space, Freien Platz anzeigen
+USB IDD 		Disk-Informationen anzeigen
+USB FWV 		Firmware-Version anzeigen
+USB RD <file> 		Read, Textdokument anzeigen
+USB REN <alt> <neu> 	Rename, Datei umbenennen 
+
+C			Cursor an/aus
+CLS			Bilschirm löschen
+VER			Anzeige Programm-Autor und Versions-Datum
+
+Umschalten zwischen USB und Kassette:
+
+DOS 	"Directory OS", Nutzen der USB-Routinen im normalen OS
+	initialisiert den Treiber. 
+CAOS 	"CAssette OS", Nutzen der Kassettenroutinen im normalen OS
+	deinitialisiert den Treiber
+
+Nach Reset, Strg-C ist standardmäßig wieder USB aktiviert
+
+
+
+Systemkommandos zur Arbeit mit Maschinencode
+--------------------------------------------
+
+(vgl. Beschreibung http://hc-ddr.hucki.net/wiki/doku.php/z9001/software/mega)
+
+- Parameter sind hexadezimal anzugeben, eine Vornull ist dabei nicht nötig!
+	z.B. DUMP C000 C0FF
+- Bei vielen Kommandos kann man mit <PAUSE> die Ausgabe anhalten/fortsetzen
+  <STOP> beendet das Kommando, jede andere Taste setzt fort
+
+MENU			Auflisten aller Kommandos im Speicher
+			Angezeit werden Name, Adresse des Kommandonamens, Adresse des Programms
+			Die Reihenfolge entspricht der Suchreihenfolge des OS
+
+DUMP von bis 		Speicher anzeigen HEX/ASCII
+FILL von bis byte 	Speicher mit Byte füllen
+TRANS von ziel anzahl 	Speicherbereich kopieren
+IN port 		Port einlesen
+OUT port byte 		Portausgabe
+RUN adr  		Programmstart von Adr.
+MEM adr 		Speicher editieren (neue Byte(s) eingeben + Enter, zurück mit R, Ende mit ;) 
+
+
+Laden/Speichern. Zur Eingabe des Dateinamens (und Typs) erscheint die Meldung "filename:"
+Hier ist der Dateiname, evtl. gefolgt von Punkt (.) und Dateityp, einzugeben
+
+LOAD [aadr] 		Laden (auf Zieladr.)
+SAVE aadr eadr [sadr] 	Speichern auf USB bzw. Kassette
+FCB			Anzeige des aktuellen File Control Block
+EOR [adr]		RAM-Ende anzeigen/ändern
+
+Bei LOAD/SAVE kann ein weiterer Parameter "1" angehängt werden. Dann wird kein
+OS-Kopfblock geschrieben bzw. geladen! Die CALL-5 Routinen OPENR und OPENW
+öffnen lediglich die im FCB stehende Datei, lesen aber keine Daten aus dieser.
+Das wird z.B. intern in BASIC genutzt.
+Tipp: Mit "LOAD 1000 1", filename:TEST.COM wird das Programm TEST.COM in den
+Speicher ab Adresse 1000 geladen. "DUMP 1000 107F" zeigt den Kopflock an, "DUMP
+1080 3FFF" das eigentlich Programm.
+Tipp2: Mit "LOAD 1000 1" kann man auch Nicht-OS-Dateien in den Speicher laden,
+z.B. Sound-Dateien für die Soundkarte oder andere MSDOS-Dateien.
+
+DOSX [maske]
+Das externe Programm DOSX analysiert die Dateien, auf die die Maske passt und
+zeigt bei Basic-Programmen Typ, Schutz, und Länge (dez.) an, bei anderen Dateien
+die FCB-Felder Anfangsadresse, Endadresse, Startadresse (hex.)
+
+
+BASIC
+=====
+
+Dateiname 		BASIC.COM
+Programmstandort 	0300h-2AFFh
+OS-Kommando 		BASIC (Kaltstart), WBASIC (Warmstart) 
+
+Ein originales ROM-BASIC ist leider nicht nutzbar, da im originalen BASIC die 
+kein CALL 5 für die Kassettenarbeit genutzt wird. Außerdem ist ein vorhandener 
+BASIC-ROM durchs USB-ROM-Modul deaktiviert! 
+Ich habe ein neues RAM-BASIC erzeugt, was den USB-Treiber via CALL 5 unterstützt.
+
+BASIC steht nun nur als RAM-Version bereit. Zur Arbeit mit BASIC sind daher 2
+RAM- Module empfehlenswert, damit genügend Speicherplatz für Programme und Daten
+zur Verfügung steht.
+
+BASIC wird erst (einmalig) von USB-Stick geladen, danach stehen im Speicher
+die Kommandos BASIC und WBASIC bereit. 
+
+Nach dem Start von BASIC erscheint die Frage nach der Größe des Speicherplatzes
+"MEMORY END?". Hier ist im Normalfall nur ENTER zu drücken. Ein gesetztes RAM-Ende 
+EOR (end of ram) wird beachtet.
+
+Mit CLOAD"DATEI" wird das Programm DATEI.ZBS vom USB-Stick geladen.
+
+Die BASIC-Dateien auf USB-Stick bekommen die Endung *.ZBS, so wie es bereits
+unter Z9001-CP/A erfolgt. 
+Alle verschiedenen BASIC-Typen (Programme, Felder, ASCII-Code mit LIST#)
+erhalten gleichermaßen die Endung ZBS. Bei Programmen, die z.B. Felder
+nachladen, muss daher darauf geachtet werden, dass Programm und Feld-Datei
+unterschiedliche Namen erhalten (z.B. Galgenraten GALGENRA.ZBS)
+Die ZBS-Dateien müssen 11 Byte Typ + Name am Anfang haben (Unterschied zu den
+SSS-Dateien des KC85/3 !!!).
+
+
+Neue BASIC-Kommandos:
+
+DIR		Anzeige aller *.ZBS-Dateien
+CD		Anzeige der Verzeichnisnamen
+CD "DIR"	Wechsel ins Unterverzeichnis. 
+		CD ".." geht eine Verzeichnisebene zurück.
+		CD "/" wechselt direkt ins Wurzelverzeichnis.
+		Tipp: Das abschließende " kann entfallen
+
+
+
+Assembler
+=========
+
+Neben IDAS steht auch das Paket EDITOR/ASSEMBLER von robotron zur Verfügung. Mit
+diesen drei Programmen wird unverändert gearbeitet.
+
+Beschreibung s.
+http://hc-ddr.hucki.net/wiki/doku.php/z9001/software/edas
+http://hc-ddr.hucki.net/wiki/doku.php/z9001/software/idas
+
+Nach Eingabe von
+>ASM
+wird das Paket EDITOR/ASSEMBLER von USB-Stick geladen. Man sieht wieder den 
+wandernden Cursor, nach dem Laden erscheint kein Hinweis!
+Nun sind die Kommandos EDIT und ASM verfügbar.
+
+Als Beispiel soll der V24A3-Treiber erzeugt werden.
+In der Textdatei V24A3Q.TXT steht der Assemblerquellcode.
+
+robotron  Z 9001	Einschaltmeldung
+EOS
+>ASM			EDITOR/ASSEMBLER laden, nach dem Laden stehen
+			die Kommandos "EDIT" und "ASM" im Speicher
+>EDIT			Den Editor starten
+EDIT:N			Neustart
++#R"V24A3Q"		Datei V24A3Q.TXT laden
++#T,			Auflisten des Programms
++#E			Editor beenden
+EOS
+>ASM			Assembler starten
+ASM--HC:N		Neustart
+HL:
+MO: T			Code-Ausgabe auf Tape (d.h. auf USB)
+LO: C			Listing auf Bildschirm (Console)
+PASS: 1			1. Pass muss sein
+PASS: M			Ausgabe des Maschinencodes
+			Datei V24A3.COM wird erzeugt
+NAME :"V24A3"		Name in Gänsefüßchen!
+ADDRESS:		Enter, Startadresse = Anfangsadresse
+VERIFY ((Y)/N)? N	
+ASM--HC:
+PASS: E			Assembler beenden
+EOS
+>
+
+Auf USB-Stick ist nun die Datei V24A3.COM angelegt. 
+
+
+
+Historie
+========
+
+**27.02.2019** erste eigenständige Modul-Version
+
+**05.03.2019** Neue Kommandos DIR und CD zur einfachen Arbeit mit USB
+
+**12.03.2019** Neue BASIC-Kommandos DIR und CD (s. oben)
+
+**09.12.2019** Umbenennung usb-os.asm -> modul.asm, usb.asm -> usbos.asm
+Neues Kommando HELP, DIR-Anzeige in BASIC nun ohne Erweiterung
+
+**26.12.2019** Keine eigene Schnittstelle für DIR und CD, sondern Nutzung von 
+CALL 5 mit weiteren Nummern. Sprungverteiler f. LOAD+SAVE. Doku siehe usbos.asm.
+
+**13.03.2020** Mit Build 147 des Arnold-Assemblers musste die Verwendung von
+Unterverzeichnissen geändert werden (Es wird jetzt relativ zu dem Verzeichnis
+gesucht, in dem die Datei mit dem Include-Statement liegt, und nicht mehr
+relativ zum aktuellen Verzeichnis). Das betrifft alle asm-Sourcen und Perl-
+Tools, die was mit include zu tun haben.
+
+**16.03.2020** Basic mit DIR, CD unter DOSX,USBX; sonst Fehlermeldung. DOSX
+merkt sich das aktuelle Laufwerk
+
+**12.04.2020** neu DEVICE, neue Version ZM30+ZMA8, USB-OS nun auch OS 1.1-
+tauglich (Z9001.84). CRT-Treiber werden bei WBOOT reinitialisiert.
+
+**11.08.2020** CALL 5 f. LOAD+SAVE, Doku s. 00usb-os-entwickler.txt
+Anpassung HLPEDIT, HELP, System. Aktualisiert CRT40. 
+Testweise SYSINFO0 im Modul-ROM enthalten
+
+**01.07.2021**
+ausführliche Modul-Dokumentation als PDF, Programmübersicht "usb-stick programme.txt"
+FILL ohne Parameter löscht 300-BFFF (ala CLEAR MEMORY)
+CTRL-C bei DIR in BASIC bricht ab (vorher Rücksprung ins OS)
+CRT-Treiber im OS integeriert (schnelles CLS, ASCII-Spezialzeichen mit @)
+CALL 5 CLOAD neu A=3 wie A=1, aber ohne initiales GVAL (Anwendung s. HLPKDO)
+R-NLREG, R-PERDAT korrigiert. WORD, SYSINFO, HLPEDIT, CRT40 aktualisiert
+neu CHIP-8, Programme Kassetten INFORMATIK 
+zusätzliche und korrgierte Dokus
+
+**05.10.2021**
+SYSINFO0 Umstellung von bitbuster_extreme auf ZX7. Dadurch noch bessere
+Pack-Ergebnisse. 
+https://spectrumcomputing.co.uk/entry/27996/ZX-Spectrum/ZX7, ADDITIONAL FILE DOWNLOADS:
+https://spectrumcomputing.co.uk/zxdb/sinclair/entries/0027996/ZX7_SourceCode.zip
+https://spectrumcomputing.co.uk/zxdb/sinclair/entries/0027996/ZX7_(WindowsExecutable).zip
+
+**22.10.2024**
+Umstrukturierung Code
+
+**10.2024** 
+R.Hecht Adaption an CH376-USB-Modul
+
+**23.01.2025**
+Version für Kingsteners SD-Modul
+
+**04.02.2025**
+CALL 5 DIR erweitert um Ablage im Speicher, neues Programm DIRX.COM

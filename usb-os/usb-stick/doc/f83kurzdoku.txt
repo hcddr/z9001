@@ -1,0 +1,424 @@
+#------------------------------------------------------------------------------
+# FORTH F83 der FG Forth
+#------------------------------------------------------------------------------
+
+Im Kulturbund der DDR wurde eine Fachgruppe FORTH als DDR-weite
+Vereinigung und Anlaufstelle gegründet. Leiter: Michael Balig. Leider nur
+kurzes Bestehen (1989-91), hervorgegangen aus der Fachgruppe Forth
+des Computerclubs Leipzig (frühere Amateur-Interessengemeinschaft
+Forth), geschätzt 50-100 Mitglieder.
+
+Die Fachgruppe FORTH hat eine F83-Version speziell für U880-Rechner
+entwickelt und vertrieben.
+- 8 Bit, min. 16K RAM
+- universeller Kern
+- einheitliche Worte für Kassetten- bzw. Diskettenarbeit
+- Full-Screen-Editor
+- Versionen f. Z1013, Z9001, BIC, (KC85/3 u.a.)
+- Version 1.3, angedacht Version 1.4 für 64K-Systeme
+- Autor: Dr. Thomas Beierlein
+- basiert auf FIG-FORTH und Laxen/Perry-F83(8080)
+- Vorgängerversion 1.2 der Forth-Gruppe des Computerclubs Leipzig
+
+
+Allemeines
+----------
+
+
+F83 arbeitet mit Screens von 32x16 Zeichen (0.5 KByte)
+
+F83 verwaltet mehrere Screens (1..MAX#) im Speicher.
+Dieser Screen-bereich wird auch als RAM-Disk bezeichnet.
+
+Die Größe der RAM-Disk wird vom FORTH selbstständig aus den in der Boot-Area
+enthaltenen Werten errechnet und bei Neustart in das FORTH-Systen übernommen.
+Eine Änderung von Konstanten im FORTH ist daher nicht nötig. Es sind die Blöcke
+1 bis MAX# (Diskgroesse / B/BUF) verfügbar. Ein Zugriff auf nicht vorhandene
+Blöcke führt zu einer Fehlermeldung.
+
+
+Besonderheiten Z9001
+--------------------
+
+da beim Z9001 leider nicht alle Zeichen direkt auf der Tastatur verfügbar sind,
+wurde eine zusätzliche Shift-Ebene eingebaut. Es ist zuerst LIST zu drücken,
+wieder loszulassen, und dann eine der Tasten 1 bis 9:
+
+LIST, dann	  1 2 3 4 5 6 7 8 9
+(F1)		7Fh ` | \ ~ { } [ ]
+
+
+Starten/Beenden
+---------------
+
+im OS
+F83A4.COM
+	Programmname auf Kassette/Megaflash.
+	(enthält f83.com+getput+sedit+see+debug)
+
+F83A4	lädt das Forth und führt einen Kaltstart aus.
+
+F83 	Kaltstart
+WF83 	Warmstart
+
+in Forth
+BYE	beendet Forth, kehrt zum OS zurück.
+
+
+Wichtige Befehle
+----------------
+
+.VERSION	Versionsbezeichnung
+BYE		Bewirkt das Verlassen des FORTH-Systems. Rückkehr ins OS.
+		Vorher werden alle Blockpuffer gerettet.
+COLD		Re-Init.
+adr u DUMP	Ausgabe von u Bytes, die im Speicher ab adr stehen. Vor jeder
+		Zeile wird die Anfangsadresse ausgegeben.
+WORDS		Ausgabe aller Wortnamen des ersten Woerterbuchs der aktuellen
+		Suchreihenfolge.
+VOCS		zeigt alle definierten Vokabulare.
+n LOAD		Laden (Kompilieren) des Screens n
+u1 u2 THRU	Laden der Screens u1 bis u2
+u LIST		Anzeige Screen u
+
+
+Arbeit mit Screens
+------------------
+
+Fullscreen-Editor
+
+n EDIT	öffnet Editor für Screen n
+
+Cursor 			hoch, runter, links, rechts
+ENTER 			Cursor auf den Anfang der nächsten Zeile
+COLOR 		(F7)	Zeile speichern
+shift+COLOR 		Zeile holen
+ESC 			Zeile einfügen
+CONT 		(F5)	Screen löschen
+PAUSE 		(F4)	Kursor home
+DEL, INS, CLLN	(,,F6)	wie der Name schon sagt ...
+LIST 2x 	(F1+F1)	nimmt Änderungen zurück
+STOP 		(F3)	Editorende
+RUN 		(F2)	Abbruch, LIST+STOP
+I<-- 		(Strg+<-)	vorhergehender Screen
+-->I 		(Strg+->)	nächster Screen
+
+(in Klammern: Sondertasten bei JKCEMU)
+
+
+Laden/Speichern auf Kassette
+----------------------------
+
+n GET fname
+   Lesen File fname.F83 in RAM-Disk ab Screen n
+
+n1 n2 PUT fname
+   Abspeichern Screens n1 bis n2 auf Kassette mit Namen fname.f83
+
+SAVE-SYSTEM fname
+   Abspeichern FORTH als File fname.COM
+
+.FILES
+   Anzeige der Filenamen von Kassette, Abbruch mit >STOP<
+   (geht nicht mit DOSX und Floppy)
+   30.12.2019 extra Version für USB-OS
+
+
+zusätzliche Module
+------------------
+
+f83.com		Basissystem
+sedit.f83	Screen-Editor	(in f83a4.com enthalten)
+getput.f83	Kassettenarbeit	(in f83a4.com enthalten)
+see.f83		Decompiler	(in f83a4.com enthalten)
+debug.f83	Debugger	(in f83a4.com enthalten)
+mtask.f83	Multitasking
+fasm.f83	Z80-Assembler
+reass.f83	z80-Reassembler
+show.f83	Screen-Druck
+
+Laden der Module mit
+1 GET SEE	(Programmname)
+1 6 THRU	(Die Anzahl der Screens wird auch bei GET angezeigt, hier als Beipiel 6)
+
+
+#------------------------------------------------------------------------------
+div:
+
+
+#------------------------------------------------------------------------------
+# F83
+#------------------------------------------------------------------------------
+
+- ein 8Bit-Forth nach Standard Forth 83
+  Screengröße 1/2 KByte
+
+- ich habe eine Implementierung für den Z1013 (f83 1_3 bcb2.z80)
+  gepatcht für den Z9001, anschließend sind die I/O-Routinen und einiges mehr
+  entstanden.
+
+f83a4.com  enthält f83.com+getput+sedit+see+debug
+
+Beschreibung s. f83glossar.txt
+
+#------------------------------------------------------------------------------
+# Kurzeinstieg
+#------------------------------------------------------------------------------
+
+.VERSION
+   Druckt Versionsbezeichnung des Systems aus.
+
+BYE
+   Bewirkt das Verlassen des FORTH-Systems.  Rueckkehr in  den
+   Monitor. Vorher werden alle Blockpuffer gerettet.
+
+Wörterbücher mit ONLY xxx ALSO xxx -Konzept
+
+adr u DUMP
+   Ausgabe von u Bytes,  die im Speicher ab adr stehen. Vor jeder
+   Zeile wird die Anfangsadresse ausgegeben.
+   Tipp: HEX adr u DUMP
+
+WORDS
+   Ausgabe aller Wortnamen des ersten Woerterbuchs der aktuellen
+   Suchreihenfolge.
+
+VOCS
+   zeigt alle definierten Vokabulare.
+
+n LOAD
+   Laden (Kompilieren) des Screens n
+
+u1 u2 THRU
+   Laden (Kompilieren) der Screens u1 bis u2
+
+u LIST
+   Anzeige Screen u
+
+Block 1 ab Adr  24064d = 5E00h
+
+#------------------------------------------------------------------------------
+# GETPUT Kassettenroutinen
+#------------------------------------------------------------------------------
+
+Woerterbuch I/O
+
+n GET fname
+   Lesen File fname.F83 in RAM-Disk ab Screen n
+
+n1 n2 PUT fname
+   Abspeichern Screens n1 bis n2 auf Kassette mit Namen fname
+
+SAVE-SYSTEM fname
+   Abspeichern FORTH als File fname.COM
+
+.FILES
+   Anzeige der Filenamen von Kassette, Abbruch mit >STOP<
+
+#------------------------------------------------------------------------------
+# SEDIT Screen-Editor
+#------------------------------------------------------------------------------
+
+Woerterbuch EDITOR
+
+Das Modul EDIT dient zum schnellen Erstellen und Aendern von Screens. Dieser
+Screeneditor beinhaltet 17 Kommandos mit wichtigen zeilen- oder
+screenorientierten Editierfunktionen. Zum Editieren wird der
+Bildwiederholspeicher genutzt. Die unmittelbare Positionierung des Cursors im
+Text vereinfacht die Handhabung des Editors und macht ihn zu einem bequemen
+Arbeitsinstrument.
+Nach dem Compilieren des Programmes ( THRU oder LOAD ) kann der Editor durch
+gewuenschte Screennummer und EDIT aufgerufen werden.
+
+Bsp.:   2 EDIT ( ruft Screen 2 zum Editieren auf)
+
+Danach kann durch einfache Tastaturbetaetigung der gewuenschte Programmtext
+eingegeben werden.
+
+Kommandos
+*********
+
+Cursorkommandos
+
+Pfeil runter - Cursor in gleicher Spalte eins tiefer		cu down
+Pfeil hoch   - Cursor in gleicher Spalte eins hoch		cu up
+Pfeil rechts - Cursor eine Position nach rechts			->
+Pfeil links  - Cursor eine Position nach links			<-
+CTR A        - Cursor auf die erste Position des Screens	PAUSE 	CONTR-S
+ENT          - Cursor auf den Anfang der naechsten Zeile	ENTER
+CTR E        - fuegt ein Leerzeichen ab Cursor ein		INS
+CTR O        - loescht ein Zeichen rechts vom Cursor		DEL
+
+Zeilenkommandos
+
+CTR D   - loescht Cursorzeile					CL LN
+CTR L   - loescht Cursorzeile und verschiebt die restl. Zeilen
+CTR S   - schiebt eine Leerzeile ein, letzte Zeile geht
+          verloren
+CTR T   - legt Zeile in den PAD
+CTR Z   - holt Zeile aus dem PAD
+
+Screenkommandos
+
+CTR N   - naechster Screen zum Editieren			-->I
+CTR B   - ein Screen zurueck					I<--
+CTR W   - loescht aktuellen Screen und verlaesst Editor		CONT
+CTR C   - sichert Screen im RAM und verlaesst Editor		STOP
+
+
+Sondertasten
+						jkcemu
+COLOR   	Zeile speichern			F7
+shift COLOR  	Zeile holen
+ESC     	Zeile einfuegen
+CONT    	Screen loeschen			F5
+PAUSE   	Kursor home			F4
+DEL, INS, CL LN
+LIST 2x nimmt Aenderungen zurueck		F1, F1
+STOP    	Editorende			F3
+RUN     	LIST+STOP			F2
+I<--    	vorhergehender Screen		Strg + <-
+-->I    	naechster Screen		Strg + ->
+
+Nichttastaturzeichen ueber
+        LIST, dann 1 .. 9
+
+LIST, dann	  1 2 3 4 5 6 7 8 9
+		7Fh ` | \ ~ { } [ ]
+
+
+Z9001 KEYS
+
+02 ( sDEL) ,	CL LN   CONTR-B 	
+03 ( STOP) ,	STOP 	CONTR-C
+05 ( CLR) ,	CONTR-E
+08 ( LEFT) ,	<-
+09 ( RIGHT) ,	->
+10 ( DOWN) ,    
+11 ( UP) ,
+13 ( ENTER) ,
+19 ( HOME) ,	PAUSE 	CONTR-S
+20 ( PUSH) ,	COLOR 	CONTR-T
+21 ( UP) ,	COLOR+SHIFT CONTR-U
+24 ( sUP) ,	-->| 	CONTR-X
+25 ( sDOWN) ,	|<-- 	CONTR-Y
+26 ( INS) ,	INS
+27 ( sINS) ,	ESC
+28 ( reLIST) ,	LIST
+29 ( BREAK) ,	RUN
+30 ( sCLR) ,	CONT
+31 ( DEL) ,	DEL
+
+
+#------------------------------------------------------------------------------
+# SEE	Decompiler nach F83
+#------------------------------------------------------------------------------
+
+Woerterbuch DECOMPILER
+
+Benutzung des Decompilers:
+
+     SEE <name>
+
+#------------------------------------------------------------------------------
+# DEBUG
+#------------------------------------------------------------------------------
+
+Woerterbuch BUG
+
+DEBUG <name>
+	schaltet den Bearbeitungsvorgang fuer das Wort 'name' ein.
+	Patcht NEXT zur debuggierten Version von NEXT und setzt die
+	Grenzen.
+
+RESUME
+	setzt die Niederschrift fort.
+
+
+
+Der Debugger erlaubt dem Nutzer die Schritte einer Hight-Level- Definition
+darzustellen. Er wird in der Form 'DEBUG name' eingeschaltet. Dabei ist 'name'
+das Dictonary-Wort, welches verfolgt werden soll. Bei der Ausfuehrung des Wortes
+werden die einzelnen Schritte und der Parameterstack auf dem Bildschirm
+angezeigt.
+
+Sonderbefehle waehrend der Anzeige
+
+<F> ermoeglicht die zusaetzliche Eingabe von Forth-Befehlen
+    und deren Interpretation bis mit RESUME die Bearbeitung
+    fortgesetzt wird
+
+<C> schaltet auf kontinuierlichen Lauf um
+
+<Q> bricht die Bearbeitung des Wortes ab (und beendet Debug-Modus des Wortes)
+
+#------------------------------------------------------------------------------
+# Reassembler (22 Screens)
+#------------------------------------------------------------------------------
+
+1 GET REASS
+1 22 THRU
+
+- Beispiel
+SEE COUNT
+COUNT is
+0F70:    POP   HL
+0F71:    LD    E,(HL)
+0F72:    LD    D,00
+0F74:    INC   HL
+0F75:    EX    DE,HL
+0F76:    JP    0420
+0F79: END
+ok
+
+
+#------------------------------------------------------------------------------
+# Einbinden von DIR und Speichern als neues System
+# DIR wird vor EMPTY aufgenommen und geört dann zum Standard
+#------------------------------------------------------------------------------
+
+' RESUME FENCE !
+FORGET EMPTY
+ONLY FORTH ALSO
+
+1 GET DIR
+1 LOAD
+
+MARK EMPTY  HERE FENCE !
+SAVE-SYSTEM F83A5
+
+
+
+#------------------------------------------------------------------------------
+# Multitasking (6 Screens)
+#------------------------------------------------------------------------------
+
+1 GET MTASK
+1 5 THRU
+
+-beispiel
+6 LIST		
+6 LOAD			im Hintergrund wird Variable COUNT hochgezählt
+COUNTS ?
+COUNTS ?
+SINGLE			wieder zurück
+
+
+#------------------------------------------------------------------------------
+# Screen-Druck (5 Screens)
+# meine Variante f. Präsident 6325 (rechter Rand, Schrift ELITE, ..)
+#------------------------------------------------------------------------------
+
+vorab Druckertreiber in OS laden!
+FORTH
+1 GET SHOW
+1 5 THRU
+
+- SHOW ( n1 n2 -- ) \ von...bis druckt Screens von..bis zweispaltig
+- Frage nach Filename: Es wird nichts geladen, der Text wird nur 
+  rechts oben auf der Seite gedruckt
+-beispiel
+1 5 SHOW
+Filename: SHOW  
+Druckbeginn Seite jeweils mit Enter, ggf. in EINZUG KEY DROP löschen
+

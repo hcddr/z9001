@@ -1,0 +1,255 @@
+genutzte Speicherzellen
+
+
+modul.asm
+DATA:		0044H	; Konvertierungsbuffer
+ARG1:		0046H	; 1. Argument
+ARG2:		0048H	; 2. Argument
+ARG3:		004AH 	; 3. Argument
+ARG4:		004CH 	; 4. Argument
+
+osXXX.asm:
+
+WRITFLG		equ	004eh		; aktuell im Schreib-Modus?
+initflg		equ	004fh
+fsize:		equ	0050h		; Blockgroesse (128 oder weniger)
+filesize:	equ	0051h		; Dateigroesse in Byte
+
+filename:	equ	0160h		; CH376: 0153h, 41 Byte
+		;ds	8+1+3+1		; Puffer für Filename (Name+Tennz+Typ+00)
+
+crtdrv.asm:
+
+keybu1	equ	005Ah		;letztes eingegebenes Zeichen
+keybu2	equ	005Bh		;ersetztes Zeichen
+
+
+helpkdo.asm
+PARBU:		EQU	0040H		;HILFSZELLE (wird nur von ALDEV genutzt)
+menukdo
+PU:		EQU	002FH		;HILFSZELLE (TIME + Status CONST)
+WORKA:		EQU	0033H		;HILFSZELLE (ASGN)
+PARBU:		EQU	0040H		;HILFSZELLE (wird nur von ALDEV genutzt)
+
+dirXXX.asm
+PARBU:		EQU	0040H		;HILFSZELLE (wird nur von ALDEV genutzt)
+
+
+#------------------------------------------------------------------------------
+# CALL 5
+#------------------------------------------------------------------------------
+
+; Umbiegen des CALL5 auf Routinen zur Nutzung des USB-Sticks
+
+  		DW	OPENR		;OPEN LESEN KASSETTE		<13>
+  		DW	OPENW		;OPEN SCHREIBEN KASSETTE	<15>
+  		DW	CLOSW		;CLOSE SCHREIBEN KASSETTE	<16>
+  		DW	READS		;BLOCKLESEN SEQUENTIELL		<20>
+  		DW	WRITS		;BLOCKSCHREIBEN SEQUENTIELL	<21>
+  		DW	RRAND		;BLOCKLESEN			<33>
+
+neue Funktionen: (sind im Orig. OS ungenutzt und liefern 'BOS error')
+ 		DW 	DIRS 		;LIST FILES 			<19>
+ 		DW 	CHDIR 		;LIST/CHANGE SUBDIRECTORY 	<32>
+; 		
+		DW	CLOAD		;LADEN				<34>
+		DW	CSAVE		;SPEICHERN			<35>
+		DW	KDOPAR		;Parameter aufbereiten		<36>
+		DW	OUTHX		;Ausgabe (E) hexa		<37>
+		DW	OUTDE		;Ausgabe (DE) hexa		<38>
+
+;-----------------------------------------------------------------------------
+; OPENR/OPENW FCB-Erweiterung
+;
+; 	(fcb+24) 	= 'N', dann kein Block 0 lesen/schreiben, nur Datei öffnen
+;
+; bei Block lesen (OPENR, READS, RREAD, CLOSR)
+;	(fcb+25)	LEADR (letzte beschriebene Adresse)
+;
+;-----------------------------------------------------------------------------
+; # DIRS C=19
+;
+; Funktion:
+; 	- LIST FILES
+; Eingang:
+;	- A Bit 7 = 1 Suchmuster in DE, sonst alles anzeigen
+;	- DE = String, mit 00-Byte
+;	- A Bit 6 = 1 Dateityp nicht anzeigen
+;	- A Bit 5 = 1 Ablegen in Speicher ab HL		-- neu 31.01.2025
+;	- HL = Adr. Buffer 	
+; Return:
+;	- 
+;	bei Bit 5 -> ab (HL) Ende mit 0
+;	1. Byte Typ (D ir/F ile), max 13 Byte Name Format "8.3"
+;	HL = Ende Adr. Buffer
+;-----------------------------------------------------------------------------
+; # CHDIR C=32
+;
+; Funktion:
+; 	- LIST/CHANGE SUBDIRECTORY
+; Eingang:
+; 	- A = 0 List directories,
+;	- A <> 0 change directory, b=länge, de=dir
+; Return:
+;-----------------------------------------------------------------------------
+; # CLOAD C=34
+;
+; Funktion:
+; 	- Schreiben einer Datei auf Kassette
+; 	- Block 0 wird nicht lesen, wenn (fcb+24) = 'N'
+; Eingang:
+;   A=0 => Dateiname+Typ ist bereits im FCB eingetragen
+;   A=1 => Dateiname "Name[.Typ]" muss in CONBU abgelegt sein (als OS-Parameter)
+;   A=2 => zuerst Abfrage "Filename:"
+;   A=3 => Dateiname "Name[.Typ]" muss in CONBU abgelegt sein, ohne initiales GVAL
+;   A+80h -> in IX Zeiger auf Default-Dateityp (3 Char), sonst COM
+;   HL = 0 => orig. aadr wird genommen
+;   HL <> 0 => aadr
+;ret: Cy=1 Fehler
+;     (fcb+25) = letzte beschriebene Adresse (LEADR)
+;-----------------------------------------------------------------------------
+; # CSAVE  C=35
+;
+; Funktion:
+; 	- Schreiben einer Datei auf Kassette
+; 	- Kopf-Block 0 wird nicht geschrieben, wenn Flag (fcb+24) = 'N'
+; Eingang:
+;   FCB ist vorbereitet (AADR, EADR, SADR, ...)
+;   A=0 => Dateiname+Typ ist bereits im FCB eingetragen
+;   A=1 => Dateiname "Name[.Typ]" muss in CONBU abgelegt sein (als OS-Parameter)
+;   A=2 => zuerst Abfrage "Filename:"
+;   A+80h -> in IX Zeiger auf Default-Dateityp (3 Char), sonst COM
+;ret: Cy=1 Fehler
+;-----------------------------------------------------------------------------
+
+Im Gegensatz zu den restl. CALL5-Funktionen belasten CLOAD/CSAVE den User-Stack
+(Tiefe 3) und verändern die Register!
+
+
+Beispiele
+
+dirz:	db	"?HLP",0	; entspricht *.HLP
+cds:	db	"ROBOTRON"
+fcb	equ	005Ch	
+fext	db	"BIN"	
+;
+dir:	ld	a,0C0h		; mit Suchmuster, keine Ext. anzeigen
+	ld	de,dirz		; Suchmuster
+	ld	c,19		; DIRS
+	call	5		
+	ret
+cd:	ld	de,cds		; Verzeichnis
+	ld	b,8		; Länge
+	ld	c,32		; CHDIR
+	jp	5	
+save:	ld	hl,0F000h
+	LD	(fcb+17),HL	; AADR
+	ld	HL,0FFFFh
+	LD	(fcb+19),HL	; EADR
+	ld	a,82h		; Filename abfragen
+	ld	ix,fext		; Filetyp BIN
+	ld	c, 35		; CSAVE
+	call	5
+	ret
+load:	LD	HL,1000h	; neue Zieladr.
+	ld	a,82h		; Abfrage "Filename:"
+	ld	ix,fext		; Filetyp BIN
+	ld	c,34		; CLOAD
+	call	5
+	ret
+
+;-----------------------------------------------------------------------------
+; # KDOPAR C=36
+;
+; Funktion:
+; 	- bis zu 4 Hex-Zahlen-Parameter aufbereiten
+; Eingang:
+; 	- bis zu 4 Parameter (Hex-Zahlen) im Eingabepuffer CONBU abgelegt
+;       - Vornull nicht nötig, es gelten die letzten 4 Stellen eines Parameters
+; 	- oder ':', dann gelten die letzten Parameter erneut
+; Return:
+;	ARG1:	in 0046H 
+;	ARG2:	in 0048H 
+;	ARG3:	in 004AH 
+;	ARG4:	in 004CH 
+;-----------------------------------------------------------------------------
+; # OUTHX C=37
+;
+; Funktion:
+; 	- Ausgabe (E) hexa
+; Eingang:
+; 	- E
+;-----------------------------------------------------------------------------
+; # OUTDE C=38
+;
+; Funktion:
+; 	- Ausgabe (DE) hexa
+; Eingang:
+; 	- DE
+;-----------------------------------------------------------------------------
+
+Beispiel:
+
+	jp 	start
+	db 	"HEX     ",0
+	db	0
+start:	ld	c,36		; KDOPAR
+	call	5		; Parameter auswerten
+	ld	hl, 0046h 	; ARG1
+	ld	b,4		; für 4 Param	
+m1:	ld	e,(hl)
+	inc	hl
+	ld	d,(hl)		; DE=Parameter
+	inc	hl
+	ld	C,38		; OUTDE
+	call	5
+	ld	e,' '		; Leerzeichen ausgeben
+	ld	c,2		; CONSO
+	call	5
+	djnz	m1
+	ret
+
+>HEX 11AA 22BB 33CD 44EF
+11AA 22BB 33CD 44EF 
+>HEX 12345678 ABCDEF
+5678 CDEF 0000 0000 
+>HEX :
+5678 CDEF 0000 0000 
+
+
+
+
+#------------------------------------------------------------------------------
+# automatische Treiberinitialisierung bei Warmstart ('#        ', STRG-C)
+#------------------------------------------------------------------------------
+
+via Missbrauch der I/O-Tabelle:
+
+;02.03.2019 10:47:50
+AUP2		equ	0EFDFh		; Eigentlich Adresse UP2-Treiber für PUNCH
+AUR2		equ	0EFD7h		; Eigentlich Adresse UR2-Treiber für READER
+					; hier f. Re-Init ON_COLD genutzt
+
+bei Eintritt ins CCP (bei '#       ') werden die hier hinterlegten Routinen
+gestartet. Damit können bei jedem Warmstart z.B. Treiber reinitalisiert werden.
+
+Bei USB-OS stehen beide INIT-Adressen zur freien Verwendung. 
+Hier wird die USB-Erweiterung und der Fast-CRT-Treiber automatisch immer aktiviert.
+
+Die externen CRT-Treiber CRT40 etc. tragen ihre INIT-Adresse in AUP2 ein. 
+USBX, DOSX tragen tragen ihre INIT-Adresse in AUR2 ein (Mega-Flash)
+Der Druckertreiber "P" (f. JKCEMU) nutzt AUR2.
+
+
+#------------------------------------------------------------------------------
+# COM-Files erzeugen
+#------------------------------------------------------------------------------
+
+# Assemblieren und COM-File erstellen und nach usb-stick\ kopieren:
+asm_file.asm nach comfiles\
+make comfiles\asm_file.com
+
+# Specials
+BASIC.COM nach robotrn2\, robotron\, SOFT\, vp\ kopieren
+crt40.com, graf.com, graf14.com, grafp.com, hlpedit.com nach vp\ kopieren
+

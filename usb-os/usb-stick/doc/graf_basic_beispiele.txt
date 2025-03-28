@@ -1,0 +1,225 @@
+aus der Anleitung Grafik-Zusatz.pdf (z9_gbas.pdf)
+
+#------------------------------------------------------------------------------
+# Beispiel 1 Funktionstest
+#------------------------------------------------------------------------------
+
+10 SCREEN 1
+20 GCLS
+30 LINE(0,0)-(255,192),1,B
+40 PSET(60,70),0
+50 LABEL "KC 87 mit Grafik-Zusatz"
+60 PAUSE 50
+70 SCREEN 0
+
+#------------------------------------------------------------------------------
+# Beispiel 2
+#------------------------------------------------------------------------------
+
+10 SCREEN 0 : CLS : GCLS
+20 PRINT AT (10,10);"KC87 zeichnet im Hintergrund"
+30 FOR FA = 3 TO 6
+40 PAUSE 20
+50 CIRCLE (125,95),10 * FA
+60 INK FA
+70 SCREEN 1
+80 PAUSE 20
+90 SCREEN 0
+100 NEXT
+110 INK 3
+120 CLS
+
+#------------------------------------------------------------------------------
+# LINE
+#------------------------------------------------------------------------------
+
+Beispiele:
+1.	
+
+10 SCREEN 1
+20 GCLS
+30 FOR I=0 TO 100 STEP 10
+40 PSET(I,I/2)
+50 NEXT I
+60 PAUSE 50
+70 SCREEN
+
+Damit wird die aus elf Punkten bestehende Punktreihe von (0,0) 	bis (100,50) gezeichnet.
+
+2.	Das gleiche Ergebnis würden folgende Anweisungen liefern:
+
+10 SCREEN 1
+20 GCLS
+30 PSET(0,0)
+40 FOR I=1 TO 9
+50 PSET STEP(10,5)
+55 NEXT I
+60 PAUSE 50
+70 SCREEN
+
+3.	Die gleiche Punktreihe in einem anderen Koordinatensystem entsteht mit:
+
+10 SCREEN 1
+20 GCLS
+30 SCALE 10,5
+40 FOR I=0 TO 10 STEP 1
+50 PSET(I,I)
+55 NEXT I
+60 PAUSE 50
+70 SCREEN
+
+
+Beispiel:
+Die folgenden Anweisungen zeichnen ein Rechteck "zwischen" den Punkten (10,10) und (60,30).
+
+10 SCREEN 1
+20 GCLS
+30 PSET(10,10),0
+40 LINE - STEP(50,20),,B
+50 PAUSE 50
+60 SCREEN
+
+Das gleiche Rechteck zeichnet man durch
+
+30 LINE(10,10) - STEP(50,20),1,B
+
+oder durch
+
+30 LINE(10,10) - (60,30),1,B
+
+
+#------------------------------------------------------------------------------
+# CIRCLE
+#------------------------------------------------------------------------------
+
+Beispiele:
+
+1.	Die nachfolgende Anweisung zeichnet einen Kreis mit dem Radius 20 um den Mittelpunkt (50,20):
+
+10 SCREEN 1
+20 GCLS
+30 CIRCLE(50,20),20
+40 PAUSE 50
+50 SCREEN
+
+2.	Die angegebene Anweisungsfolge zeichnet ein "Kuchendiagramm".
+
+10 SCREEN 1
+20 GCLS
+30 CIRCLE(50,50),20,,-PI/4,-3*PI/2
+40 CIRCLE STEP(5,-2),20,,-3*PI/2,-PI/4
+50 PAUSE 50
+60 SCREEN
+
+3.	Die nachfolgenden Anweisungen zeichnen einen Kreis und je zwei im Kreis liegende Ellipsen, gestaucht in y- bzw. x-Richtung.
+
+10 SCREEN 1
+20 GCLS
+30 PSET(30,30),0
+40 FOR I=0 TO 4
+50 READ EL
+60 CIRCLE STEP(0,0),20,,,,EL/15
+70 NEXT I
+80 DATA 3,9,15,25,75
+90 PAUSE 50
+100 SCREEN
+
+#------------------------------------------------------------------------------
+# LABEL
+#------------------------------------------------------------------------------
+
+Beispiele:
+1.	
+
+10 SCREEN 1
+20 GCLS
+30 PSET(20,100),0
+40 LABEL "ABC"+CHR$(13)+"XYZ"
+50 PAUSE 50
+60 SCREEN
+
+	bewirkt auf dem Grafikbildschirm die Ausgabe von
+
+		ABC
+		XYZ
+
+2.	Löschen von Zeichen:
+
+10 SCREEN 1
+20 GCLS
+30 PSET(20,100),0
+40 LABEL "ABCDEFGHIJK"
+50 PAUSE 20
+60 PSET(32,100),0
+70 LABEL STRING$(3,CHR$(23))
+80 PAUSE 50
+90 SCREEN
+
+3.	LABEL CHR$(24)+"A"+CHR$24+"a"
+	bewirkt die Ausgabe von 
+
+		Ää
+
+4.	Verwendung des Sonderzeichens CHR$(31) zur Kennzeichnung von Punkten eines Polygonzuges:
+
+10 SCREEN 1
+20 GCLS
+30 DATA 50,50,100,15,150,95,220,5
+40 FOR I=0 TO 3
+50 READ X,Y
+60 LINE-(X,Y):LABEL CHR$(31)
+70 NEXT I
+80 PAUSE 50
+90 SCREEN
+
+
+
+#------------------------------------------------------------------------------
+# Plotter 
+#------------------------------------------------------------------------------
+
+10 SCREEN 1,1
+20 ZERO(0,0):HOME
+30 LINE(0,0)-(2550,1800),1,B
+40 PSET(700,700),0
+50 LABEL "KC 87 und XY 4131"
+60 HOME
+ 
+
+#------------------------------------------------------------------------------
+https://www.atarimagazines.com/creative/v10n2/204_Simple_screen_graphics_wi.php
+
+5 !BOUNCING
+10 X=2:Y=2
+20 I=4:J=4
+30 INPUT "Leave trail (Y or N)";A$
+50 SCREEN 1:GCLS
+70 C=1
+80 PSET (X,Y),C
+90 X=X+I
+100 Y=Y+J
+110 IF X>=254 THEN I=-I :BEEP
+120 IF X<=1 THEN I=-I :BEEP
+130 IF Y>=192 THEN J=-J :BEEP
+140 IF Y<=1 THEN J=-J :BEEP
+160 PSET (X,Y),C
+180 IF A$="Y" THEN 90
+190 GOTO 70
+
+
+5 !BALLISTIC CURVE
+10 A=45
+20 V=1000 :G=32
+30 D=180/PI
+40 SCREEN 1:GCLS
+50 CX=V*COS(A/D)
+60 CY=V*SIN(A/D)
+80 FOR T=0 TO 44.2 STEP .2
+90 X=CX*T
+100 Y=CY*T-16*T*T
+110 X=X/125
+120 Y=Y/125*1.2
+130 PSET (X,Y)
+140 NEXT T
+150 GOTO 150
+

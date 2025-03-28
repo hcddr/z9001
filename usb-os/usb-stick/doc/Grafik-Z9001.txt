@@ -1,0 +1,209 @@
+
+Plotter geht nicht im JKCEMU 0.97 !!!
+
+#------------------------------------------------------------------------------
+
+
+Spalten x Zeilen  (X x Y)
+Koordinatenursprung HOME (0,0) ist defaultmäßig links unten
+
+
+Achtung: Die Treiber müssen zur BASIC-Version passen, da sie interne Prozeduren
+der BASIC-Erweiterung aufrufen!
+
+#------------------------------------------------------------------------------
+
+GRPLOT	(nur Plotter)
+2550x1800 Punkte
+----------------------
+
+Papier muss man sich im Querformat denken, auch wenn es im Hochformat in den Plotter
+eingeführt wird!
+
+- LINE BF (box filled) ist nicht implementiert, es wird gar nichts gezeichnet
+- POINT liefert immer 0
+- PAINT ist nicht implementiert
+- GCLS löscht nicht
+	,entspricht SCALE 1,1 : ZERO(0,0) : HOME
+
+GRAF  (robotron Grafikzusatz + Plotter)
+256x192 Punkte
+----------------------------------------
+
+für Plotter gelten die Einschränkungen wie bei GRPLOT
+
+Grafikzusatz:
+- LINE BF (box filled) ist nicht implementiert, es wird gar nichts gezeichnet
+- PAINT ist nicht implementiert
+- SIZE  ist nicht implementiert
+- SCREEN 1 übernimmt aktuelle Vorder- und Hintergrundfarbe (aus Farbattribut ATRIB)
+- GCLS macht kein ZERO(0,0) !!!
+
+2 Farben: Vordergrundfarbe 1, Hintergrundfarbe 0
+	Farben mit INK und PAPER vor der Anweisung SCREEN 1 setzen
+
+
+
+GRAFP (KRT-Grafik + Plotter)	V. Pohlers
+320x192 Punkte
+-------------------------------------------
+
+wie graf, aber 
+- andere Hardware + größere Auflösung
+- 8 Vorder- und 8 Hintergrundfarben, mit INK und PAPER setzen. 
+  Vorder- und Hintergrundfarbe gilt jeweils für 8x8 Pixel.
+- Grafikbefehle ohne SCREEN 1 vorab bringen die Ausgabe durcheinander,
+  man muss dann blind SCREEN <Enter> eintippen.
+
+
+GRAF14	(Z9001 + Plotter)	V. Pohlers, 1/4-Grafik, 
+80x48 Punkte 
+-------------------------------------------------------
+
+wie graf, aber
+- keine Zusatzhardware nötig, aber geringere Auflösung
+- LABEL ist nicht implementiert (normales PRINT AT nutzen)
+- enthält damit auch keinen 6x8-Pixel-Font
+- 8 Vorder- und 8 Hintergrundfarben, mit INK und PAPER setzen. 
+  Vorder- und Hintergrundfarbe gilt jeweils für 2x2 Pixel.
+- 1/4-Pixel-Routine nach A. Zierott, aus BAC87  
+
+#------------------------------------------------------------------------------
+
+SCREEN
+
+SCREEN 0  - normaler alpanumerischer Bildschrm
+SCREEN 0,1 - Plotter (an E/A-Buchse)
+SCREEN 1 - Grafikzusatz, KRZ, 1/4-Grafik
+
+Eine gleichzeitige parallele Ausgabe auf Vollgrafik und Plotter ist nicht möglich,
+SCREEN 1,1 aktiviert die Grafik und gibt auf Plotter aus
+
+Die erste SCREEN-Anweisung initialisiert SCALE mit 1,1.
+Sonst bleibt der SCALE-Faktor unverändert.
+
+Solange keine SCREEN-Anweisung abgearbeitet ist, sind die
+Skalierungsfaktoren nicht initialisiert und damit undefiniert.
+
+Tipp: Vollst. Init. der Grafik mit 
+SCREEN1:GCLS:ZERO(0,0)
+Koordinatenursprung HOME (0,0) ist links unten
+
+
+GCLS löscht den Grafikbildschirm, initialisiert SCALE mit 1,1, setzt Pointer auf (0,0) 
+ clear_grafic : SCALE 1,1 : [ZERO(0,0)] : HOME
+ZERO nur bei Plotter, nicht bei Grafikausgabe !!! Beispiel:
+
+10 SCREEN 1:REM 10 SCREEN 0,1
+15 ZERO(128,96)
+20 GCLS
+30 LINE(0,0)-(255,192),1,B
+40 PSET(60,70),0
+50 LABEL "KC 87 mit Grafik-Zusatz"
+60 PAUSE 50
+70 SCREEN 0
+
+
+HOME ==
+	PSET(0,0),0
+
+#------------------------------------------------------------------------------
+
+BASIC-Beispiele
+---------------
+
+r_grdem2_sss.tap Große Grafikdemo. Angepasste Version von R+PLDEMO (Demo f. Plotter)
+globus87_sss.tap Der Globus (H. Völz). Achtung: Lange Rechenzeit!
+grafpt1_sss.tap Testprogramm 1
+grafpt2_sss.tap Testprogramm 2
+grafpt3_sss.tap Testprogramm 3
+n-eck_sss.tap Zeichnen von n-Ecken
+uhr_sss.tap Anzeige der Uhrzeit als Analoguhr. Tipp: Vorher mit TIME im OS
+die Uhrzeit einstellen!
+
+
+#------------------------------------------------------------------------------
+# Befehle des Vollgrafik-Treibers f. BASIC
+# (entsprechen dem MSX1-Standard)
+#------------------------------------------------------------------------------
+
+
+PSET(x,y)[,stift]
+Setzen eines Punktes
+stift - 0 Hintergrundfarbe (Löschen), 1 Vordergrundfarbe, (Standard: stift = 1)
+
+LINE [(x1,y1)]-(x2,y2)[,[stift][,B[F]]]
+Zeichnen von Linie oder Rechteck
+stift - 0 Hintergrundfarbe (Löschen), 1 Vordergrundfarbe, (Standard: stift = 1)
+B - Zeichnen eines Rechteckes (box)
+
+BF 	nicht implementiert !!! , es wird dann gar nichts gezeichnet !!!
+
+CIRCLE(x,y),radius[,stift[,anf-winkel[,end-winkel[,ellip]]]]
+CIRCLE(x,y),radius[,stift],[anf-winkel],[end-winkel],ellip
+Zeichnen eines Kreises
+stift - 0 Hintergrundfarbe (Löschen), 1 Vordergrundfarbe, (Standard: stift = 1)
+anf-winkel - Anfangswinkel für Kreisbogen (Bogenmaß)
+end-winkel - Endwinkel für Kreisbogen (Bogenmaß)
+ellip - Ellipsenparameter (Standard: ellip = 1)
+
+PAINT(x,y)[,c[,d]]	nicht implementiert !!!
+c default 1
+d default 1
+
+LABEL string[,stift]
+Ausgabe einer Zeichenkette ab aktueller Stiftposition
+
+SIZE b,l[,r[,s[,a]]]		SIZE nur für Plotter
+SIZE b,l,[r],[s],a
+Festlegung der Schriftart (nur für PLOTTER)
+b Breite der Buchstaben (Geräteeinheiten)
+I Länge (Geräteeinheiten)
+r Schreibrichtung (Bogenmaß)
+s Schräglage (Bogenmaß)
+a Abstand 0 - gleichabständig (Standard), 1 - proportional
+
+ZERO (x,y)
+Der Nullpunkt des aktuellen Koordinatensystems wird in den Punkt (x,y) gelegt.
+
+HOME
+Die Koordinaten des letzten erreichbaren Punktes werden in den
+Koordinatenursprung, den Punkt (0,0) des aktuellen Koordinatensystems, gelegt.
+HOME ist gleichbedeutend mit PSET(0,0),0.
+
+GCLS
+Grafikbildschirm löschen
+
+XPOS
+XPOS liefert als Rückgabeparameter die x-Koordinate des letzten erreichten Punktes
+
+YPOS
+YPOS liefert als Rückgabeparameter die y-Koordinate des letzten erreichten Punktes
+
+SCALE xfaktor,yfaktor
+Mit SCALE erfolgt eine Maßstabsfestlegung in x- bzw. y-Richtung (unabhängig voneinander).
+Alle Koordinatenangaben werden vor der Verarbeitung mit xfaktor bzw. yfaktor multipliziert.
+
+SCREEN [0],plotter
+plotter = 0 => Abschalten des Plotters
+SCREEN 1 => Grafikbildschirm
+SCREEN 0 => Textbildschirm
+
+POINT(X,Y)
+Bestimmen des Punktzustandes
+POINT liefert als Rückgabeparameter 0, wenn der Abfragepunkt die
+Hintergrundfarbe, und 1, wenn der Abfragepunkt die Vordergrundfarbe hat.
+
+
+--------------
+
+Tipp: Vollst. Init. der Grafik mit 
+SCREEN1:GCLS
+
+KRT-Tipp: Bei KCs mit Farbe funktionieren die Farbbefehle (INK, PAPER, BORDER) auch im 
+Grafikmodus. Für ein 8x8 Pixel großes Feld können eigene Vorder- und 
+Hintergrundfarben gewählt werden (s. Demos)
+
+KRT-Tipp: Im Grafikmodus dürfen keine Ausgaben mit PRINT oder PRINT AT erfolgen.
+Es muss vorher auf SCREEN 0 geschaltet werden! Zur Textausgabe im Grafikmodus
+gibt es den Befehl LABEL.

@@ -1,0 +1,70 @@
+robotron Kassette R 0122	IDAS
+====================================
+
+Die Kassette R0121 IDAS enthält das Programmpaket IDAS, einen Interpretativen Dialogassembler.
+
+Mit dem Interpretativen Dialogassembler (IDAS) hat der Anwender die Möglichkeit,
+Programme auf Assemblerniveau zu schreiben.
+
+s.a.  http://www.sax.de/~zander/z9001/z9_idas.pdf U. Zander
+
+Programme
+---------
+
+    IDAS Dialogassembler
+    ZM30 Zusatz-Monitor
+    ZM70 Zusatz-Monitor
+    ZMA8 Zusatz-Monitor
+
+Programmbeschreibungen
+----------------------
+
+IDAS
+----
+
+Dateiname	IDAS.COM
+Laden in	OS
+Programmstandort	0400h-1BFFh
+OS-Kommando	IDAS
+
+Der IDAS ist ein Dienstprogramm zur dialogorientierten Erarbeitung von
+Programmen in der Assemblersprache SYPS K 1520. Es vereinigt in sich Editier-,
+Übersetzer- und Interpreterfunktionen. Besonders geeignet ist es dann, wenn
+Befehlsfolgen und kurze Programme (z. B. Unterprogramme für den BASIC-
+Interpreter) rationell aufgestellt und getestet werden sollen. IDAS realisiert
+folgende Funktionen:
+ - Erfassen, Einfügen, Ändern und Streichen von Assembleranweisungen in einem
+   internen Textpuffer.
+ - Übersetzen von Assembleranweisungen in abarbeitsfähige Maschinenbefehle.
+ - Abarbeiten einzelner Assemblerbefehle sofort nach der Eingabe (interpretativ)
+   oder Abarbeiten des im Textpuffer erfaßten Quellprogramms (ganz oder
+   teilweise).
+ - Belegen von Speicherplätzen mit gewünschten Werten und Ausgabe von aktuellen
+   Registerinhalten.
+
+Beschreibung für den Interpretativen Dialogassembler s. IDAS.
+
+ZM30, ZM70, ZMA8
+----------------
+
+Dateiname 	ZM30.COM, ZM70.COM, ZMA8,COM
+Laden in 	OS
+Programmstandort 	3000h-3FFFh (ZM30)
+		7000h-7FFFh (ZM30)
+		A800h-B7FFh (ZMA8)
+		220H-2FFH (EXEC-Sprungvektoren)
+OS-Kommando 	ZM
+
+Zusatz-Monitor
+
+Der Zusatz-Monitor ist ein leistungsfähiges Maschinencodeprogramm zum
+Implementieren von Programmen auf der Ebene der Maschinensprache (Debugger). Er
+dient zum:
+
+    Einlesen von Speicherinhalten (z. B. Maschinencodeprogrammen)
+    Ausschreiben und Abspeichern von Speicherinhalten
+    direkten Eingeben von Maschinencode in den Speicher des Rechners
+    Testen und Manipulieren von Maschinencodeprogrammen.
+
+Beschreibung s. Zusatzmonitor ZM
+

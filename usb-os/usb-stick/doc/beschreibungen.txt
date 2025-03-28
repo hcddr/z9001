@@ -1,0 +1,145 @@
+#------------------------------------------------------------------------------
+# life.com
+#------------------------------------------------------------------------------
+
+HEIMCOMPUTER robotron Z9001
+SPIEL
+LIFE
+BIONIK-SPIEL "LIFE"
+VON JOHN HORTON CONWAY
+HANS KITTELMANN
+8019 DRESDEN
+HOLBEINSTR. 131
+1.0 VOM 07.01.85
+         >ENTER<
+
+
+cursortasten
+l,space	loeschen
+s	setzen
+g	go (einzelschritt)
+a	auto
+STOP -> Programmende
+
+bei go:
+
+n	new
+k	korrektur
+t	Darstellung mit 4tel-Grafik
+d	Darstellung mit *
+a	auto
+h	halt
+cursortasten Ausschnitt verschieben
+
+
+#------------------------------------------------------------------------------
+# morsedec.com
+#------------------------------------------------------------------------------
+
+HEIMCOMPUTER ROBOTRON Z9001
+HEIM UND HOBBY
+MORSEDECODER
+FUER FUNKAMATEURE
+HANS KITTELMANN
+ANDREAS SCHROETER
+DRESDEN
+1.0 VOM 21.01.85
+
+; Morse-Decoder
+; Mit bel. Taste morsen, der Computer gibt die zugehörigen Zeichen aus
+; Ende mit STOP
+
+
+
+#------------------------------------------------------------------------------
+# comodore.com
+#------------------------------------------------------------------------------
+
+HEIMCOMPUTER ROBOTRON Z9001
+SYSTEM-PROGRAMM
+LESEN UND VERARBEITEN
+VON COMMODORE-KASSETTEN
+HANS KITTELMANN
+8019 DRESDEN
+HOLBEINSTR. 131
+
+2.0 VOM 30.10.84
+
+Liest C64-Basic-Kassetten ein und konvertiert zu KC-BASIC.
+; 73 Token, vgl. http://www.c64-wiki.com/index.php/BASIC_token
+
+erzeugter Programmname BASPRO
+
+#------------------------------------------------------------------------------
+# bomber.com
+#------------------------------------------------------------------------------
+
+HEIMCOMPUTER ROBOTRON Z9001
+SPIEL
+BOMBER
+EIN TREFFERSPIEL
+* SOFTWARE-KOLLEKTIV *
+SCHROETER / KITTELMANN
+DRESDEN
+2.0 VOM 14.01.85
+
+Bomben abwerfen
+
+#------------------------------------------------------------------------------
+# CHESS VIDEO-CHESS-MASTER
+#------------------------------------------------------------------------------
+
+VCM
+ADAPTED BY REINHOLD LUDLEI 1987
+
+
+Kommandos werden mit max. vier Buchstaben eingeben -> ENTER.
+
+Abbruch  des Spiels ist jederzeit mit Eingabe NEWG moeglich.
+
+weisse kurze Rochade: E1G1
+weisse lange Rochade: E1C1
+
+Status und Wertänderungen nur durchführen wenn YOUR angezeigt ist.
+
+Der vorgeschlagene Zug kann durch dessen Eingabe ausgeführt werden.
+
+Falsche Züge oder nichtbeachtetes SCHACH wird mit *** anzeigt.
+
+Rechner gibt Zug vor, angenommen wird mit SPACE ENTER.
+
+nach NEWG hat Computer schwarz, 2.Zugvorschlag  durch Computer.
+
+nach  COLO  Zugvorschlag  fuer  eigene  Partei  ->  nur mit ENTER
+quittieren
+
+AUTO = AUTO Computer spielt automatisch gegen sich selbst
+
+COLO  = COLOR Doppelfunktion:
+
+1.Farbwahl  Computer  -  weiss Spieler schwarz
+
+REFE	=  REFERE
+
+Zwei  Spieler	koennen  gegeneinander	spielen.
+Computer ist Schiedsrichter
+
+SELF  =  SELFPLAY
+Computer  spielt  gegen sich selbst.Zuege durch ENTER bestaetigen
+
+LEVE  =  LEVEL Spielstaerke 0 bis 7
+
+RAND  =  RANDOM
+
+Zufallsstufen 0 bis 3 (Eingabe wie bei LEVE). Mit steigendem Wert
+wird Streubereich der ausgewaehlten Zuege vergroessert
+
+BOAR  = BOARD
+
+Eingabemodus fuer Schachprobleme
+z.B.  KE4  = weisser Koenig auf E4 -KE4 = schwarzer Koenig auf E4
+Uebergang  in Spielmodus mit BOAR SPACE ENTER Nach Start wird das
+Spielfeld aufgebaut. Dann muss Eingabe erfolgen
+
+NEWG  =  NEW  GAME
+neues	Spiel;	Aufstellung der Figuren.
