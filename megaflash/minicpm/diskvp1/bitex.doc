@@ -1,0 +1,939 @@
+.pl72 
+.mt4
+.mb4
+.he B I T E X -  8 8               - # -
+.op
+
+
+**********************************************************************
+
+                           B I T E X - 8 8
+
+         Programm zur bildschirmorientierten Textaufbereitung
+               fuer Mikrorechnersysteme auf Z80 - Basis
+                - Anwenderbeschreibung CP/M-Version -
+
+**********************************************************************
+
+
+
+
+Inhalt:	1® Programmspezifikation.................................2
+
+	2. Geraetetechnische Voraussetzungen.....................2
+
+	3. Start und Bedienung...................................3
+
+	4. Texteingabe...........................................4
+
+	5. Kursorpositionierung..................................5
+
+	6. Kommandoeingabe.......................................5
+
+	7. Kommandobeschreibungen................................8
+
+           - ASSIGN..............................................8
+           - CURSOR..............................................9
+           - DELETE..............................................9
+           - END.................................................9
+           - LIST...............................................10
+           - MARK...............................................10
+           - PUNCH..............................................10
+           - READ...............................................11
+           - READ F.............................................12
+           - SUBSTITUTE.........................................12
+           - WRITE..............................................13
+
+        8. Programmeldungen.....................................13
+
+	9. Anpassung und Generierung............................14
+
+       10® Hinweiså zuò Nutzunç aí Z900± (KC85/1)...............15
+
+
+	Anlage: Kommandouebersicht..............................17
+
+
+
+
+
+
+
+
+
+
+
+
+
+ADW der DDR  -  Zentralinstitut fuer Kernforschung
+.paŠ
+1. Programmspezifikation
+========================
+
+
+BITEX-8¸  isô eiî Programí zuò komfortableî bildschirmorientierteî 
+Erfassunç unä Aufbereitunç beliebigeò Texte.
+Eó  ermoeglichô daó zeichen- unä blockweiså Editiereî  voî  Quell
+texteî  iî eineí interneî Textspeicheò beé staendigeò Anzeigå  deó 
+Texteó auæ deí Bildschirm® Diå Aufbereitunç erfolgô grundsaetzlicè 
+zeichenorientiert.
+
+Deò  zõ  bearbeitendå  Texô  wirä uebeò Tastatuò  odeò  voî  eineí 
+Externspeicheò blockweiså iî deî interneî Textspeicheò  eingegebeî 
+unä  dorô editiert®  Dabeé erfolgô einå staendigå Reproduktioî deó 
+Texteó  auæ deí Bildschirm®  Jedå Eingabå odeò Aenderunç  ií  Texô 
+wirä aucè soforô auæ deí Bildschirí sichtbar¬ sï dasó deò Bedieneò 
+stetó eiî Abbilä deó aktuelleî Texteó voò sicè hat.
+
+Wichtigsteó Elemenô deò Bedienerfuehrunç isô deò Kursor®  Eò zeigô 
+deí  Bedieneò  stetó diå Stellå ií Texô an¬  aî deò  diå  naechstå 
+Eingabå  odeò  Aenderunç erwarteô wird®  Miô Funktionstasteî  odeò 
+durcè  Kommandï kanî deò Kursoò schnelì aî jedå Stellå deó  Texteó 
+positionierô werden.
+
+
+
+2. Geraetetechnische Voraussetzungen
+====================================
+
+Ií  Prinziğ  kanî BITEX-8¸ aî allå Mikrorechnersystemå  auæ  Basió 
+eineò CPÕ Z-80¬ U-88° o® ae® angepassô werden® Dabeé werdeî aî diå 
+Geraetetechnië folgendå Minimalforderungeî gestellt:
+
+-     interneò  Speicheò fueò etwá 5 KBytå Programí unä  35°  Bytå   
+      Arbeitsspeicheò  (abhaengiç  voí  Anpassungsaufwand)¬   dazõ 
+      mindestenó ± KBytå Arbeitsspeicheò aló Textspeicher.
+
+-     alphanumerischeó  Displaù miô mind®  40 Zeicheî ¯ Zeilå  unä 
+      hoheò Schreibgeschwindigkeiô 
+
+-     alphanumerischå  Funktionstastatuò miô Funktionstasteî  fueò 
+      Kursorsteuerunç unä Bedienung
+
+-     Geraetå zuò Externspeicherunç voî Texten¬ Listgeraet
+
+Jedå Nutzunç voî BITEX-8¸ erforderô einå sorgfaeltigå Anpassunç aî 
+diå speziellå Geraetetechnik® Allå Anpassungeî erfolgeî uebeò einå 
+einheitlichå Schnittstelle.
+
+
+.paŠ3. Start und Bedienung
+======================
+
+
+CP/M-BITEX kann wie folgt aufgerufen werden:
+
+BITEX            - Daó  Prograí  meldeô sicè miô deò Grundanzeigå  unä 
+                   deò   Anfragå "Neustart¿ (Y/N):"
+
+BITEX  filename  - Daó  Programí meldeô sicè miô deò  Grundanzeige¬ 
+                   anschliessenä   wirä   nacè   eineò   Neustart-
+                   Initialisierunç diå angegebenå Dateé eingeleseî 
+                   unä angezeigt.Diå Angabå deó Filenamenó erfolgô 
+                   wiå beií READ-Kommando.
+
+Nacè  Neustarô ermittelô BITEØ diå Lagå deó CCĞ unä legô daraufhiî 
+diå  Anfangsadresså deó Textspeicheró fest®  Deò  ií  Textspeicheò 
+stehendå Texô kanî durcè Programm-Restarô wiedeò verfuegbaò gemachô 
+werden¬  solangå  diå  dafueò notwendigeî Arbeitszelleî  (1650È  - 
+16FFH© unä deò Texô selbsô erhalteî bleiben.
+
+Nacè  deí  Programmstarô  wirä  deò Bildschirí  geloeschô  unä  eó 
+erscheinô diå Signumzeile®  Siå unterteilô deî Bildschirí iî Text
+anzeigå unä Bedieneranzeige.
+
+Textanzeige:        Deò  ií  Textspeicheò stehendå Texô  wirä  wiå 
+                    durcè  eiî  "Fenster¢  betrachtet®  Durcè  deî 
+                    Kursoò   odeò  durcè  Kommandoó  kanî   dieseó 
+                    "Fenster¢ aî jedå Stellå deó Texteó verschobeî 
+                    werden.
+
+Bedieneranzeige:    Dienô   deò  Eingabå  voî  Kommandoó  unä  zuò 
+                    Anzeigå  voî Fehlerî  unä  Programmzustaenden® 
+                    Rechtó werdeî diå Koordinateî unä deò HEX-Kodå 
+                    deò aktuelleî Kursorpositioî angezeigt.
+
+Diå  iî  deò  Bedieneranzeigå  erscheinendå  Anfragå  "NEUSTARÔ  ¿ 
+(Y/N):¢  isô nacè deí erstmaligeî Starteî deó Programmó  unbedingô 
+miô "Y¢ zõ quittieren.
+
+"Y" (Yes):	Initialisierunç    wichtigeò   Arbeitszelleî   deó 
+                Programms¬   deò   Textspeicheò  wirä   aló   leeò 
+                angenommen.
+"N" (No):	(odeò   eiî   andereó  Zeicheî  ausseò  "Y"©   Diå 
+                Initialisierunç unterbleibt¬  eiî ií  Textspeicheò 
+                befindlicher Texô wirä angezeigt.
+
+Danacè  erscheinô iî deò Textanzeigå deò erstå  Kursor®  Daó  Programí 
+befindeô sicè ií Kommandoeingabe-Mode.
+ 
+Kommandoeingabe-Mode und Texteingabe-Mode
+-----------------------------------------
+
+Ií  Kommandoeingabe-Modå  erscheinô eiî blinkendeò Kursoò  iî  deò 
+Bedieneranzeige®  Eó  koenneî  Kommandoó eingegebeî unä  gestarteô 
+werden®  Deò  Kursoò iî deò Textanzeigå bleibô sichtbaò  unä  kanî 
+bewegô werden.
+Ií  Texteingabe-Modå  isô  nuò deò Kursoò iî  deò  Textanzeigå  zõ 
+sehen®  Eó  isô  daó  zeichenweiså Schreibeî unä  Korrigiereî  deó 
+Texteó moeglich.
+Daó   Umschalteî  zwischeî  deî  beideî  Modé  erfolgô   miô   deò 
+Funktionstastå "ESCAPE¢ (*).
+.paŠ
+4. Texteingabe
+==============
+
+
+Ií  Texteingabe-Modå  koenneî  uebeò diå Tastatuò Zeicheî  aî  deò 
+Kursorpositioî geschrieben¬  geaendert¬ gestricheî odeò eingefuegô 
+werden.
+
+- Schreibeî unä Aenderî voî Zeicheî erfolgeî durcè Betaetigeî  deò 
+  entsprechendeî Zeichentaste.
+
+- Daó  Streicheî  einzelneò Zeicheî aî Kursorpositioî erfolgt miô 
+  deò  Funktionstastå "DELETE¢ (*)®  Dabeé wirä deò folgendå  Texô 
+  automatiscè nachgerueckt.
+
+- Solleî Zeicheî eingefuegô werden¬  sï isô miô deò Funktionstastå 
+  "INSERT¢  (*©  iî  eineî  "Einfuegezustand¢  ueberzugehen®   Deò 
+  Einfuegezustanä wirä iî deò Bedieneranzeigå durcè diå Ausschrifô 
+  "INSERT-MODE¢ angezeigt.
+  Voî nuî aî werdeî allå eingegebeneî Textzeicheî fortlaufenä  voò 
+  deò  Kursorpositioî iî deî Texô eingefuegt®  Dabei wirä deò Texô  
+  im Textspeicheò automatiscè aufgespreizt.
+  Diå Funktionstastå "DELETE¢ haô ií Einfuegezustanä diå  Funktioî 
+  deó "loeschendeî Backspace"¬  d.h® eó wirä daó jeweiló linkó voî 
+  deò Einfuegestellå stehendå Zeicheî gestrichen.
+  Deò  Einfuegezustanä  wirä aufgehobeî durcè erneuteó  Betaetigeî 
+  deò "INSERT"-Taste.
+
+(*)  Aktuelle Belegung der Funktionstasten siehe Pkt. 9
+
+Steuerzeichenbehandlung:
+------------------------
+
+Miô  BITEX-8¸  koenneî  allå  ií  Texô  enthalteneî  Steuerzeichen
+editierô werden®"(Daó bedeuteô z.B.¬ dasó daó Satzsteuerzeicheî NÌ 
+(Newline© wiå jedeó anderå Zeicheî ueberschrieben¬ gestricheî odeò 
+eingefuegô werdeî kanî !)
+Dá Steuerzeicheî keinå eigenå Gestalô besitzen¬ werdeî siå auæ deí 
+Bildschirí durcè eiî Leerzeicheî repraesentiert® Siå koenneî durcè 
+ihreî  iî  deò Bedieneranzeigå angezeigteî  Zeichenkodå  eindeutiç 
+identifizierô werden.
+
+Folgende Steuerzeichen werden in BITEX-88 gesondert behandelt:
+
+NL (Newline-1EH)        - Zeilenende
+CR (Carriage Return-0DH)- Zeilenende (s. auch READ/PUNCH - Kdo.)
+LF (Line Feed-0AH)	- siehe READ/PUNCH - Kdo.
+FF (Form Feed-0CH)	- Seitenvorschub (s. auch LIST - Kdo)
+TAB (Tabulator-09H)	- Horizontaltabulator (modulo 8)
+
+
+Unformatierte Texte und Zeilenueberlauf:
+----------------------------------------
+
+Obwohì  BITEX-8¸ diå Steuerzeicheî NL¬  CÒ unä FÆ aló  Zeilenende
+kennzeicheî  interpretiert¬  setzô eó keinå festå  Einteilunç  deó 
+Texteó  iî Zeileî voraus®  Eó koenneî fortlaufendå Textå ohnå jedå 
+Formatierunç editierô werden®  Fueò dieså Textå gilô beé deò  Dar
+stellunç  auæ deí Bildschirí unä zuí Ausdruckeî diå aktuellå maxi
+malå Zeilenlaengå (s® ASSIGÎ - Kdo.).
+Ebensï  werdeî Zeilen¬  beé deneî voò deò max®  Zeilenlaengå  nocè 
+keiî  expliziteó  Zeilenendå erkannô wurde¬  automatiscè  auæ  deò 
+Folgezeilå fortgesetzt.Š
+5. Kursorpositionierung
+=======================
+
+
+Fueò  diå  Positionierunç deó Textkursoró sinä  ·  Funktionstasteî 
+vorgesehen®  Siå  wirkeî sowohì waehrenä deò Texteingabå aló  aucè 
+beé  deò Kommandoeingabe®  Prinzipielì kanî deò Kursoò  nuò  unteò 
+Textzeicheî  positionierô werden¬  einå Positionierunç  ausserhalâ 
+deó Texteó isô nichô moeglich.
+
+Kursorfunktionen:
+-----------------
+- Kursor ein Schritt nach rechts
+- Kursor ein Schritt nach links
+- Kursor ein Schritt nach oben
+- Kursor ein Schritt nach unten
+- Kursor zum Zeilenanfang
+- Kursor zum ersten Zeichen der Textanzeige (links oben)
+- Kursor zum letzten Zeichen der Textanzeige (rechts unten)
+
+Diå  beideî  letzteî Funktioneî habeî daruebeò hinauó diå  Zusatz
+funktion¬  dasó  beé mehrmaligeò Betaetigunç deò  angezeigtå  Texô 
+jeweiló  uí  einå  Bildschirmseitå nacè obeî  bzw®  unteî  gerollô 
+("umgeblaettert"© wird.
+
+.cp8
+
+6. Kommandoeingabe
+==================
+
+
+Ií Kommando-Modå bleibô deò Kursoò iî deò Textanzeigå fixiert¬  iî 
+deò Bedieneranzeigå erscheinô eiî blinkendeò Kursoò zuò  Bediener
+fuehrunç beé deò Kommandoeingabe.
+BITEX-8¸ beinhalteô eineî Satú universelleò Kommandoó zuò Ein- unä 
+Ausgabå  voî Texten¬  zuò Kursorpositionierunç unä zuò blockweiseî 
+Aufbereitunç  deó Textes®  Allå Kommandoó orientiereî sicè aî  deò 
+zeichenorientierteî Arbeitsweise¬ einå zeilenorientiertå Aufberei
+tunç isô nichô moeglicè !
+
+Diå  Eingabå  eineó Kommandoó erfolgô  durcè  seineî  Anfangsbuch
+staben®   Daraufhiî  wirä  diå  vollstaendigå  Kommandobezeichnunç 
+ausgeschriebeî   unä  evtl®   einå  weiterå  Spezifizierunç  durcè 
+Parameteò angefordert® Daó Kommandï wirä nacè beendeteò Parameter
+eingabå durcè NÌ odeò CÒ zuò Ausfuehrunç gebracht.
+Waehrenä deò gesamteî Kommandoeingabå isô miô deî  Funktionstasteî 
+daó  Bewegeî  deó iî deò Textanzeigå stehendeî Kursoró  sowiå  daó 
+Ein-/Ausschalteî deó Einfuegezustandeó moeglich.
+Miô  "DELETE¢  kanî eiî nichô abgeschlosseneó  Kommandï  geloeschô 
+werden¬  waehrenä "ESCAPE¢ aî jedeò Stellå deò Kommandoeingabå zuí 
+Ueberganç iî deî Texteingabe-Modå fuehrt.
+
+.paŠParametereingaben
+-----------------
+
+Diå Eingabå voî Parameterî erfolgô durcè Eingabå eineó Einzelbuch
+stabens®  Diå Arô deò moeglicheî Parameteò isô kommandospezifisch¬ 
+wobeé   diå  einzelneî  Parameterbuchstabeî  einheitlicè  folgendå 
+Bedeutunç haben:
+
+A	- All of text (gesamter Text)
+B	- Begin of text (Textanfang)
+C       - Schliessen einer Datei
+E	- End of text (Textende)
+M	- markierte Textposition (s. MARK - Kdo.)
+L	- Anfang der folgenden Bildschirmzeile
+S'...'	- Zeichenkette / Zeichenkettenposition
+T1,T2,T3- markierte Zeichenketten im Text (s. MARK - Kdo.)
+F	- Feed (Vorschub) bzw. Anzeige der eroeffneten Dateien
+P       - Seitenumbruch anweisen
+U       - Umschaltung Gross-/Kleinbuchstaben-Konvertierung
+Z       - Ausgabe von CTRL-Z
+
+Zeichenketteneingabe:
+---------------------
+
+Deò Abschlusó deò Zeichenketteneingabå erfolgô durcè diå  Zeichen
+kombinatioî Apostropè - Newline®  Iî deò Zeichenkettå koenneî aucè 
+Steuerzeicheî  (Darstellunç  durcè Leerzeichen© angegebeî  werden® 
+Korrektureî  beé  deò Zeichenketteneingabå sinä  mitteló  "DELETE¢ 
+(loeschendeó Backspace© moegliah®  Eiî Abbrucè deò  Zeichenketten
+eingabå   isô  nuò  durcè  zweimaligeó  Betaetigeî  voî   "ESCAPE¢ 
+moeglich.
+
+
+Mehrfachfaktor
+--------------
+
+Beé einigeî Kommandoó (LIST¬  PUNCH¬ WRITE© isô durcè Angabå eineò 
+vorzeichenloseî  Dezimalzahì (° ¼ Î ¼ 255© diå mehrfachå  Ausfueh
+runç  deó  Kommandoó  moeglich®  Diå  Angabå  deó  Mehrfachfaktoró 
+erfolgô stetó voò deí Parameter.
+
+Beispiele:
+LIST 2 A	zweimaliges Ausdrucken des gesamten Textes
+WRITE 100 S'*'	100-maliges Schreiben von "*"
+
+
+Angabe eines Textbereiches
+--------------------------
+
+Wirä  iî eineí Kommandï diå Angabå eineó Textbereicheó  gefordert¬ 
+sï  erfolgô dieså immeò unteò Bezugnahmå auæ diå aktuellå  Kursor
+positioî  unä deî angegebeneî Parameter®  Dieså Bereichsangabå isô 
+stetó iî deò Forí "voî ..®  bió ausschliesslicè ...¢ zõ verstehen® 
+Einå Ausnahmå bildeî diå Parameteò A¬  T1¬  T2¬  T3¬ beé deneî diå 
+Bezugnahmå auæ diå Kursorpositioî entfaellt.
+.cp15ŠBeispiele:
+
+DELETE A      - loeschô deî gesamteî Text
+DELETE B      - loeschô  deî  Texô  voî  Textanfanç  bió  ausschl® 
+                Kursorposition.
+DELETE E      - loeschô deî Texô voî Kursorpositioî bió Textende
+DELETE M      - loeschô  deî Texô voî Kursorpositioî bió  ausschl® 
+                markierteò   Positioî   (wenî   Kursoò   voò   deò 
+                markierteî  Positioî steht© odeò  umgekehrô  (wenî
+                Kursoò nacè deò markierteî Positioî steht).
+DELETE L      - loeschô deî Texô voî Kursorpositioî bió  ausschl® 
+                Anfanç deò naechsteî Bildschirmzeile
+DELETE S'XYZ' - suchô   aâ   Kursorpositioî   diå   Positioî   deò  
+                naechsteî  Zeichenkettå "XYZ"®  Wirä diå  Zeichen
+                kettå gefunden¬ sï wirä deò Texô aâ Kursorpositioî 
+                bió    ausschl®    deò   gefundeneî   Zeichenkettå 
+                geloescht.
+DELETE T1     - loeschô deî Textbereich¬  deò durcè daó  MARK-Kdo® 
+                deí Parameteò T± zugewieseî wurde.
+
+
+Einfuegezustand
+---------------
+
+Analoç deí unteò (4.© beschriebeneî Einfuegeî voî Einzelzeicheî iî 
+deî Texô isô miô deî Kommandoó REAÄ unä WRITÅ daó Einfuegeî ganzeò 
+Textbloeckå moeglich® Daó geschiehô ebenfalló unteò Ausnutzunç deó 
+Einfuegezustandes¬  deò wiå beií zeichenweiseî Einfuegeî durcè diå 
+Funktionstastå "INSERT¢ erreichô unä verlasseî werdeî kanî unä  iî 
+deò  Bedieneranzeigå angezeigô wird®  Daó Einfuegeî erfolgô  stetó 
+voò Kursorposition® 
+.paŠ
+7. Kommandobeschreibungen
+=========================
+
+
+
+A S S I G N     - Anzeige und Modifikation von Programmparametern
+-----------------------------------------------------------------
+
+Moegliche Parameter: T, L, F, P, U
+
+
+Nacè Eingabå deó Parameteró "T¢ werdeî diå aktuelleî Textspeicher
+adresseî hexadezimaì iî folgendeò Forí angezeigt:
+
+	ASSIGN TB (XXXX-YYYY/ZZZZ):
+
+Dabei bedeuten	XXXX - Anfangsadresse Textspeicher
+		YYYY - aktueller Fuellstand des Textspeichers
+		ZZXZ - Endeadresse Textspeicher
+
+Anfangs- unä  Endeadresse  deó Textspeicheró werdeî beé  Programm
+neustarô standardmaessiç initialisierô (s®  aktuellå Generierung)® 
+Eó  isô zõ beachten¬  dasó BITEX-8¸ deî Textspeicheò  dekrementie
+rend¬ d.h® voî deò hoehereî zuò niedereî Adresså aufbaut.
+
+Die Textspeicheradressen koennen wie folgt modifiziert werden:
+
+XXXX,ZZZZ	- Zuweiseî eineó neueî Textspeicheró durcè Eingabå 
+                  voî  Anfangs- unä  Endeadresse®  Fuellstanä  isô 
+                  gleicè deí Textpufferanfang.
+YYYY		- Eingabå eineò neueî Fuellstandsadresse
+                  Dadurcè wirä z.b® daó Verkuerzen/Verlaengerî deó 
+                  Textspeichers¬ daó Anlegeî mehrereò Textspeicheò 
+                  unä   daó  Retteî  eineó   Texteó   (z.b®   nacè 
+                  unbeabsichtigtåm "Y¢ beé Programmstart© moeglich.
+
+Korrektureî  beé  deò Adresseingabå sinä wiå beé deò  Eingabå  voî 
+Zeichenketteî moeglich.
+
+Nacè Eingabå deó Parameteró "L¢ wirä diå aktuellå maximalå Zeilen
+laengå angezeigt:
+
+	ASSIGN LINE (XXX):
+
+Diå  maximalå  Zeilenlaengå  wirä beé  Programmneustarô  standard
+maessiç initialisiert®  Durcè siå wirä festgelegt¬ wievieì Zeicheî 
+maximaì  iî  eineò Zeilå beé deò  Bildschirmdarstellunç  unä  beií 
+Ausdruckeî  enthalteî sind®  Siå kanî durcè Eingabå eineò Dezimal
+zahì ° ¼ Î ¼ 20° modifizierô werden.
+
+Solleî  keinå  Modifikationeî  erfolgen¬  sï  sinä  diå  Kommandoó 
+bereitó nacè deò Parameteranzeigå durcè NÌ odeò CÒ abzuschliessen® 
+
+Nacè  Eingabå  deó Parameteró "F¢ werdeî diå Nameî  deò  zuò  Zeiô 
+eroeffneten Eingabe- und Ausgabedatei angezeigt.  Wird kein Datei-
+name angezeigt, so ist keine Datei von BITEX eroeffnet:
+
+        ASSIGN FILE   READ :
+                      PUNCH:
+
+Die  Anzeige  verschwindet nach Quittierung durch  ein  beliebiges 
+Zeichen.
+ŠNach  Eingabe des Parameters "P" wird das aktuelle Druckformat  in 
+folgender Form angezeigt:
+
+        ASSIGN PAGE (XXX/YYY):
+
+Die erste Zahl gibt die maximale Laenge einer Druckseite an  (Zei-
+lenzahl),  die zweite Zahl bestimmt, mit wieviel Zeilen sie ausge-
+nutzt werden soll. Beide Werte werden bei Neustart standardmaessig 
+initialisiert.  Sie  koennen durch Eingabe einer oder zweier Dezi-
+malzahlen an unterschiedliche Drucker angepasst werden:
+
+XXX,YYY    - Aenderung beider Werte
+XXX        - Aenderung der maximalen Zeilenzahl
+
+Soll keine Aenderung erfolgen,  so ist die Anzeige mit CR oder  NL 
+zu quittieren.
+
+Durch  Eingabe von "U" und Quittieren durch ein beliebiges Zeichen 
+wird  die Gross-/Kleinschreibung der ueber  Tastatur  eingegebenen 
+Buchstaben umgekehrt:
+
+        ASSIGN UPPER <--> LOWER CASE
+
+Das Kommando negiert den jeweils vorher gueltigen Zustand.
+
+
+C U R S O R     - Positionieren des Kursors
+-------------------------------------------
+
+Moegliche Parameter: A. B, E, M, L, S, T1, T2, T3
+
+
+Deò Kursoò wirä auæ diå angegebenå Textpositioî (B¬  E¬  M¬  L¬ S© 
+odeò auæ deî Anfanç deó angegebeneî Textbereicheó (A¬  T1¬ T2¬ T3© 
+gestellt.
+Daó Sucheî eineò angegebeneî Zeichenkettå erfolgô stetó aâ Kursor
+positioî iî Richtunç Textende.
+
+
+D E L E T E     - Loeschen von Textbereichen
+------/-------------------------------------
+
+Moegliche Parameter: A, B, E, M, L, S, T1, T2, T3
+
+
+Deò durcè Kursorpositioî unä Parameteò spezifiziertå Textbereicè  wirä 
+gestrichen.
+
+
+
+E N D     - Ende BITEX-88
+-------------------------
+
+
+Daó  Kommandï bereiteô deî Texô fueò eineî  evtl®  Programmrestarô 
+vor¬ loeschô deî Bildschirí unä rufô daó Betriebssystem auf.
+BITEX-8¸  solltå  stetó  nuò uebeò  daó  END-Kommandï  abgebrocheî 
+werdeî !
+
+.cp8ŠL I S T     - Ausdrucken von Textbereichen
+------------------------------------------
+
+Moegliche Parameter: A, B, E, M, L, S, T1, T2, T3, F
+
+
+Deò durcè Kursoò unä Parameteò spezifiziertå Textbereicè wirä  auæ 
+daó  festgelegtå Listgeraeô ausgegeben®  Dabeé isô (ausseò beé  F© 
+diå Angabå eineó Mehrfachfaktoró moeglich.
+
+Diå  Ausgabå deó Texteó erfolgô iî deò gleicheî Forí wiå  auæ  deí 
+Bildschirm®  Wiå beé deò Bildschirmdarstellunç wirä diå Laengå deò 
+Zeileî durcè diå zugewiesenå maximalå Zeilenlaengå begrenzt.
+
+Daó LISÔ - Kommandï beinhclteô eineî automatischeî Seitenvorschub® 
+Dabeé  wirä  nacè eineò festgelegteî Anzahì voî Zeileî  odeò  nacè 
+Erkenneî deó Steuerzeichenó "Forí feed¢ (0CÈ - Ctrl-L© automatiscè 
+deò  Vorschuâ  auæ einå neuå Seitå durchgefuehrt®  Dieseò  Seiten
+vorschuâ kanî ebenfalló durcè deî Parameteò "F¢ ausgeloesô werden.
+Seitengroesså  unä  Anzahì  deò  Zeileî ¯  Seitå  werdeî  beé  deò 
+Generierunç   festgelegt   unä  koenneî  durcè   daó   ASSIGN-Kdo® 
+veraenderô werden® Daó Ruecksetzeî deó Zeilenzaehleró erfolgô nacè 
+jedeí Programmstart.
+
+
+
+M A R K     - Markieren von Textpositionen und Textbereichen
+------------------------------------------------------------
+
+
+Miô  deí MARË - Kommandï isô einå einfachå unä sicherå  Markierunç 
+voî  Textpositioneî  unä  ganzeî  Textbereicheî  moeglich®   Text
+positioneî unä Textbereichå werdeî Parameterî zugewiesen¬  auæ diå 
+danî iî andereî Kommandoó zugegeriffeî werdeî kann.
+
+Durcè  "MARK¢  ohnå  weiterå Angabeî wirä deí  Í  - Parameteò  diå 
+aktuellå Kursorpositioî ií Texô zugewiesen.
+Nacè Angabå eineó Parameteró T1¬  T² odeò T³ wirä diå  Spezifizie
+runç eineó Textbereicheó iî ueblicheò Weiså verlangt® Positioî unä 
+Laengå  deó  Textbereicheó  werdeî deí angegebeneî  Ô  - Parameteò 
+zugewiesen.
+
+Beispiele:
+
+MARK	     weist deí Parameteò Í diå aktuellå Kursorpositioî zu
+MARK T2: B   weist  T²  deî durcè Textanfanç  unä  Kursorpositioî 
+             spezifizierteî Bereicè zu
+MARK T3: T2  weist  T3  den gleichen Bereich zu wie T2
+
+
+
+P U N C H     - Ausgabe auf externen Speicher
+---------------------------------------------
+
+Moegliche Parameter: A, B, C, E, M, L, S, T1, T2, T3, F
+
+
+Anforderung  und Eingabe des Dateinamens erfolgen wie  beim  READ-
+Kommando  (Ausgabe  auf Lochband:  "PUN:").  Ebenso beziehen  sich 
+danach  alle weiteren Ausgabekommandos bis zum Schliessen auf  die 
+eroeffnete Datei.
+.cp8ŠDie Ausgcbedatei wird geschlossen:
+
+- implizit bei Austritt aus dem Programm mit dem END-Kommando
+- explizit durch das Kommando "PUNCH C"
+
+Im Unterschied zu anderen CP/M-Editoren legt BITEX keine Zwischen-
+Datei an.  Ist eine Datei gleichen Namens bereits auf der Diskette 
+vorhanden,  so  wird diese schon bei der Dateieroeffnung in  "BAK" 
+umbenannt. Diese Umbenennung wird durch die Meldung
+
+          OLD FILE RENAMED TO 'BAK'
+
+angezeigt®   Einå evtl®  vorhandenå BAK-Dateé dieseó Namenó  wirä 
+vorher awtomatisch geloescht.
+
+Unabhaengig von der eroeffneten Ausgabedatei bewirken
+
+   PUNCH F      die Ausgabe von 64 Zeichen Lochbandvorschub
+   PUNCH Z      die Ausgabe von Ctrl-Z
+
+auf Lochband.
+
+
+Fehlermeldungen:
+
+FILE NAME ERROR        - ungueltiger Dateiname
+DISK WRITE ERROR       - Fehler  bei der Aufzeichnung  (i.a.  Dis-
+                         kette voll oder Verzeichnis voll)
+
+Deò  spezifiziertå  Textbereicè wirä ií ASCIÉ - Codå  auæ  eineî 
+externeî Speicheò ausgegeben® Dabeé wirä CÒ ergaenzô zõ CR-LF.
+Deò  Parameteò "F¢ bewirkô diå Ausgabå voî 6´ Zeicheî Lochbandvor
+schuâ (00H).
+Die Angabe eines Mehrfachfaktors ist moeglich.
+
+
+R E A D     - Eingabe von externem Speicher
+-------------------------------------------
+
+Daó  Kommandï  dienô  deò  Eingabå voî  Texô  voî  eineí  externeî 
+Speicher® Beé deò Eingabå wirä daó Zeicheî LÆ (0AH© ueberlesen.
+Befindeô  sicè  daó Programí ií  Einfuegezustand¬  sï  werdeî  diå 
+eingegebeneî   Zeicheî   voò  deò  Kursorpositioî  iî   deî   Texô 
+eingefuegt®  Ansonsteî ueberschreibeî diå eingegebeneî Zeicheî deî 
+Texô aâ deò Kursorposition.
+Beé   Angabå   eineò   Zeichenkettå  erfolgô   diå   Eingabå   bió 
+einschliesslicè  dieseò Zeichenkette¬  ansonsteî wirä siå  beendeô 
+nacè  Erkenneî  deó Fileende-Kennzeichenó Ctrl-Ú (1AH©  odeò  nacè 
+Fehlerstatus.
+Auæ   deí  Bildschirí  wirä  deò  Anfanç  deó  eingefuegteî   bzw® 
+geschriebeneî  Texteó angezeigt®  Daó Endå deó eingegebeneî Texteó 
+isô durcè deî Í - Parameteò markiert.
+
+Soweiô nocè keinå Eingabedateé eroeffneô ist¬ forderô BITEØ iî der
+zweiten Kommandozeile die Eingabe eines Dateinamens an:
+
+              OPEN FILE:
+
+Daraufhin  ist  ein  Dateiname in der unter  CP/M  ueblichen  Form 
+einzugeben (fuer Eingabe von Lochband:  "RDR:").  Fehlt die  Lauf-
+werksangabe,  so wird das aktuelle Laufwerk angenommen.  Fehlt der 
+Filetyp,  so wird ein Standardtyp (z.b.  "MAC") angenommen.  Nicht 
+erlaubt ist die Verwendung folgender Zeichen im Dateinamen:
+Š              Leerzeichen <>.,;:=?*[]
+
+Nach Abschluss der Eingabe mit CR oder NL wird die Datei eroeffnet 
+und  das Eingabekommando ausgefuehrt.  Bis zum Schliessen beziehen 
+sich alle weiteren Eingabekommandos auf die eroeffnete Datei.
+
+Die Eingabedatei wird geschlossen:
+
+- implizit  bei Erkennen des Dateiendes ("END OF FILE") sowie  bei 
+  Austritt aus dem Programm mit dem END-Kommando
+- explizit durch das Kommando "READ C"
+
+Als Dateiende werden Ctrl-Z und der BDOS-Fileendestatus anerkannt.
+
+Fehlermeldungen:
+
+FILE NAME ERROR        - ungueltiger Dateiname
+FILE NOT FOUND         - angegebene Datei nicht auffindbar
+
+Beispiel:
+
+READ		- Eingabe bis Fileende
+READ S'STATUS'	- Eingabe bis einschl. der Zeichenkette "STATUS"
+
+
+
+R E A D  F     - Ueberlesen auf externem Speicher
+-------------------------------------------------
+
+
+Analoç  deí REAÄ - Kommandï dienô dieseó Kommandï  zuí  Ueberleseî 
+voî Texô auæ deí externeî Speicheò (z.B® zuí Sucheî eineò Zeichen
+kettå auæ ext® Speicher).
+Der Einfuegezustand wird nicht ausgewertet.
+
+READ F		- Ueberlesen bis Fileende
+
+
+
+S U B S T     - Suchen, Ersetzen und Streichen von Zeichenketten
+----------------------------------------------------------------
+
+
+Daó Kommandï laessô sicè a"ussersô vorteilhafô anwendeî zuí Suchen¬ 
+Ersetzeî  odeò Streicheî voî Zeichenketten¬  diå mehrfacè ií  Texô 
+auftreten.
+
+SUBST 'ZK1' BY 'ZK2'	- Suchen und Ersetzen von ZK1 durch ZK2
+SUBST 'ZK1' BY ''	- Suchen und Streichen von ZK1
+
+Beginnenä  aâ  deò Kursorpositioî wirä diå erste  Zeichenkettå  ií 
+Texô  gesuchô  unä durcè deî Kursoò auæ deí Bildschirí  angezeigt® 
+Uebeò einå Auswahleingabe¬  diå iî deò Bedieneranzeigå angeforderô 
+wird¬  kanî  deò Bedieneò entscheiden¬  oâ daó Ersetzeî  bzw®  daó 
+Streicheî durchgefuehrô wirä odeò nicht.
+
+	EXECUTION ? (Y/N/A/E):
+
+Y (Yes)	- Ersetzen / Streichen ausfuehren, Suche wird fortgesetzt
+N (No)	- keine Ausfuehrung, Suche wird fortgesetzt
+A (All)	- ab hier fortlaufendes Suchen und Ersetzen bis Textende
+E (End)	- Beenden des Kommandos an dieser Stelle
+
+Deò  Abschlusó eineò Zeichenketteneingabå erfolgô iî  jedeí  Fallå Š(aucè  beií Streichenº  Angabå eineò "leeren¢ Zeichenkette©  durcè 
+diå Zeichenfolgå Apostropè - NÌ bzw® Apostropè - CR.
+
+
+W R I T E     - Schreiben von Zeichenketten
+-------------------------------------------
+
+Moegliche Parameter: S, T1, T2, T3
+
+
+Daó  Kommandï  ermoeglichô daó Schreibeî unä  Einfuegeî  einzelneò 
+Zeichenketteî  sowiå  diå  Wiederholunç voî Zeichenketteî  bió  zõ 
+ganzeî Textteilen¬  diå vorheò durcè daó MARË - Kommandï  markierô 
+wurden® Diå Angabå eineó Mehrfachfaktoró isô moeglich.
+Analoç zuí REAÄ - Kommandï wirä deò Einfuegezustanä ausgewertet:
+Befindeô  sicè  daó  Programí ií  Einfuegezustand¬   sï  wirä  diå 
+Zeichenkette  voò  deò  Kursorpositioî  iî  deî  Texô  eingefuegt¬ 
+ansonsteî wirä diå Zeichenkettå aâ Kursorpositioî geschrieben.
+
+Beispiele:
+
+WRITE 5 S'ABCDE'   - diå  Zeichenkettå  "ABCDE¢ wirä µ maì iî  deî 
+                     Texô geschriebeî odeò eingefuegt
+WRITE T1           - diå   T±   zugewiesenå   Zeichenkettå    wirä 
+                     geschriebeî odeò eingefuegt
+WRITE 10 T1        - diå  T± zugewiesenå Zeichenkettå wirä 1°  maì 
+                     geschriebeî odeò eingefuegt
+
+
+8. Meldungen des Programms
+==========================
+
+Iî  deò  untersteî Zeilå deò Bedieneranzeigå erhaelô deò  Bedieneò 
+voí Programí Meldungeî uebeò Fehleò unä  Programmzustaende®  Dieså 
+Ausschrifteî werdeî durcè diå naechstå Tastatureingabå geloescht.
+
+
+BITEX IS WORKING   - daó   Programí  isô  beé  deò  Ausfuehrunç  eineó 
+                     Kommandos.
+
+BEGIN OF TEXT      - Kursor hat den Textanfang erreicht
+
+END OF TEXT        - Kursor hat das Textende erreicht
+
+TEXTBUFFER FILLED  - daó  Endå  deó Textspeicheró  isô  erreicht¬  daó 
+                     weiterå Einfuegeî odeò Schreibeî voî Zeicheî  isô 
+                     ersô  nacè  deí  Loescheî voî  Zeicheî  odeò  deò 
+                     Vergroesserunç deó Textspeicheró moeglich.
+
+STRING NOT FOUND   - diå  angegebenå Zeichenkettå wurdå nichô ií  Texô 
+                     (aâ Kursorposition© gefunden.
+
+INVALID COMMAND    - fehlerhaftes Kommando
+
+OUTSIDE OF TEXT    - diå Textpositioî voî M¬  T1¬ T² odeò T³ liegô 
+                     nichô  ií Textspeicher.
+
+END OF FILE        - Dateiende bei Eingabe von ext. Speicher
+	
+FILE NAME ERROR    - ungueltiger Dateiname
+
+DISK WRITE ERROR   - Disk voll oder Schreibfehler
+
+FILE NOT FOUND     - Datei nicht vorhandenŠ
+9. Aktuelle Anpassung und Generierung
+=====================================
+
+
+Durcè Nutzunç deò BDOS-Schnittstellå deó CP/Í isô daó Programí bió 
+auf  die Bildschirmausgaben voellig unabhaengig von einer speziel-
+len CP/M-Implementierung.  Die bildschirmorientierte  Arbeitsweise 
+erfordert  jedoch  in jedem Falle eine Anpassung an  die  konkrete 
+Bildschirmsteuerung.
+Zuò  Zeiô  gibô eó Realisierungeî fueò  diå  Bildschirmsteuerungeî 
+ROBOTROÎ K7023/7024¬  ZFË ANTVT-101¬  PÃ 171µ unä Z900± (KÃ 85/1)® 
+Diå   Adresså  deó  Bildwiederholspeicheró  fueò  diå   ROBOTRON-
+Steuerungeî  unä  deî Z900± kanî auæ deò Adresså  1273È  geaenderô 
+werden.
+Fuer eine praktische Arbeitsweise ist weiterhin eine Anpassung der 
+Steuerzeichen-Kodes an die verwendete Tastatur moeglich.
+Die Umkodierungstabelle dazu hat folgenden Aufbau:
+
+KITAB:  DB      XXH     ; NL (1EH)
+        DB      XXH     ; CR (0DH)
+        DB      XXH     ; LF (0AH)
+        DB      XXH     ; FF (0CH)
+        DB      XXH     ; TAB (09H)
+        DB      XXH     ; INSERT
+        DB      XXH     ; DELETE
+        DB      XXH     ; ESCAPE
+        DB      XXH     ; RECHTS
+        DB      XXH     ; LINKS
+        DB      XXH     ; OBEN
+        DB      XXH     ; UNTEN
+        DB      XXH     ; ZEILENANFANG
+        DB      XXH     ; LINKS OBEN
+        DB      XXH     ; RECHTS UNTEN
+
+Adresse der Tabelle im Programm:
+
+     12A4H     Robotron K 7023 / K 7024 / Z9001
+     12C7H     ZfK ANTVT-101
+
+
+Aktuelle Belegung der Funktionstasten
+-------------------------------------
+
+.........
+: INS	:	INSERT
+.........
+: DEL   :	DELETE
+.........
+: ESC	:	ESCAPE
+.........
+: ==>	:	Kursor nach rechts
+.........
+: <==	:	Kursor nach links
+.........
+:  ^|	:	Kursor nach oben
+.........
+:  |v	:	Kursor nach unten
+.........
+: 	:	Kursor zum Zeilenanfang
+.........
+: |<==	:	Kursor nach links oben / Umblaettern rueckwaerts
+.........
+: ==>|	:	Kursor nach rechts unten / Umblaettern vorwaerts
+.........
+
+.paŠ10. Hinweise zur Nutzung am Z9001 (KC85/1)
+==========================================
+
+
+Daó  Programí  la"ufô  aló  CP/M-Programm®   Diå  dafu"ò  notwendigå 
+Betriebssystemumgebunç  wirä  durcè deî  Monitoò  ZÍ  (I-Kommando© 
+emuliert®  Liegô  daó Programí auæ EPROÍ vor¬  sï wirä eó miô  deí 
+Start-Kommando
+
+                LBITEX
+
+voí ROM-Bereicè iî deî RAÍ kopierô unä dorô gestartet¡ Vorheò wirä 
+daó CP/M-Regimå deó ZÍ eingestellt.
+Zõ beachteî ist¬ dasó nacè Verlasseî voî BITEØ weiterhiî daó CP/M-
+Regimå wirksaí unä evtl® miô deí ZM-Kommandï "O¢ abzuschalteî ist® 
+
+Arbeit mit dem Kassetten-Magnetbandgera"t
+
+
+Diå urspru"nglicè Disketten-orientiertå Arbeitsweiså deó BITEØ wirä 
+durcè  deî CP/M-Emulationsmodå auæ Kassettå umgelenkt®  Dabeé sinä 
+folgendå Besonderheiteî zõ beachten:
+
+-    Beií  R(ead)- unä P(unch)-Kommandï wirä deò nacè "openfile:¢ 
+     eingegebenå  Namå  nacè  deò  Meldunç  "starttape¢  nochmaló 
+     ausgegeben®  Jetzô  isô  daó Kassettengera"ô  zõ  starteî  unä 
+     nochmaló >ENTER¼ zõ geben!
+
+-    Nacè  deò Ausgabå eineó Textfileó (z.B®  P(unch© A(ll)©  musó 
+     unbedingô nocè daó Kommandï "P(unch© C(lose)¢ gegebeî werden® 
+     Ersô  damiô  wirä  eiî  evtl®  Restblocë  unä  deò  Endeblocë 
+     ausgegeben® Eiî Textfilå ohnå Endeblocë kanî nuò nocè miô deí 
+     Kommandï "R(ead© S(tring)¢ geretteô werden.
+
+-    Aló  Verify-Kommandï  kanî  maî  "R(ead©  F(eed)¢  verwenden® 
+     Hierbeé   wirä  nuò  gelesen¬   deò  Textpuffeò  abeò   nichô 
+     vera"ndert!
+.paŠAdressen
+--------
+Programm	von  ..100H	bis  .15FFH
+Arbeitsbereich	von  .1600H	bis  .18FFH
+Textspeicher	von  .1900H	bis  .....H
+Startadresse	     .....H
+
+Display
+-------
+Typ:	.......................................................
+Format:	.......................................................
+BWHS:	.....H
+max. Zeilenlaenge:  .....  erweiterbar bis auf .....
+
+Listgeraet
+----------
+Typ:	......................................................
+Seitengroesse:	.....
+Zeilen/Seite:	.....
+.paŠ
+Kommandouebersicht
+==================
+
+----------------------------------------------------------------
+ASSIGN		Anzeige und Modifikation von Programmparametern
+		moegl. Parameter: T,L,P,U,F
+----------------------------------------------------------------
+CURSOR		Positionieren des Kursors
+		moegl. Parameter: A,B,E,M,L,S,T1,T2,T3
+----------------------------------------------------------------
+DELETE		Loeschen von Textbereichen
+		moegl. Parameter: A,B,E,M,L,S,T1,T2,T3
+----------------------------------------------------------------
+END		Ende BITEX-88
+		Text abschliessen, Monitoraufruf
+----------------------------------------------------------------
+LIST		Ausdrucken von Textbereichen
+		moegl. Parameter: A,B,E,M,L,S,T1,T2,T3,F
+		Mehrfachfaktor moeglich
+----------------------------------------------------------------
+MARK		Markieren von Textpositionen und Textbereichen
+		MARK	: Zuweisen Textposition an M - Parameter
+		MARK Tx	: Zuweisen Textbereich an T - Parameter
+			  moegl. Parameter: A,B,E,M,L,S,T1,T2,T3
+----------------------------------------------------------------
+PUNCH		Ausgabe auf ext. Speicher
+		moegl. Parameter: A,B,C,E,M,L,S,T1,T2,T3,F,Z
+		Mehrfachfaktor moeglich
+----------------------------------------------------------------
+READ		Eingabe von ext. Speicher 
+		im INSERT-Mode: Einfuegen vor Kursorposition
+		sonst	      : Eingabe ab Kursorposition
+ 		READ	: Eingabe bis Fileende
+		READ S	: Eingabe bis einschl. Zeichenkette
+                READ C  : Schliessen der Eingabedatei
+----------------------------------------------------------------
+READ F		Ueberlesen auf ext. Speicher
+		READ F	 : Ueberlesen bis Fileende
+		READ F S : Ueberlesen bis einschl. Zeichenkette
+----------------------------------------------------------------
+SUBST		Suchen und Ersetzen von Zeichenketten
+		SUBST 'ZK1' BY 'ZK2'	- Ersetzen ZK1 durch ZK2
+		SUBST 'ZK1' BY ''	- Streichen von ZK1
+		Zeichenkettenabschluss durch Apostroph - NL
+		EXECUTION ? (Y/N/A/E):	- wahlweise Ausfuehrung
+		(Y - ja, N - nein, A - ueberall, E - Ende)
+----------------------------------------------------------------
+WRITE		Schreiben von Zeichenketten
+		im INSERT-Mode: Einfuegen vor Kursorposition
+		sonst	      : Schreiben ab Kursorposition
+		moegl. Parameter: S,T1,T2,T3
+		Mehrfachfaktor moeglich
+----------------------------------------------------------------
+
+Erlaeuterung der Parameter:
+A -  All (gesamter Text)        L - Line 
+B -  Begin (Textanfang)         S - String 
+C -  Datei schliessen           P - Seitenumbruch
+E -  End (Textende)             T1,T2,T3 - markierte Textbereiche
+M -  markierte Textposition     F - Feed (Vorschub)
+U -  Gross/Klein-Umschaltung

@@ -1,0 +1,23 @@
+<YELLOW>Zusatzmonitor (robotron)
+<WHITE>Aufruf:   ZM30, ZMA8 oder ZM
+
+<RED>B<WHITE>             ZM beenden
+<RED>CD<GREEN>zahl<WHITE> <RED>CH<GREEN>zahl<WHITE> Umrechnung Hex<->Dez
+<RED>H<GREEN>zahl1 zahl2<WHITE>  Summe und Differenz
+<RED>G<GREEN>adr<WHITE>          (Go) Start
+<RED>D<GREEN>aadr [eadr]<WHITE>  Hexdump
+<RED>T<GREEN>aadr [eadr]<WHITE>  ASCII-Dump
+<RED>F<GREEN>aadr eadr wert<WHITE>    (Fill)
+<RED>M<GREEN>aadr eadr zieladr<WHITE> (Move)
+<RED>V<GREEN>aadr eadr zieladr<WHITE> (Verify)
+<RED>J<GREEN>aadr eadr<WHITE>    Speichertest
+<RED>QI<GREEN>port<WHITE>        Lesen vom Port
+<RED>QO<GREEN>port byte<WHITE>   Schreiben zum Port
+<RED>S<GREEN>aadr<WHITE> Speicher editieren HEX
+  Leertaste weiter, ENTER Ende
+<RED>W<GREEN>aadr<WHITE> Speicher editieren ASCII
+  <- zurueck, STOP Ende
+<RED>Y<GREEN>byte byte ..<WHITE> Zeichenfolge suchen
+<YELLOW>Kassette Speichern/Lesen:<WHITE>
+  AP=T, Paadr eadr sadr
+  AR=T, R[offset]

@@ -1,0 +1,17 @@
+<YELLOW>KRT-Grafik (V. Pohlers)
+
+<RED>CRT80P          <WHITE>80-Zeichen-Treiber
+<RED>CRT40P          <WHITE>40-Zeichen-Treiber
+<RED>CRT40PZG        <WHITE>3 Zeichensaetze
+  <RED>ZG1<WHITE>,<RED>ZG2<WHITE>,<RED>ZG3   <WHITE>Kommandos zum ZS-Wechsel
+<RED>GRAFP           <WHITE>Grafiktreiber f. BASIC
+  vor BASIC-Programm laden!
+  Basic Memory End < <GREEN>32000<WHITE> setzen
+
+<YELLOW>BASIC-Grafik-Programme, brauchen GRAFP<WHITE>
+
+<RED>GLOBUS87        <WHITE>Globus-Darstellung
+<RED>UHR             <WHITE>Uhr, vorher <GREEN>TIME<WHITE> setzen
+<RED>N-ECK           <WHITE>verschachtelte n-Ecke
+<RED>R+GRDEMO        <WHITE>Grafik-Demo Robotron
+<RED>R+GRDEM2        <WHITE>abgew. Plotter-Demo

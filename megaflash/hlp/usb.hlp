@@ -1,0 +1,21 @@
+<YELLOW>USB-DOS (V. Pohlers 2016/2019)
+<WHITE>
+<RED>USBX	 <WHITE>USB/VDIP-Treiber
+laedt VDIP-kompatible I/O-Routinen
+  anstelle Kassette wird nun in allen
+  Programmen auf USB gespeichert
+<YELLOW>Kommandos<WHITE>
+<RED>DOS      <WHITE>Umschalten auf Disk-OS
+<RED>CAOS     <WHITE>-"- auf Kassetten-OS
+<RED>DDIR<WHITE> <GREEN>[suchmuster]<WHITE> Disketteninhalt
+<RED>CD<WHITE> <GREEN>[dirname]<WHITE>     Verzeichniswechsel
+         CD / root, CD .. eins rauf
+<RED>USB	 <WHITE>VDIP-Treiber Reinitialisieren
+<GREEN>USB FWV  <WHITE>Anzeige der Firmware-Version
+<GREEN>USB IDD  <WHITE>Anzeige Laufwerksinformation
+<GREEN>USB DIR<WHITE>  Anzeige des Verzeichnisses
+<GREEN>USB MKD dirname<WHITE>  Verzeichnis anlegen
+<GREEN>USB DLD dirname<WHITE>  Verzeichnis loeschen
+<GREEN>USB DLF filename<WHITE> Datei loeschen
+<GREEN>USB RD filename<WHITE>  (Text-)Datei anzeigen
+<GREEN>USB REN alt neu<WHITE>  Datei umbenennen

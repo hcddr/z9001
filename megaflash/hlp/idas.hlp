@@ -1,0 +1,23 @@
+<YELLOW>IDAS (robotron)
+<RED>ASGN<WHITE> Speicherplatzzuweisung
+<RED>CM<WHITE>   Rueckkehr ins OS (call monitor)
+<RED>LIST <GREEN>[marke|zeile1,zeile2]<WHITE> Textanzeige
+<RED>STEP <GREEN>abstand<WHITE> Zeilennummern-Abstand
+<RED>KILL <GREEN>[zeile1,zeile2]<WHITE> Text loeschen
+<RED>RUN  <GREEN>[zeile1[,zeile2]]<WHITE> Prg. starten
+<RED>ADDR <GREEN>markename<WHITE> Ausgabe Adresse
+<RED>PUT  <GREEN>konstante<WHITE> Ausgabe Wert
+<RED>DR<WHITE> Anzeige Register (display register)
+<RED>DS<WHITE> Speicher anzeigen/aendern. STOP=Ende
+<RED>READ <GREEN>[zeile1|marke]<WHITE> Eingabe von Text
+<RED>WRIT <GREEN>[zeile1|marke]<WHITE> Ausgabe von Text
+<RED>MCSV <GREEN>[adr1,adr2]<WHITE> Pgm.speichern(MC-SAVE)
+<YELLOW>Fehler:<WHITE>
+<CYAN>+ILO+<WHITE> unzulaessige Operation
+<CYAN>+IO+<WHITE>  Ein-/Ausgabefehler
+<CYAN>+LNR+<WHITE> unzulaessige Zeilennummer
+<CYAN>+MDS+<WHITE> mehrfach definiertes Symbol
+<CYAN>+MNE+<WHITE> falsche Syntax;unbekannter Code
+<CYAN>+NDS+<WHITE> nicht definiertes Symbol
+<CYAN>+OPD+<WHITE> Operandenfehler o. Operand fehlt
+<CYAN>+SYM+<WHITE> Symbolfehler

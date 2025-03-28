@@ -1,0 +1,478 @@
+.PL72 
+..Textbreite auf 72 Spalten einstellen !
+.po6
+.MT4
+.he                                                  SCPX - POWER  09/85-1.0
+**************************** SCPX - DOK ********************************
+*         *                                             *              *
+*   VEB   *                  P O W E R                  *   POWER.DOC  *
+*         *                                             *              *
+*   WTR   *                 universelles                ****************
+*         *  Manipulationsprogramm fuer Diskettenarbeit *              *
+* Abt. TD *                                             *  SCPX V 1.2  *
+*         *                                             *              *
+************************************************************************
+*                                                                      *
+*   Stand: September 85            Bearbeiter: Rg  nach s. Literatur   *
+*                                                                      *
+************************************************************************
+
+
+Aufruf des Programmes unter seinem Namen:
+
+ A>POWER
+
+Danacè wirä voî "POWER¢ eiî Buchstabå zuò Kennzeichnunç deó Arbeitslauf
+werkeó ausgegeben® Wirä eiî andereó Laufwerë gewuenscht¬ kanî dieseó miô 
+deò  Eingabå des Laufwerkbezeichneró (z.B®  B:© angewaehlô  werden®  Diå 
+nachfolgendå Eingabå kanî eiî Kommandï sein® Einigå Kommandoó zeigeî auæ 
+deí  Bildschirí  diå Directorù (evtl®  nuò Dateigruppen©  aî  miô  eineò 
+laufendeî  Nummer®  Dieså  Nummeò dienô zuò Kennzeichnunç deò Dateé  zuò 
+weitereî  Bearbeitunç deó Kommandos®  Nacè deò Fragå "SELECT:¢ kanî  nuî 
+eine¬  mehrerå  odeò Gruppeî voî Dateieî durcè dieså Nummeò  ausgewaehlô 
+werden®  Diå  Zifferî  sinä durcè Leerzeicheî  voneinandeò  zõ  trennen¬ 
+Bereichå  werdeî durcè Anfanç unä Ende¬  miô Minuó (-© verbundeî angege
+ben®  Fehlô beé eineí Bereicè diå Angabå deó Endes¬ wirä deò Bereicè bió 
+zuí Endå gesetzô (z.B® ± ² 5-· 9-)® 
+
+Nacè eineí Kommandï kanî einå Dateigruppenbezeichnunç angegebeî  werden¬ 
+wenî  daó  sinnvolì ist®  Diå Anzeigå unä Auswahì erfolgô danî nuò  fueò 
+dieså  Dateigruppe®  Eiî Laufwerkbezeichneò voò dieseò Angabå odeò  aucè 
+nuò   deò  Laufwerkbezeichneò  alleiî  lasseî  daó  Kommandï   auæ   deí 
+angegebeneî Laufwerë wirksaí werden.
+Dateigruppen werden bezeichnet mit:
+     *.erw
+     name.*
+     *.*
+Aucè diå Angabå eineó Fragezeichenó fueò eineî beliebigeî Buchstabeî isô 
+moeglich.
+
+Werdeî  Disketteî gewechselô waehrenä deò Arbeiô miô POWER¬  danî isô ^Ã 
+voò  deí  naechsteî Kommandï zõ geben¬  sonsô wirä dieó durcè einå  Aus
+schrifô verlangt® ESÃ unä ^Ã unterbrecheî ausserdeí jedeó Kommando.
+
+Diå  Tasteî <-- (Backspace© bzw®  DEÌ LINÅ (^X© gestatteî diå  Korrektuò 
+eineò Kommandozeilå voò deò Eingabå deó abschliessendeî ET1 (RETURN).
+Mit ^P wird der Drucker bei Bildschirmausgabe zu- bzw. abgeschaltet.
+
+Zusaetzlicè  koenneî  beé jedeí Kommandï  weiterå  Optionen¬  iî  eckigå 
+Klammerî eingeschlossen¬  angegebeî werden® Fehlô dieså Angabe¬ wirä eiî 
+Standarä gesetzt¬  deò miô deí Kommandï LOÇ auæ deí Bildschirí angezeigô 
+werdeî kann.
+
+.cp 6ŠAllå  Kommandoó koenneî durcè Eingabå eineó Fragezeichenó (Helpfunktion© 
+angezeigô  werden¬  beé falscheî Kommandoó wirä auæ  dieså  Moeglichkeiô 
+hingewiesen.
+
+Auswahl des Laufwerkes:       A:, B:,...,D:
+oder auch                     1:, 2:,...,9:
+
+Auswahl der Files:
+Angabe einzeln:               1 3 7...
+Angabe fuer Gruppen:          3-8; 8-  (8 bis Ende)
+
+Folgendå   Abkuerzungeî   werdeî  iî  deò  Beschreibunç  deò   Kommandoó 
+verwendet:
+     com       Kommando
+     ufn       Filename
+     adr       Adresse, hexadezimal angegeben
+
+
+
+Kommandos:
+~~~~~~~~~~
+
+CHECK                -  Bilden einer Kontrollsumme
+Errechnet eine Kontrollsumme fuer die ausgewaehlten Dateien.
+
+
+CM aadr eadr adr2    -  vergleicht Speicher aadr..eadr mit Speicher-
+bereicè  aâ adr2®  Eó wirä eiî byteweiseò Vergleicè deò  Speicherinhaltå 
+durchgefuehrô unä Abweichungeî miô Adresså unä Inhalô angezeigt.
+
+
+COPY [opt]                 -  Kopieren von Dateien
+Diå ausgewaehlteî Dateieî werdeî auæ eiî andereó Laufwerë  kopiert®  Diå 
+Optioneî sind:
+     [Á]  wenî  Dateé  auæ Zieldiskettå schoî  vorhanden¬  automatischeó 
+          Ueberschreiben
+     [B]  automatisches Aendern der Namenserweiterung in .BAK   
+     [Ã]  fragt¬  wenî  Filå bereitó existiertº  "filå exist¬  (B)ackup¬ 
+          (O)verwrite, (S)kip:" 
+     [D]  uebergeht automatisch vorhandene Files gleichen Namens
+     [Í]  markierô originalå (<© unä kopiertå (>© Files¬ falló Í OÎ musó 
+          auch die Quelldatei R/W sein
+     [Q]  Aendert den Namen waehrend des Kopierens
+     [R]  Fragt Y/N bei jedem File
+     [Ô]  stellô diå Reichenfolgå deó Kopierenó nacè deò Groesse¬  falló 
+          einå Dateé beií Kopiereî zõ grosó ist¬  wirä einå  Instruktioî 
+          erwartet®   Wenî  Ô  OFÆ ist, wirä  miô  deò  naechsteî  Dateé 
+          fortgesetzt.
+     [V]  kopierte Datei wird nach dem Schreiben kontrollgelesen
+
+
+
+DIR [UXi]            - Anzeige der Directory
+     U - alle USER-Felder    
+     X - alle gewuenschten Laufwerke
+     i - Anzahl der Spalten
+Kennzeichnung der Files:
+     ..*    - File ist R/O (schreibgeschuetzt)
+     ..)    - File ist SYS (systemgeschuetzt) 
+Durcè  diå  Optioî  [Sİ kanî diå Anzeigå  voî  Systemfileó  unterdrueckô Šwerden.
+
+
+DISK            - Anzeige des DISK-Status
+Eó wirä angezeigtº Disketten-Kapazitaet¬ Anzahì deò Spuren/Systemspuren¬ 
+Sektoren/Spur, Sektoren fuer System u.a.
+.cp6
+DS adr          - Anzeige und Veraendern Inhalt einer Speicheradresse
+Deò Inhalô deò angegebeneî Adresså wirä angezeigt®  Danacè kanî eingege
+beî werden:
+     .A        Eingabe in ASCII-Code
+     .H        Eingabe hexadezimal
+     .D        Eingabe dezimal
+     .B        Eingabe binaer
+Dieså Angabå stellô diå folgendeî Eingabeî auæ deî gewuenschteî Typ® Diå 
+folgendeî  Eingabeî  werdeî kontrollierô unä iî deí  angegebeneî  Formaô 
+gespeichert®  Jå  Zeilå duerfeî maximaì 12° Bytå angegebeî  werden®  Diå 
+Byteó  muesseî  durcè Leerzeicheî getrennô werden®  Beé  ASCII-Codå  isô 
+jedeó  druckbarå Zeicheî moeglich.  Steuerzeicheî (00È bió 1FH©  koenneî 
+miô deò Folgå ^ø angegebeî werden¬ wobeé ø daó Steuerzeicheî ist.
+     - jedå Zeilå wirä miô ET1 (cr© abgeschlossen
+     - bei .A keine Trennung durch Leerzeichen 
+     - bei .B duerfen nur volle Bytes eingegeben werden
+     - miô "TILDE¢ (~© kanî zwischeî "vor- unä rueckwaerts¢ umgeschalteô 
+       werden
+     - daó Kommandï wirä durcè Eingabå voî .® odeò durcè Tastå ESÃ abge-
+       brochen
+  
+
+
+DUMP adr            - Anzeige eines Speicherbereiches in ASCII
+Diå Anzeigå erfolgô aló formatierteò Text® Allå nichô druckbareî Zeicheî 
+werdeî nichô angezeigt® 
+
+DUMPX adr           - HEX- und ASCII- Anzeige auf Bildschirm
+DUMPH adr           - HEX- Anzeige auf Bildschirm
+DUMPA adr           - ASCII- Anzeige ohne Tabulatoren
+Die Adresse kann wie folgt angegeben werden:
+     adr     - 1 Byte von adr
+     adr,i   - i Byte ab adr 
+     adr,    - 128 Bytes von adr
+     adr,,   - alle Bytes ab adr
+und nach erstem DUMP-Kommando:
+     ,       - 128 Bytes ab aktueller Position
+     ,i      - i Bytes   ab      "         "
+     ,,      - weiter    ab      "         "  , alle Bytes
+
+     - DUMĞ unä DUMPÁ werdeî beií Standarä EOF-Zeicheî (1AH© abgebrochen
+
+
+
+ERA                 - Loeschen der ausgewaehlten Dateien
+ERA [R]             - Loeschen mit vorheriger Frage
+Schreibgeschuetztå Dateieî koenneî nichô geloeschô werden® Falló miô [Rİ 
+geloeschô wird¬  solltå deò Schalteò durcè eiî zweiteó Aufrufeî miô  [Rİ  
+wiedeò  ausgeschalteô  werden¬  dá  sonsô allå Operationeî  miô  Abfragå 
+durchgefuehrô werden.
+
+
+  
+EXIT                -  verlaesst POWER mit Speichertest Š                       (? wenn Fehler)
+  
+
+FILL aadr eadr byte - Fuellt Speicher von aadr-eadr mit byte
+  
+GO ufn adr param    -  laedt File ufn nach adr und startet es
+Dieseó Kommandï funktionierô aló einå speziellå Forí voî RUN‚ ®  Eó liesô 
+daó angegebenå Programm¬  laedô eó aî diå angegebenå Adresså unä starteô 
+daó Programí aî dieseò Adresse®  Besonderó fueò Programme¬  diå nichô aî 
+deò Startadresså 100È beginnen® Diå Parameteò koenneî wiå normaì angege-
+beî werden®  Siå werdeî ií "POWER"-Eingabepuffeò zwischengespeicherô unä 
+sinä uebeò daó HL-Registeò ansprechbar.
+
+
+  
+GROUP               -  Zeigt alle Filegruppen auf Display an
+Diå Filegruppeî eineò Dateé sinä diå Dateibloecke¬  diå iî deò Directorù 
+diå  gestreutå  Speicherunç auæ Diskettå angeben®  Eó wirä diå  logischå 
+Nummeò  jedeó verwendeteî Dateiblockeó deò Dateé  angegeben¬  voò  jedeò 
+Angabå stehô nocè diå Extend-Nummer. (weiter z.B. READGR)
+
+
+
+JP adr arg          -  startet Programm ab adr
+Danacè  wirä  Warmstarô ausgefuehrt®  arç isô Kommandozeilå wiå  ií  Be
+triebssystem® Diå Kommandoó JĞ unä EØ erlaubeî deí Nutzeò zõ  Programmeî 
+zõ springen¬ diå bereitó iî deî Speicheò geladeî wurden.
+  
+
+EØ adò arg          -  starteô Programí aâ adò
+Danach zuruecë nacè "POWEÒ", sonst wie oben.
+
+
+                    
+LOAD  ufn adr       -   laedt ufn nach adr
+Eó wirä keinå Veraenderunç deó Fileó vorgenommen®  Deò Bereicè voî POWEÒ 
+daræ  nichô ueberschriebeî werdeî (siehå LOG)®   Zõ grosså Dateieî  musú 
+maî miô READGÒ iî Teileî nacheinandeò einleseî unä bearbeiten®  Nacè deí 
+Ladeî  wirä diå Endadresså unä diå Zahì deò eingeleseneî Sektoreî  ange-
+zeigt.
+
+
+SAVE ufn adr sect   -  rettet adr nach ufn
+Deò  Transporô  wirä fueò diå angegebenå Zahì voî  Sektoreî  ausgefuehrt® 
+Dieså Angabå kanî entfallen¬  wenî vorheò daó Filå ufî miô LOAÄ  geladeî 
+wurde.
+
+
+LOG [opt]           - zeigt die gestellten Schalter auæ Displaù an
+Gleichzeitiç  wirä deò freiå Anwenderspeicheò  angegeben®  Diå  Schalteò 
+koenneî  durcè diå Angabå eineò Optioî opô iî eckigeî Klammerî  gestellô 
+werden® Jedå Angabå schalteô diå Wirkunç um:
+Fuer Bildschirmausgabe:
+      Ğ  - beé  OÎ wirä zunaechsô nuò einå  BS-Seitå  angezeigt¬  danacè 
+           weiter mit Leertaste (zeilenweise) oder ^B (rollen)
+      
+Fuer COPY:
+      Á - wenî  Dateé  auæ Zieldiskettå schoî  vorhanden¬  automatischeó 
+          Ueberschreiben
+      B - automatisches Aendern der Namenserweiterung in .BAK   Š      Ã - fragt¬  wenî  Filå bereitó existiertº  "filå exist¬  (B)ackup¬ 
+          (O)verwrite, (S)kip:" 
+      D - uebergeht automatisch vorhandene Files gleichen Namens
+      Í - markierô originalå (<© unä kopiertå (>© Files¬ falló Í OÎ musó 
+          auch die Quelldatei R/W sein
+      Q - Aendert den Namen waehrend des Kopierens
+      R - Fragt Y/N bei jedem File
+      Ô - stellô diå Reichenfolgå deó Kopierenó nacè deò Groesse¬  falló 
+          einå Dateé beií Kopiereî zõ grosó ist¬  wirä einå  Instruktioî 
+          erwartet®   Wenî  Ô  OFÆ ist, wirä  miô  deò  naechsteî  Dateé 
+          fortgesetzt
+Fuer DIR:
+      S - Zeigt SYSTEM-Files an oder unterdrueckt deren Anzeige
+      X - Anzeige fuer allen (aktiven) Laufwerken 
+      U - Anzeige aller USER-Bereiche
+Fuer RUN:
+      ¤ - weî diå SUBMIT-Funktioî eingeschalteô ist¬  wirä nacè Abarbei
+          tunç eineó Programmó "POWER¢ wiedeò geladen
+Fuer SET:
+      +/-  - n¬  S¬  R¬  Ø setzeî bzw® loescheî deó 7® Biô voî einzelneî 
+          Zeicheî deó Dateinamens
+Anzeige Speicherbelegung:
+      POWER 100H - eadr
+      TPÁ aadò eadò nseã  -  Anfangsadresse¬  Endadresse¬ Laengå iî Sek-
+                             toren (128 Byte)
+
+
+
+MOVE aadr eadr adr2      - Speichertransport
+Eó  wirä  deò Speicherbereicè aadò bió eadò nacè  adr²  verschoben®  Deò 
+Transporô erfolgô aufsteigend¬ Ueberdeckungeî sinä zõ vermeiden.
+
+
+
+READ trk sec aadr nsec        - Lesen von Diskette
+Voî Spuò trk¬  Sektoò seã wirä ± Sektoò bzw® nseã Sektoreî voí aktuelleî 
+Laufwerë  geleseî  unä auæ Speicherbereicè 80È  .®  0FFÈ  transportiert¬ 
+sonst nach aadr .
+
+
+WRITE trk sec aadr nsec       - Schreiben auf Diskette
+Nacè Spuò trk¬ Sektoò seã wirä ± Sektoò bzw® nseã Sektoreî voí Speicher
+bereicè 80È .®  0FFÈ auæ daó aktuellå Laufwerë transportiert¬  sonsô voî 
+aadr .
+   
+
+READ trk sec kind nsec        - Lesen von Diskette und Anzeige
+Aâ  Spuò  trk¬  Sektoò seã werdeî nseã Sektoreî geleseî unä auæ  Displaù 
+dargestellt® kinä bedeuteô dabei:
+     XX   HEX- und ASCII- Darstellung
+     XH   HEX- Darstellung
+     XA   ASCII- Darstellung
+
+
+READGR ngroup aadr nsec       - Lesen von Dateigruppen
+Eó werdeî nseã Sektoreî eineò Speichergruppå ngrouğ (logischå Nummeò wiå 
+DÍ  iî Directory© voî Diskettå geleseî unä nacè deí Speicheò aâ  Adresså 
+aadr transportiert.
+
+Š.cp6
+WRITEGR ngroup aadr nsec      - Schreiben von Dateigruppen auf Diskette
+Wiå  vor¬  jedocè voí Speicheò aâ Adresså aadò nacè  Diskette¬  logischå 
+Gruppennummeò ngrouğ miô nseã Sektoren.
+
+
+READGÒ  ngrouğ  kinä nsec     - wiå READ
+Leseî deò Dateigruppå unä Anzeigå auæ Display®  kinä daræ XX¬ XÈ odeò XÁ 
+sein.
+  
+
+RECLAIM             - Wiederherstellen geloeschter Files
+Bereitó geloeschtå Fileó werdeî wiedeò gueltig¬  wenî siå nocè deî alteî 
+Dateninhalô haben® Eó werdeî allå geloeschteî Dateieî auæ deí Bildschirí 
+angezeigô unä eó kanî ausgewaehlô werden®  Isô einå Dateé bereitó  durcè 
+einå anderå ueberschrieben¬ erscheinô diå Fehlernachricht:
+
+     can not recover, file with bad extent
+
+Miô  ESÃ  kanî daó RECLAIM-Kommandï verlasseî  werden®  Allå  wiederher-
+gestellten Dateien werden auf R/O gesetzt.
+
+
+
+REN                 - Umbenennen Filename
+Diå ausgewaehlteî Fileó bzw® File-Gruppeî koenneî umbenannô werden® Dazõ 
+wirä  nacè  deí  neueî Nameî gefragô beé jedeí File®  Diå  Angabå  eineó 
+Sterneó "*¢ ií Nameî odeò deò Namenserweiterunç laessô deî alteî Namens
+teiì unveraendert:
+     *.ext  --> setzt eine andere Namenserweiterung ext
+     name.* --> setzt einen anderen Namen name
+Solleî mehrerå Dateieî gleicè umbenannô werden¬ kanî voò deò Eingabå deó 
+neueî Namenó eiî ":¢ gesetzô werden®  Wirä nuò eiî ":¢ eingegeben¬  danî 
+werdeî  allå  Dateieî zuò Aenderunç angeboten®  Wirä dabeé nuò  ET±  ge-
+drueckt, bleibt der alte Name erhalten.
+
+ 
+
+RESET d:            - Setzt Laufwerk d: zurueck
+Dieseó Kommandï gestatteô daó Ruecksetzteî einzelneò Laufwerkå unä damiô 
+deî Diskettenwechseì auæ dieseí Laufwerk.
+
+
+RUN ufn param             - Laedt und startet das .COM-File ufn
+Eó  duerfeî Parameteò angegebeî werden®  Isô diå SUBMIT-Funktioî  einge-
+schalteô  (s®  LOG)¬  wirä  einå entsprechendå  Kommandodateé  generierô 
+($$$.SUB)¬  diå  nacè  Beendigunç  deó Programmó daó erneutå  Ladeî  voî 
+"POWER" bewirkt.
+
+
+
+SEARCÈ  aadò eadò byte....‚ - Suchô ií Speicheò nacè bytå ..®  (max®  12¸ 
+Byte)¬  aâ aadò bió eadr®  Diå gefundeneî Byteó werdeî miô ihreò Adresså 
+angezeigt® Fueò bytå kanî ausserdeí angegebeî werden:
+     ?    fuer Zeichen, die nicht naeher bestimmt werden koennen
+     ""   schliesst ein ASCII-Zeichen ein, welches gesucht wird
+Ií Normalfalì suchô SEARCÈ nacè Hex-Codes®  Dieså werdeî hintereinander¬ 
+durcè  Leerzeicheî getrennô eigegeben®  Iî deò Eingabezeilå koenneî Kom-
+binationen von Hex-Codes und ASCII-Zeichen vorkommen.
+Beispiel: SEARCH aadr eadr "???TEST" C3 ? ?
+Š   
+
+SET [-{1..8,S,R,X}]  - Setzen Fileskennzeichen
+Eó  wirä beé Angabå eineò Ziffeò î  beií  n® Zeicheî deó  Filenamenó daó
+Biô · ½ ± gesetzt® S¬ Ò unä Ø setzeî daó Biô · ½ ± deò Namenserweiterung.
+
+
+
+SEÔ [+{....}İ        - Setzô Fileskennzeichen zurueck
+Wiå vor¬ eó wirä ií angegegebeneî Zeicheî daó Biô · auæ Nulì gesetzt.
+
+
+SET                  - Zeigt die gesetzten 7.Bits an
+   
+
+SETDIR               - Setzt DIR/SYS - Attribute
+SETSYS                 (S = 2. Buchstabe der Namenserweiterung)
+ 
+
+SETRO                - Setzt R/O oder R/W - Attribute
+SETWR                  (R = 1. Buchstabe der Namenserweiterung)
+  
+
+SIZE                - Zeigt die Groesse der Datei an
+Eó  werdeî angezeigtº  belegtå  Sektoren¬  freiå  Sektoren¬  benoetigteò 
+Seicherplatz in kByte unä belegter Speicherplatz gesamt
+
+
+SORT i              - Sortiert Files zur Anzeige
+Die Files werden sortiert angezeigt:
+     i = O      unsortiert
+     i = 1      sortiert nach dem Filenamen
+     i = 2      wie 1, SYS-File zuletzt
+     i = 3      sortiert nach Namenserweiterung
+     i = 4      wie 3, SYS-File zuletzt
+
+
+SPEED i              - Setzt Ausgabegeschwindigkeit
+     i = 0      schnell
+     ...
+     i = 9      sehr langsam
+Diå  Ausgabå auæ deí Bildschirí kanî miô deò Leertastå odeò ^Ó  gestoppô 
+werden®  Wirä diå Leertastå nochmaló betaetigt¬  wirä zeilenweiså ausge-
+geben. Bei allen anderen Tasten wird wieder im Rollmodus ausgegeben.
+
+
+
+STAÔ d:‚              - Statusanzeigå fueò Diskettå ií Laufwerë d:
+(unä  alleî andereî aktiveî Laufwerken)®  Eó wirä  angezeigtº   Schreib
+schutú (R/O© bzw®  Schreiberlaubnió (R/W)¬ belegteò unä freieò Speicher
+platz, Diskettenkapazitaet
+
+  
+
+TESÔ                 - Test
+Liesô  allå Sektoreî unä zeigô dieó an¬  zeigô fehlerhaftå Sektoreî  an¬ 
+reparierô  allå Filegruppeî unä defekteî Fileó unä errechneô einå  Kont
+rollsumme®  Nichô reparierbarå Bloeckå werdeî miô eineí besondereî File-
+nameî belegô (========.==½ ¬ R/Ï unä SYS-Attributå gesetzt).
+Wenî beií Testeî nichtlesbarå Sektoreî gefundeî werden¬  wirä anschlies-Šsenä  gefragtº  SAVE?‚  Wenî ja¬  werdeî diå betreffendeî Bloeckå iî o.g® 
+Dateé  eingetrageî unä sinä damiô fueò BDOÓ aló  belegô  gekennzeichnet® 
+Falló  diå defekteî Bloeckå innerhalâ eineò existierendeî Dateé gefundeî 
+werden, kann das angezeigt werden:
+     show bad files (Y/N)?
+Danach wird gefragt, ob die defekten Sektoren repariert werden sollen:
+     repair (Y/N)
+Auæ  diå  defekteî  Stelleî werdeî Saetzå miô 12¸ Bytå  Laengå  00È  ge-
+schrieben¬  falló eiî erneuteó Leseî keineî Erfolç hat®  Damiô kanî  der 
+Fehleò evtl®  behobeî sein®  Sonsô musó maî miô READ/WRITÅ bzw®  READGR¯ 
+WRITEGR Teile der Datei einzeln retten.
+
+
+
+TEST S              - Test wie vor
+Es werden zusaetzlich die Systemspuren ueberprueft.
+ 
+
+TYPÅ ‚         - Zeigô Fileó auæ Displaù an¬ Ausgabå ASCIÉ formatiert
+TYPEA         - Ausgabe in ASCII nicht formatiert
+TYPEH         - Ausgabe in HEX
+TYPEX         - Ausgabå iî ASCIÉ unä HEX
+
+^Ã odeò ESÃ brecheî diå Ausgabå ab® LeertasteºUeberganç zuò zeilenweisån 
+Ausgabe¬  danî miô ET± naechstå Zeile¬ allå anderå Tasteî bewirkeî Roll
+modus.
+^Ë beendeô diå Ausgabe¬ wenn angegeben wirä daó naechstå Filå angezeigt®
+
+
+USER i              - Schaltet zum USER i um
+
+
+XUSEÒ i‚             - Setzô diå Quellå fueò daó Kopiereî auæ Anwendeò i.
+Anwendunç  beé COPYº  Auæ deí gleicheî Datentraegeò kanî einå Dateé  miô 
+COPÙ  iî eineî andereî USER-Bereicè kopierô werdeî (d.h®  siå  existierô 
+danî  zweimaì auæ deò Diskette© odeò siå kanî voî eineî USER-Bereicè  iî 
+einen anderen transportiert werden (d.h. sie existiert nur einmal).
+Anfrage von "POWER":   (C)OPY or (M)OVE:  
+
+UR1...4             - Anwenderkommandos
+Sinä  dieså  installiert¬  koenneî siå aufgerufeî werden.Siå muesseî  iî 
+folgendeî Speicherplaetzeî voî POWEÒ angegebeî werden:
+     UR1  140..147H
+     UR2  148..14fH
+     UR3  150..157H
+     UR4  158..15FH
+"POWER¢ uebergibô ií HL-Registeò diå Adresså deó Eingabepuffers¬ sï dasó 
+mit dem URn-Kommando gleichzeitig Parameter uebergeben werden koennen.
+
+
+
+
+
+
+
+Literaturangaben:
+
+/1¯  "POWEÒ Befehlsuebersicht¢ Forschungszenruí fueò  Werkzeugmaschinen-
+     bau Karl-Marx-Stadt
+Š

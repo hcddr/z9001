@@ -1,0 +1,18 @@
+<YELLOW>CP/M mit dem Z9001
+<WHITE>
+<RED>BOOT <GREEN>[lw] <WHITE>Boot f. robotron-Floppy-Modul
+<RED>BOOTZFK<WHITE> <GREEN>[lw]<WHITE> Boot f. Rossendorf
+    benoetigen 64K-RAM-Modul
+    sowie spezielle Boot-Disk
+<RED>CPM<WHITE>       Auswahlmenue f. 3 Systeme
+          keine Systemdisk noetig
+  CP/M orig. robotron
+  CP/M orig. ZFK Rossendorf
+    benoetigen 64K-RAM-Modul!
+  CP/M 48K robotron
+    braucht 2 RAM-Module
+<RED>MINICPM<WHITE>
+    braucht 2 RAM-Module
+    ohne Floppy, aber mit 2 ROM-Disks
+    und 8K-RAM-Disk
+

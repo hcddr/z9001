@@ -1,0 +1,23 @@
+<WHITE>C-Compiler <YELLOW>Pretty C V1.1 Dr. R. Wobst
+
+<RED>PRETTYC	<WHITE>Paket laden<YELLOW>
+<RED>EC MAIN	<WHITE>Programm editieren
+<RED>EC /DI	<WHITE>Directory
+<RED>C@	<WHITE>kompilieren (EC CMD)
+<RED>GO	<WHITE>ausfuehren
+
+<YELLOW>Compilieren mit Debugger<WHITE>
+CC MAIN/BP:2/LI:2/AS:100
+CC CLIB/BP:0/LI:0/CN
+CC DEBUG/CN
+
+<YELLOW>Editor<WHITE>
+4 Textpuffer (<MAGENTA>CLIB, DEBUG, CMD, MAIN<WHITE>)
+Klammern: runde Klammer, dann @ bzw. @@
+<GREEN>Enter + ^C<WHITE> -> _ (Kommandomodus)
+<GREEN>^D	<WHITE>Zeile loeschen
+<GREEN>^E	<WHITE>Insertmodus (-> *), Ende ^C
+<GREEN>ESC+E 	<WHITE>Ende
+<GREEN>ESC+W	<WHITE>auf Kassette speichern
+<GREEN>ESC+R	<WHITE>von Kassette lesen
+<GREEN>ESC+T	<WHITE>Pufferfang, <GREEN>ESC+B <WHITE>Pufferende

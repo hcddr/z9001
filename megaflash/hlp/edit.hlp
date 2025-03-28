@@ -1,0 +1,23 @@
+<YELLOW>EDAS Editor/Assembler (robotron)
+
+Editor: Wechseln zu Assembler mit #E<WHITE>
+<RED>#A<WHITE> (assign) Speicherzuweisung aendern
+<RED>#B<WHITE> (begin) Neustart der Aufbereitung
+<RED>#E<WHITE> (end) Beenden, zurueck ins OS
+<RED>#R<GREEN>"Name"<WHITE> (read) Lesen von Kassette
+<RED>#W<GREEN>"Name"<WHITE> (write) Schreiben auf Kassette
+<RED>#T<GREEN>n,m<WHITE> (text) Anzeige Text
+<RED>#I<GREEN>n<WHITE> (insert) Zeilen einfuegen
+<RED>#K<GREEN>n,m<WHITE> (kill) Zeilen loeschen
+<RED>#C<GREEN>n,m<WHITE> (comment) Kommentar anfuegen
+<RED>#N<GREEN>n,m<WHITE> (no comment) Kommentar Loeschen
+<RED>#S<GREEN>n,m<WHITE> /ZKa1/ZKn1/... (substitute)
+<RED>#UN<WHITE> oder <RED>#U<GREEN>[Y]<WHITE> (uppercase)
+<RED>#L<GREEN>n,m<WHITE> (list) Ausgabe auf Drucker
+
+<YELLOW>Fehler:<WHITE>
+<CYAN>+++CE<WHITE> (command error)
+<CYAN>+++LE<WHITE> (length error)
+<CYAN>+++NF<WHITE> (not found)
+<CYAN>+++TB<WHITE> (textbuffer)
+<CYAN>+++SE<WHITE> (substitution error)

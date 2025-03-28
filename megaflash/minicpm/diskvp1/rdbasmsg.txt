@@ -1,0 +1,1197 @@
+*REDABAS
+RElationales DAten-BAnkbetriebs-System REDABAS 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+(Version 1.0 - 23.08.85)       (Robotron - Projekt Dresden)
+
+Zum Lieferumfang gehoeren folgende Komponenten auf Diskette:
+
+  REDABAS.COM   - Hauptprogramm
+  RDBASOVR.COM  - Routinen und Nachrichten
+  RDBASMSG.TXT  - Textdatei fuer HELP - Einrichtung
+  RDBASINS.COM  - Programí  zuò Anpassunç voî REDABAÓ  aî  deî
+                  verwendeten Bildschirmtyp und zur Auswahl von
+                  Programmparametern
+  Beispieldateien,   auæ   diå   iî  deò   "Programmtechnischeî
+                     Beschreibung",  Abschnitô 3.  unä 4. Bezuç
+                     genommeî wird.
+
+Diå Komponenteî REDABAS.COM und RDBASOVR.COM muesseî beé eineò 
+REDABAS-Sitzunç stetó verfuegbaò sein. 
+RDBASMSG.TXÔ wirä ausschliesslicè  voí HELP-Befehl benoetigt.
+RDBASINS.COÍ   isô  nuò  waehrenä  eineó   Installierungslaufeó
+erforderlicè  unä  kanî auæ einå  anderå  Diskettå  ausgelagerô
+werden.
+Uí  Ihneî  diå Einarbeitunç iî diå  REDABAS-Kommandosprachå  zõ
+erleichtern,   werdeî   Ihneî   iî   deò   "Programmtechnischeî
+Beschreibung"  (Abschnitô  3.  unä 4.) diå wichtigsteî  Befehlå
+beispielhafô erlaeutert.  Diå dorô verwendeteî  Dateieî
+liegeî  bereitó  auæ Diskettå vor.  Siå koenneî  dieså  Dateieî
+loescheî odeò auslagern, uí daó Demonstrationsbeispieì kompletô
+nachzuvollziehen.
+*EXIT
+
+*INSTALL
+REDABAS - Installierung
+~~~~~~~~~~~~~~~~~~~~~~~
+Uí diå vollå Leistunç deò REDABAS-Befehlå verwendeî zõ koennen,
+diå  ií  Seitenmoduó arbeiten,  d.h.  deî  gesamteî  Bildschirí
+ausnutzen, musó deò Cursoò freé adressierbaò sein. Dazõ isô diå
+Anpassunç  voî REDABAÓ aî deî voî Ihneî verwendeteî  Bildschirí
+erforderlich,   wenî   dieseò  nichô  deò   Standardgenerierunç
+entspricht.  Andernfalló  kanî  beé eineò Reihå  voî  Kommandoó
+(z.B. MODIFY, APPEND, BROWSE...) eiî Wirrwaò auæ deí Bildschirí
+entstehen.
+Weiterhiî   ermoeglichô   diå  Installierunç   diå  permanentå
+Aenderung folgender Programmparameter:
+
+     - Wahl des Makroanzeigers (Standard "&")
+     - Wahl des Datumformats (TT.MM.JJ oder MM.TT.JJ)
+     - Benutzunç deó Fehlerkorrekturdialogó (Standarä "nein")
+
+Zuí Zweckå deò Anpassunç rufeî Siå daó Programí "RDBASINS"  auæ
+unä  koenneî  ií  Dialoç Ihrå  Auswahì  treffen.  Daó  Programí
+REDABAS.COÍ  musó  dazõ auæ dem aktuelleî  Laufwerë  verfuegbaò
+sein.
+*EXIT
+*DATEIEN
+REDABAS - Dateien
+~~~~~~~~~~~~~~~~~
+REDABAÓ  organisierô verschiedenå Dateitypeî unä vergibô dafueò
+standardmaessiç   diå   dreé  Zeicheî  fueò   diå   Dateinamen-
+Erweiterung. Allå zuò Datenbanë gehoerendeî Komponenteî sinä iî
+den folgenden Dateiarten gespeichert:
+
+Datenbankdateien (.DBD)
+~~~~~~~~~~~~~~~~~~~~~~~
+enthalteî allå Nutzerdateî unä dereî Strukturbeschreibung. Einå
+Dateé umfassô deî Informationsumfanç z.B.  eineò Liste, Tabellå
+oder Kartei.
+
+Indexdateien (.IDX)
+~~~~~~~~~~~~~~~~~~~
+dieneî  deí  beschleunigteî Zugrifæ auæ Datensaetzå  uebeò  eiî
+Ordnungskriterium.  Dieseò  Schluesseì kanî sicè auó  eiî  odeò
+mehrereî  Datenfelderî  eineó Datensatzeó  zusammensetzen.  Diå
+Indexdateé  enthaelô  zõ jedeí Satú  eineò  Datenbankdateé  deî
+Schluessel und einen Zeiger.
+
+Variablendateien (.VAR)
+~~~~~~~~~~~~~~~~~~~~~~~
+bieteî  deí  Nutzeò  diå  Moeglichkeit,   unabhaengiç  voî  deî
+Datenbankdateieî   variable,    temporaerå   Informationeî   zõ
+speichern,  diå  uebeò einå REDABAS-Sitzunç hinauó fueò weiterå
+Programmlaeufe verfuegbar sein sollen.
+
+Befehlsdateien (.PRG)
+~~~~~~~~~~~~~~~~~~~~~
+sinä   Sammlungeî  voî  Befehlsfolgeî  unä  koenneî   komplettå
+Programme oder Unterprogramme darstellen.
+
+Reportdateien (.DEF)
+~~~~~~~~~~~~~~~~~~~~
+enthalteî  diå  ií Nutzerdialoç des REPORT-Befehls eingegebeneî
+Definitioneî  zuí Aufbaõ eineò Auswertungslistå, sie koenneî 
+wiederholô aufgerufeî werden.
+
+Maskendateien (.MSK)
+~~~~~~~~~~~~~~~~~~~
+besteheî  auó  Befehleî zuí Bildschirmaufbau.  Siå koenneî  zuò
+programmierteî Dateneingabe/ -ausgabå verwendeô werdeî odeò beé
+Befehlen zum Erfassen und Aendern die Standardmaske ersetzen.
+
+Textdateien (.TXT)
+~~~~~~~~~~~~~~~~~~
+koenneî  Kopieî  voî Datenbankdateieî ií Systemdatenformaô seiî
+odeò   durcè  anderå  Programmå  erzeugtå   Eingabedateî   fueò
+Datenbankdateien enthalten.
+
+Sicherungsdateien (.BAK)
+~~~~~~~~~~~~~~~~~~~~~~~~Šlegô  REDABAÓ voî Dateieî an,  diå durcè deî Befehì MODIFÙ  miô
+dem Texteditor bearbeitet werden.
+*EXIT
+
+*FUNKTIONEN
+Funktioneî  sinä  Algorithmen,  diå iî deò Regeì daó ií  Aufruæ
+anzugebendå   Argumenô  verarbeiteî  unä  eineî   Funktionswerô
+liefern.  Funktioneî  koenneî  Bestandteilå  voî  <ausdruecken>
+sein.  Nacè  deí  Ergebnió  unterscheideô  REDABAÓ  numerische,
+alphanumerische und logische Funktionen.
+
+numerische Funktionen  (ergeben einen numerischen Wert)
+~~~~~~~~~~~~~~~~~~~~~
+#  - liefert die Nummer des aktuellen Datenbanksatzes
+
+@ (<zeichenreihen-ausdruck1>,<zeichenreihen-ausdruck2>)
+   - gibt diå Beginnpositioî innerhalâ deò Zeichenreihe² aî, ab
+     der eine Uebereinstimmung mit der Zeichenreihe1 besteht
+ 
+INÔ (<numerischeò ausdruck>)  - nennô deî  ganzzahligeî  Teiì
+     des <numerischen ausdrucks>
+
+LEÎ (<zeichenreihen-ausdruck>)   - lieferô  diå  Laengå  voî 
+     Datenfeldern, Variablen oder anderen Zeichenreihen
+ 
+ORÄ (<zeichenreihen-ausdruck>)  - gibô diå Wertigkeiô deó  1. 
+     Zeichenó deó <zeichenreihen-ausdrucks> ií  ASCII-Alphabeô 
+     an
+
+PEEK (<adresse>)  - liefert den Wert, der unter der angegebenen
+     <adresse> im Arbeitsspeicher steht
+  
+TESÔ (<ausdruck>)   - testeô  deî <ausdruck> unä  bringô  aló
+     Ergebnió   irgendeinå   Zahì  ungleicè  "0",   wenî   deò
+     <ausdruck> korrekô ist
+     Ergebnió ½ ° bedeutetº <ausdruck> isô syntaktiscè falsch.
+  
+VAÌ (<zeichenreihen-ausdruck>)   - wandelô Zifferî auó  eineí
+     <zeichenreihen-ausdruck> in einen numerischen Wert um
+
+alphanumerischå  Funktioneî  (lieferî  einå  Zeichenreihå  aló
+~~~~~~~~~~~~~~~~~~~~~~~~~~~  Ergebnis)
+
+!(<zeichenreihen-ausdruck>)   - wandelô allå ií <zeichenreihen-
+     ausdruck> vorkommendeî Kleinbuchstabeî iî  Grossbuchstabeî
+     um
+
+$(<zeichenreihen-ausdruck>,<start>,<laenge>)    - entnimmô  auó
+     deí  <zeichenreihen-ausdruck>  beginnenä beé deò  Positioî
+     <start> einå <laenge> entsprechendå Anzahì voî Zeichen 
+
+CHÒ(<zahl>)  - wandelô einå Zahì iî daó entsprechendå  Zeicheî
+     des ASCII-Alphabets um
+
+DATE()  - liefert das aktuelle Datum 
+
+STR(<numerischer-ausdruck>,<laenge>,[<dezimalstellen>])  
+     wandelô eineî <numerischeî ausdruck> odeò eineî Teiì davoîŠ     in eine Zeichenreihe um.
+
+TRIM(<zeichenreihen-ausdruck>)   - entfernô Leerstelleî aí Endå
+     des <zeichenreihen-ausdrucks>
+
+TYPE(<ausdruck>)   - lieferô  deî Datentyğ (C,  Î odeò  L)  deó
+     <ausdrucks>
+
+ 
+logischå  Funktionen  (lieferî  deî  Wahrheitswerô  "ja"   oder
+~~~~~~~~~~~~~~~~~~~~   "nein")
+ *   - zeigô   an,    oâ   deò   aktuellå   Datensatú    daó
+     Loeschkennzeichen enthaelt
+
+EOÆ  - zeigô an,  oâ deò aktuellå Datensatú deò letztå iî  deò
+     Datei war
+
+FILE(<dateiname>)  - prueft,  oâ deò angegebenå <dateiname> auæ
+     der Diskette im aktuellen Laufwerk vorhanden ist
+*EXIT
+
+*BEGRIFFE
+Iî  deò  Syntaxbeschreibunç deò REDABAS-Befehlå unä  Funktioneî
+werdeî  vielfacè  iî spitzå Klammerî  eingeschlossenå  Begriffå
+verwendet.  Dieså sogenannteî metasprachlicheî Ausdrueckå habeî
+erlaeuterndeî Charakteò unä sinä beé deò praktischeî  Anwendunç
+durcè  konkretå  Eintragungeî zõ ersetzen.  Diå Begriffå  habeî
+folgende Bedeutung:
+
+<adresse>          - absolute Adresse im Arbeitsspeicher
+                     (Angabe dezimal)
+
+<ausdruck>         - eine -nach den Regelî von REDABAS- sinn-
+                     volle Verknuepfung von Konstanten, Feld-
+                     namen,   temporaereî   Speichervariablen,
+                     Funktioneî unä Operationen
+
+<ausdrucksfolge>   - durcè  Kommaó getrenntå Folgå voî  
+                      <ausdruecken>
+
+<bedingung>        - Ausdruck, der als Auswahlkriterium  fuer
+                     Dateiverwaltunç, Dateizugrifæ  odeò  fueò
+                     Programmfortsetzung dient
+                     Neben der Einleitung einer Bedingung mit
+                     FOR ist im allgemeinen auch die Angabe von
+                     WHILE moeglich. WHILE <bedingung> betrifft
+                     alle Saetze, die nach dem aktuellen Daten-
+                     satz kommen, so lange, bis die <bedingung>
+                     nicht mehr erfuellt ist.
+                     FOR und WHILE sollten nicht gemeinsam be-
+                     nutzt werden, mehrere Bedingungen koennen
+                     aber logisch verknuepft werden.   
+<befehl>           - ein oder mehrere gueltige REDABAS-Befehle
+
+<befehlsdatei>     - Name einer Datei vom Typ .PRG zur 
+                     Speicherung von Befehlsfolgen
+
+<begrenzung>       - beliebigeó Sonderzeicheî (ausseò ";"), iî
+                     daó Feldeò voí Tyğ <zeichenreihe>  einge-
+                     schlosseî werden
+ 
+<bereich>          - Bereicè deò Datei,  fueò deî deò  verwen-
+                     detå Befehì gilt. Zulaessiç sinä folgendåŠ                     Angaben:                     
+                     ALL  - es werden alle Saetze einer Datei,
+                     unabhaengig von der aktuellen Datensatz-
+                     nummer beruecksichtigt
+                    
+                     NEXÔ <zahl>  - betriffô  diå   naechsteî,
+                     durcè  <zahl> spezifizierteî  Datensaetzå
+                     und den aktuellen Satz
+                     
+                     RECORÄ  <zahl> - betriffô nuò deî  Daten-
+                     satú  miô deò durcè <zahl> spezifizierteî
+                     Nummer
+
+<bytefolge>        - Folgå von Dezimalzahleî voî ° bió 255,  
+                     durcè Kommas getrennt
+ 
+<dateiname>        - beliebigeò  Dateinamå   entsprechenä  deò
+                     SCP-Konvention,  deò sicè auó max. ¸ Zei-
+                     cheî fueò deî Namen, eineî Punkô unä max.
+                     ³  Zeicheî  fueò deî  Dateityğ  zusammen-
+                     setzt.  REDABAÓ vergibô fueò verschiedenå
+                     Dateiarteî  automatiscè deî Dateityğ.
+
+<datum>            - Datumangabe in der Form tt.mm.jj
+                     (Tag.Monat.Jahr)
+
+<dezimalstellen>   - Anzahl Ziffern nach dem Dezimalpunkt 
+                     einer Dezimalzahl  
+
+<feldname>         - Name eines beliebigen Datenfeldes (max.
+                     10 Zeichen lang)
+
+<feldnamen>        - mehrere, durch Kommas getrennte Namen von
+                     Datenfeldern
+
+<indexdatei>       - Namå  eineò  Dateé  voí  Tyğ  .IDØ   zuò
+                     Speicherunç   eineó  Zugriffsindeø  (wirä
+                     durch den INDEX-Befehl erzeugt)
+
+<koordinaten>      - Bildschirm- oder Druckposition in der
+                     Form x,y (x=Zeilennummer,y=Spaltennummer)
+
+<laenge>           - Laenge oder Teillaenge eines FeldesŠ                     (ganze Zahl)
+
+<laufwerk>         - Bezeichnung des Diskettenlaufwerkes
+                     (z.B. A:, B:)
+
+<maske>            - Zeichenfolge, die als Schablone fuer die
+                     Dateneingabe/-ausgabe dient
+
+<maskendatei>      - Name einer Datei vom Typ .MSK, die Masken
+                     zur Dateneingabe/-ausgabe enthaelt
+
+<muster>           - <dateiname>  odeò Namå eineò  temporaereî
+                     <speichervariablen> miô Ersetzungszeichen
+                     ("?" fueò einzelnå Zeichen, "*" fueò  deî
+                     Resô deó Namens)
+ 
+<numerischeò  ausdruck> - Ausdruck,  desseî Auswertunç  eineî
+                          Zahlenwert ergibt
+
+<parameter>        - Beiwoerter zur naeheren Spezifizierung 
+                     von Befehlen
+
+<reportdatei>      - Name einer Datei vom Typ .DEF zur  
+                     Speicherung einer Listenstruktur, die
+                     durch den REPORT-Befehl erzeugt wird
+
+<schluessel>       - Feldnamå  odeò <ausdruck>,  deò aló  Ord-
+                     nungskriterium einer Datenbankdatei dient
+
+<SCP-befehlsfolge> - durch Kommas getrennte Folge von SCP-Kom-
+                     mandos bzw. -programmnamen
+
+<speichervariable(n)> - Name von einer oder mehreren temporae-
+                  ren Variablen, die dem Zwischenspeichern von
+                  Werten zur spaeteren Wiederverwendung dient.
+                  Es sinä max. 6´ Speichervariablån erlaubt.
+
+<start>            - Position im Datenfeld (mit 1 beginnend)
+
+<text>             - beliebiger Text
+<variable>         - Namå  eineó beliebigeî  Datenfeldeó  odeò 
+                     einer <speichervariablen>
+
+<zahl>             - ganze, positive Zahl
+
+<zeichen>          - ASCII-Zeichen,  daó iî  Hochkommaó  ein-
+                     geschlosseî wird
+
+<zeichenreihe>     - beliebigå Folgå voî <zeichen>, diå iî '',
+                     "" oder [] eingeschlossen sein kann
+
+<zeichenreihen-ausdruck>  - Ausdruck,  desseî Auswertunç  einåŠ                            <zeichenreihe> ergibt  
+*EXIT
+
+*?
+*??
+º ? [<ausdrucksfolge>]   - Anzeigå   voî   Ausdrueckeî  
+                           (mit vorherigem Zeilenvorschub)
+: ?? <ausdrucksfolge>    - Anzeige von Ausdruecken
+                           (ohne vorherigen Zeilenvorschub)
+*EXIT
+
+*@
+: @ <koordinaten> [SAY <ausdruck> [USING <maske>]]
+                  [GET <variable> [PICTURE <maske>]]
+     - positionsgebundene Druckausgabe bzw. Bildschirm-
+       eingabe/-ausgabe mit Verwendung von Masken
+*EXIT
+
+*ACCEPT
+: ACCEPT ['<text>'] TO <speichervariable> 
+         - fordert in Befehlsdateien vom Nutzer eine Eingabe
+         fuer die <speichervariable> vom Typ Zeichenreihe.
+         <text> kann eine Erlaeuterung enthalten.
+*EXIT
+
+*APPEND
+: APPEND FROM <dateiname> [FOR <bedingung>] [SDF] [DELIMITED]
+         - fuegt Datensaetze von einer anderen Datenbankdatei
+         oder Nutzerdatei an die aktuelle Datenbankdatei an.
+
+: APPEND BLANK
+         - haengt einen leeren Datensatz an die aktuelle Da-
+           tenbankdatei an.
+
+: APPEND  - haengt neue Datensaetze an die aktuelle Datenbank-
+            datei an
+*EXIT
+
+*BROWSE
+: BROWSE [FIELD <feldnamen>]
+         - zeigt im Seitenmodus einen Ausschnitt aus der Da-
+         tenbank und ermoeglicht feldweises Aendern mehrerer
+         Datensaetze.
+*EXIT
+
+*CALL
+: CALL [<speichervariable>]
+       - ruft ein in Maschinensprache geschriebenes Unterpro-
+       gramm auf
+*EXIT
+  
+*CANCEL
+: CANCEL   - wird in Befehlsdateien zum bedingten Programmab-
+             bruch und Rueckkehr zu REDABAS verwendet.
+*EXIT
+*CHANGE
+: CHANGE [<bereich>] FIELD <feldnamen> [FOR <bedingung>]  
+         - erlaubt zeichenweises Ersetzen bei feldweiser Be-
+         arbeitung  von Datensaetzen. ESCAPE-Taste beendet den
+         CHANGE-Modus.Š*EXIT
+*CLEAR
+: CLEAR   -schliesst alle eroeffneten Dateien ab und loescht
+          alle temporaeren Speichervariablen
+
+: CLEAR GETS  - entaktiviert alle GET-Klauseln
+*EXIT
+
+*COPY
+: COPY TO <dateiname> [<bereich>][FIELD <feldnamen>]
+                      [FOR <bedingung>]      
+     - kopiert eine Datenbankdatei vollstaendig oder teilweise
+       in eine andere Datenbankdatei
+           
+: COPY TO <dateiname> ... SDF [DELIMITED [WITH <begrenzung>]]
+     - kopiert nur die Datensaetze der aktuellen Datenbankdatei
+       vollstaendig oder teilweise in eine Textdatei.
+
+: COPY TO <dateiname> STRUCTURE [EXTENDED]
+     - kopiert nur die Struktur der aktuellen Datenbankdatei
+       und bildet daraus Datensaetze fuer eine andere Daten-
+       bankdatei.
+*EXIT
+
+*COUNT
+: COUNT [<bereich>] [FOR <bedingung>] [TO <speichervariable>]
+      - zaehlt die Datensaetze eines vorgebbaren <bereichs>
+        der aktuellen Datenbankdatei, die einer angegebenen
+        <bedingung> entsprechen und bewahrt das Ergebnis wahl-
+        weise in einer <speichervariablen> auf.
+*EXIT
+*CREATE
+: CREATE [<dateiname>] 
+       - erzeugt eine neue Datenbankdatei
+
+: CREATE <dateiname> FROM <dateiname1> 
+       - erzeugô einå neuå Datenbankdateé miô deò Struktuò 
+         eineò anderen Datenbankdatei
+*EXIT
+*DELETE
+: DELETE [<bereich>] [FOR <bedingung>]
+       - markiert Datensaetze eines Dateibereiches bei 
+         erfuellter Bedingung mit einem Loeschkennzeichen.
+
+: DELETE RECORD <zahl>
+       - markiert den genannten Satz mit einem Loeschkenn-
+         zeichen
+
+: DELETE FILE <dateiname> 
+       - loescht die angegebene Datei physisch auf der Diskette
+*EXIT
+*DISPLAY
+: DISPLAY [<bereich>][FOR <bedingung>][<ausdrucksfolge>][OFF]
+        - zeigt die in der <ausdrucksfolge> genannten Felder 
+          oder Ausdruecke fuer alle Datensaetze des genannten
+          Dateibereiches an, entsprechend der vorgegebenen Be-
+          dingung mit oder ohne Satznummer.
+
+: DISPLAY STRUCTURE
+        - zeigt die Struktur der aktuellen Datenbankdatei an
+
+: DISPLAY FILES [ON <laufwerk>][LIKE <muster>]
+        - zeigt die Dateinamen an, die Datenbankdateien sind 
+          (Standard) oder die dem vorgegebenen <muster> ent-
+          sprechen und sich auf dem aktuellen oder dem vorgege-
+          benen Laufwerk befinden.
+   
+: DISPLAY STATUS
+        - weist die aktiven Datenbankdateien und Indexdateien
+          aus und zeigt die aktuellen Werte der SET-Parameter
+          an.
+
+: DISPLAY MEMORY
+        - zeigt Name, Typ und Inhalt aller temporaeren 
+          Speichervariablen und deren Gesamtlaenge an
+*EXIT
+*DO
+*ENDDO
+*LOOP
+: DO <befehlsdatei>
+   - ruft eine Programmdatei zur Abarbeitung auf
+
+  DO WHILE <bedingung>
+     .    - fuehrt die darauffolgenden Befehle in einer Pro-
+     .      grammdatei sooft aus, solange die <bedingung>
+     .      erfuellt ist.  
+     .
+  ENDDO 
+      - beendet die Befehlsfolge einer DO WHILE-Schleife
+ 
+  LOOP
+     - bewirkt innerhalb einer DO WHILE-Schleife den 
+       Ruecksprung zum Schleifenanfang (z.B. im Zusammenhang 
+       mit einer IF-Anweisung)
+     
+*CASE
+*ENDCASE
+: DO CASE 
+        - leitet die fallgerechte Auswahl von mehreren Be-
+          fehlsfolgen ein
+  CASE <bedingung>
+    .     - fuehrt bei erfuellter Bedingung zur Ausfuehrung der
+    .       nachfolgenden Befehle bis zum naechsten CASE,  
+    .       OTHERWISE oder ENDCASE
+    .
+  [OTHERWISE] 
+    .     - fuehrt zur Ausfuehrung der nachfolgenden Befehle 
+    .       bis zum ENDCASE, wenn keine der vorhergenannten 
+    .       CASE-Bedingungen erfuellt ist.
+    .
+  ENDCASE
+        - beendet eine DO CASE-Befehlsfolge
+*EXIT
+*EDIT
+: EDIT [<zahl>]
+     - erlaubt das feldweise Aendern des angegebenen Satzes.
+       Es kann die Standardmaske oder eine Maskendatei des 
+       Nutzers dazu verwendet werden.
+*EXIT
+*EJECT
+: EJECT
+      - erzeugt einen Seitenvorschub auf dem Drucker, wenn
+        SET PRINT ON oder SET FORMAT TO PRINT gesetzt sind.
+        Zeilen- und Spaltenzaehler werden auf Null gesetzt.
+*EXIT
+*ERASE
+: ERASE 
+      - loescht den Bildschirm
+*EXIT
+*FIND
+: FIND <zeichenreihe>
+     - sucht einen Datensatz in der indizierten Datenbank, 
+       dessen Schluessel der <zeichenreihe> entspricht.
+*EXIT
+*GO
+*GOTO
+: GO bzw. GOTO [BOTTOM] [TOP] [RECORD <zahl>]
+               [<speichervariable>][<zahl>]
+             - positioniert auf einen bestimmten Datensatz in
+               der Datenbankdatei. Dieser Satz kann der erste 
+               (TOP), der letzte (BOTTOM) oder ein bestimmter
+               Datensatz (<zahl> oder <speichervariable>)
+               sein.
+*EXIT
+*HELP
+        HELP-Textdatei (RDBASMSG.TXT, Version 1.0)
+             (Robotron-Projekt-Dresden)
+
+Online - Unterstuetzung fuer die Benutzung des relationalen
+Datenbankbetriebssystems REDABAS
+
+Die HELP-Einrichtung vermittelt Ihnen am Bildschirm Informa-
+tionen zum Datenbankbetriebssytem REDABAS. Zusammen mit der 
+"Programmtechnischen Beschreibung" sind Sie nach kurzer Zeit
+in der Lage, REDABAS wirkungsvoll zur Loesung Ihrer Datenbank-
+aufgaben einzusetzen.
+
+Benutzung der HELP-Einrichtung:
+Der HELP-Befehl liefert verschiedene spezielle Informationen,
+die durch Eintippen von 
+               HELP <parameter>
+angefordert werden koennen.
+Fuer <parameter> kann einer der folgenden Begriffe stehen:
+
+REDABAS       -allgemeine Hinweise           
+INSTALL       -Hinweise zur Installierung
+LEISTUNG      -Uebersicht der Leistungsparameter
+DATEIEN       -verwendete Dateiarten
+BEFEHLE       -komplette Befehlsuebersicht
+<befehl>      -Syntax eines speziellen REDABAS-Befehls
+FUNKTIONEN    -Uebersicht der Funktionen
+BEGRIFFE      -verwendete Begriffe in der Syntaxbeschreibung
+               der Befehle
+TASTATUR      -Erklaerung der Steuertasten
+NEU           -Programmaenderungen
+
+REDABAS sucht die zum <parameter> gehoerenden Informationen 
+und zeigt sie am Bildschirm an. Ist der Text laenger als eine 
+Bildschirmseite, so koennen Sie durch Betaetigung einer 
+beliebigen Taste die naechste Textseite anfordern oder mit der
+<ESC>-Taste die Anzeige abbrechen.
+Bei Eingabe eines falschen Schluesselwortes antwortet REDABAS
+mit:
+FALSCHER PARAMETER!      
+*EXIT
+*IF
+*ELSE
+*ENDIF
+  IF <bedingung>  - fuehrt die nachfolgenden Befehle bis zur 
+     .              ELSE oder ENDIF-Anweisung aus, wenn die 
+     .              <bedingung> erfuellt ist.
+     . 
+  [ELSE]          - fuehrt die nachfolgenden Befehle bis zur 
+     .              ENDIF-Anweisung aus, wenn die IF-
+     .              <bedingung> nicht erfuellt ist.
+     .
+  ENDIF           - beendet die IF-Befehlsfolge
+*EXIT
+*INDEX
+: INDEX ON <ausdruck> TO <indexdatei> 
+      - erzeugt zur aktuellen Datenbankdatei eine Indexdatei,
+        wobei durch <ausdruck> der Schluessel gebildet wird
+
+*EXIT
+
+*INPUT
+: INPUT ['<text>'] TO <speichervariable>
+      - fordert den Nutzer durch <text> zu einer Bildschirm-
+        eingabe auf und legt die eingegebene Information 
+        typengerecht in der <speichervariablen> ab.
+*EXIT
+*INSERT
+: INSERT [BEFORE] [BLANK]
+       - ermoeglicht dem Nutzer das Einfuegen eines Daten-
+         satzes oder eines leeren Satzes (BLANK) nach oder vor
+         (BEFORE) den laufenden Satz der aktuellen Datenbank-
+         datei.
+*EXIT
+*JOIN
+: JOIN TO <dateiname> FOR <bedingung> [FIELD <feldnamen>]
+     - erzeugt aus zwei Datenbankdateien (primaere und sekun-
+       daere Datei) eine neue Datei, wenn die Datensaetze der
+       <bedingung> genuegen, wobei alle oder die nach FIELD 
+       genannten Felder in die neue Datei uebernommen werden.
+*EXIT
+*LIST
+: LIST [<bereich>][FOR <bedingung>][<ausdrucksfolge>][OFF]
+     - listet die in der <ausdrucksfolge> genannten Felder 
+       oder Ausdruecke fuer alle Datensaetze des genannten 
+       Dateibereiches auf entsprechend der vorgegebenen Be-
+       dingung mit oder ohne Satznummer.
+       
+: LIST STRUCTURE
+     - listet die Struktur der aktuellen Datenbankdatei auf.
+
+: LIST  FILES [ON <laufwerk>][LIKE <muster>]
+     - listet die Dateinamen auf, die Datenbankdateien sind
+       (Standard) oder die dem vorgegebenen <muster> entspre-
+       chen und sich auf dem aktuellen oder dem vorgegebenen
+       Laufwerk befinden.
+                    
+: LIST STATUS 
+     - weist die aktiven Datenbankdateien und Indexdateien aus
+       und zeigt die aktuellen Werte der SET-Parameter an.
+
+: LIST MEMORY
+     - listet Namen, Typ und Inhalt aller temporaeren Speicher-
+       variablen und deren Gesamtlaenge auf.
+*EXIT
+*LOCATE
+*CONTINUE
+: LOCATE [<bereich>][FOR <bedingung>]
+       - lokalisiert den 1. Datensatz im vorgegebenem
+         <bereich> der aktuellen Datenbankdatei, fuer den die 
+         angegebene Bedingung "wahr" ist.
+
+: CONTINUE
+         - setzt die Suche nach dem naechsten Datensatz 
+           entsprechend der LOCATE-<bedingung> fort.
+*EXIT
+*MODIFY
+: MODIFY STRUCTURE
+       - erlaubt, die Struktur der aktuellen Datenbankdatei 
+         zu veraendern, wobei die Daten zerstoert werden. Mit 
+         vorangegangenem COPY und nachfolgendem APPEND koennen
+         die Daten erhalten werden.
+
+: MODIFY COMMAND [<dateiname>]
+       - ruft den REDABAS-Texteditor, der das Erstellen und 
+         Aendern von Befehlsdateien (.PRG), Reportdateien
+         (.DEF), Maskendateien (.MSK) oder Textdateien (.TXT)
+         unterstuetzt.
+*EXIT
+*NOTE
+: NOTE <text> oder * <text>
+     - erlaubt das Einfuegen von Kommentaren in Befehlsdateien
+       Bei Programmausfuehrung wird der <text> uebergangen.
+*EXIT
+*PACK
+: PACK
+     - loescht markierte Datensaetze in der aktuellen Daten-
+       bankdatei, eroeffnete Indexdateien werden automatisch
+       aktualisiert.
+*EXIT
+*POKE
+: POKE <adresse>,<bytefolge>
+       - ersetzt beginnend bei <adresse> die Zeichen im 
+       Arbeitsspeicher durch die in der <bytefolge> genannten
+       Zeichen.
+*EXIT
+*QUIT
+: QUIT [TO <SCP-Befehlsfolge>]
+     - schliesst eroeffnete Dateien ab, beendet die REDABAS-
+       Sitzung und ruft wahlweise Folgeprogramme auf.
+*EXIT
+*READ
+: READ [NOUPDATE]
+    - ermoeglicht das Eingeben bzw. Editieren von Variablen,
+      die vorher durch GET-Klauseln in @-Befehlen aktiviert
+      wurden, wahlweise ohne Aktualisieren (NOUPDATE) von
+      Indexdateien.
+*EXIT
+*RECALL
+: RECALL [<bereich>] [FOR <bedingung>]
+       - aktiviert markierte Datensaetze der aktuellen Daten-
+         bankdatei. Angabe eines Dateibereichs und einer
+         Bedingung sind moeglich.
+*EXIT
+*REINDEX
+: REINDEX 
+        - aktualisiert die in einem vorausgegangenem SET 
+          INDEX-Befehl oder USE-Befehl aktivierte(n) Index-
+          datei(en).
+*EXIT
+*RELEASE
+: RELEASE ALL
+        - loescht alle temporaeren Speichervariablen
+
+: RELEASE <speichervariablen>
+        - loescht die angegebenen temporaeren Speicher-
+          variablen  
+
+: RELEASE ALL LIKE <muster>
+        - loescht alle temporaeren Speichervariablen, die dem
+          <muster> entsprechen
+
+: RELEASE ALL EXEPT <muster>
+        - loescht alle temporaeren Speichervariablen, die
+          nicht dem angegebenen <muster> entsprechen.
+
+Im <muster> kann ein "?" fuer jedes beliebige Zeichen und "*"
+fuer den Rest des Namens stehen.
+*EXIT
+*REMARK
+: REMARK <text>
+       - erlaubt innerhalb von Befehlsdateien die Anzeige
+         von beliebigem Text.
+*EXIT
+*RENAME
+: RENAME <dateiname1> TO <dateiname2>
+       - benennt eine beliebige Datei im Dateiverzeichnis 
+         einer Diskette um. (Standarddateityp ist .DBD)   
+*EXIT
+*REPLACE
+: REPLACE [<bereich>] <feldname1> WITH <ausdruck> 
+          [,<feldname2> WITH <ausdruck>,...] [FOR <bedingung>]
+          [NOUPDATE]
+        - ersetzt ein oder mehrere Datenfelder in den Daten-
+          saetzen eines waehlbaren Dateibereichs durch einen 
+          neuen Inhalt. Das Ersetzen kann von einer <bedingung>
+          abhaengig gemacht werden.
+          Bei NOUPDATE erfolgt keine Aktualisierung von Index-
+          dateien.
+*EXIT
+*REPORT
+: REPORT [FORM <reportdatei>] [<bereich>] [FOR <bedingung>]
+         [TO PRINT] [PLAIN]
+       - erzeugt im Dialog die <reportdatei>, die den Aufbau 
+         einer Auswertungsliste enthaelt. Fuer die an-
+         schliessende Ausfuehrung koennen ein Dateibereich,
+         eine <bedingung> und das Ausgabemedium vorgegeben
+         werden.
+*EXIT
+*RESET
+: RESET
+      - muss gegeben werden, nachdem der Nutzer einen Disket-
+        tenwechsel vorgenommen hat.
+*EXIT
+*RESTORE
+: RESTORE FROM <dateiname>[ADDITIVE]
+        - laedt eine Variablendatei in den Arbeitsspeicher,
+          wobei die bereits vorhandenen temporaeren Speicher-
+          variablen ueberschrieben werden oder bei Angabe von
+          ADDITIVE erhalten bleiben.
+*EXIT
+*RETURN
+: RETURN
+       - zeigt das logische Ende einer Befehlsdatei an und 
+         beendet deren Ausfuehrung.
+*EXIT
+*SAVE
+: SAVE TO <dateiname> [ALL LIKE <muster>]
+     - sichert die temporaeren Speichervariablen in einer 
+       Datei. Mit <muster> kann eine Auswahl getroffen 
+       werden. LIKE bezieht nur alle dem <muster> entsprechen-
+       den Speichervariablen ein. Im <muster> kann "?" fuer 
+       jedes beliebige Zeichen und "*" fuer den Rest des Namens
+       stehen.
+*EXIT
+*SELECT
+: SELECT [PRIMARY] [SECONDARY]
+       - schaltet zwischen den zwei moeglichen Dateibereichen
+         (primaer und sekundaer) um.
+*EXIT
+*SET
+: SET <parameter> [ON] [OFF]  - schaltet Programmparameter ein
+                                (ON) oder aus (OFF) 
+: SET <parameter> TO <option> - stellô Programmparameter auæ 
+                                eineî bestimmten Wert.
+
+Der Standardwert ist jeweils zuerst genannt.
+
+: SET ALTERNATE OFF/ON - schreibt alle Bildschirmausgaben in
+                         eine Diskettendatei(ausser im Seiten-
+                         modus). SET ALTERNATE TO <dateiname>
+                         muss vorausgehen.
+
+: SET BELL ON/OFF - Glocke am Rechner ertoent (wenn vorhanden)
+                    bei falscher Eingabe.
+
+: SET CARRY OFF/ON - Bei APPEND werden die Daten aus dem
+                     vorherigen Satz in den neuen Satz ueber-
+                     nommen.
+
+: SET COLON ON/OFF - Im Seitenmodus werden Variable durch 
+                     Doppelpunkte eingegrenzt.
+
+: SET CONFIRM OFF/ON - Automatischer Sprung zum naechsten 
+                       Feld im Seitenmodus, wenn ein Feld ge-
+                       fuellt ist, ansonsten Abschluss mit 
+                       <RETURN> erforderlich.
+
+: SET CONSOLE ON/OFF - Alle Eingaben erscheinen auf dem Bild-
+                       schirm.
+
+: SET DEBUG OFF/ON - Programmprotokollierung auf Drucker (ON)
+                     oder Bildschirm (OFF) (vgl. SET ECHO, 
+                     SET STEP)
+
+: SET DELETED OFF/ON - ON verhindert die Verarbeitung zum 
+                       Loeschen markierter Saetze durch be-
+                       liebige Befehle (ausser PACK, RECALL).
+
+: SET ECHO OFF/ON - ermoeglicht die Programmprotokollierung
+
+: SET EJECT ON/OFF - Seitenvorschub vor Erzeugung eines 
+                     Reports.
+
+: SET ESCAPE ON/OFF - Abbruch einer Befehlsdatei durch die 
+                      ESCAPE-Taste.
+
+: SET EXACT OFF/ON - OFF erlaubt die Suche und den Vergleich 
+                     mit verkuerzten Suchbegriffen (bei FIND
+                     und in <bedingung>).
+
+: SET INTENSITY ON/OFF - erlaubt die inverse oder intensive 
+                         Zeichendarstellung im Seitenmodus
+                         (wenn vom Bildschirm unterstuetzt)
+
+: SET LINKAGE OFF/ON - erlaubt Positionieren des Satzzeigers
+                       in beiden Dateibereichen gleichzeitig
+                       (primaer und sekundaer).
+
+: SET PRINT OFF/ON - sendet die Ausgaben zum Drucker.
+
+: SET RAW OFF/ON - OFF fuegt Leerstellen zwischen den Feldern
+                   bei DISPLAY- und LIST-Befehlen ein.
+
+: SET SCREEN ON/OFF - stellt den Seitenmodus ein fuer die 
+                      Befehle APPEND, EDIT, INSERT, READ und
+                      CREATE.
+
+: SET STEP OFF/ON - stoppt die Ausfuehrung nach jedem 
+                    einzelnem Kommando einer Befehlsdatei
+                    (vgl. SET DEBUG).
+
+: SET TALK ON/OFF - zeigt die Ergebnisse der Befehlsaus-
+                    fuehrung auf dem Bildschirm.
+
+: SET ALTERNATE TO <dateiname> - benennt eine Diskettendatei
+                                 zur Speicherung der Bild-
+                                 schirmanzeigen.
+
+: SET CALL TO <adresse> - setzt eine Adresse im Arbeits-
+                          speicher, zu der bei einem folgenden 
+                          CALL-Befehl verzweigt werden soll.
+            
+: SET DATE TO <datum> - setzt das REDABAS-Datumfeld
+
+: SET DEFAULT TO <laufwerk> - weist ein Laufwerk fuer die 
+                              Datenbank zu.
+
+: SET FORMAT TO SCREEN - Ausgabe von @...SAY-Kommandos auf 
+                         Bildschirm.
+
+: SET FORMAT TO PRINT - Ausgabe von @...SAY-Kommandos auf 
+                        Drucker
+
+: SET FORMAT TO <maskendatei> - @-Befehle zur Bildschirmforma-
+                                tierung fuer die Befehle
+                                APPEND, EDIT, INSERT, CREATE
+                                und READ werden aus der 
+                                <maskendatei> entnommen.
+        
+: SET HEADING TO <text> - bewahrt den <text> auf und druckt 
+                          ihn als Kopfzeile in Reports.
+
+: SET INDEX TO <indexdatei1>[,<indexdatei2>,...] - benennt die
+                Indexdateien fuer die aktuelle Datenbankdatei.
+
+: SET MARGIN TO <zahl> - legt die Spaltennummer fuer den 
+                         linken Rand auf dem Drucker fest.
+*EXIT
+*SKIP
+: SKIP [[+][-] <numerischer ausdruck>] 
+     - bewegt den Satzzaehler um den angegebenen Wert
+       vorwaerts oder rueckwaerts. Standard ist +1.
+*EXIT
+*SORT
+: SORT ON <feldname> TO <dateiname> [ASCENDING/DESCENDING] 
+     - erzeugt eine Kopie der aktuellen Datenbank, aufsteigend
+       (ASCENDING) oder absteigend (DESCENDING) sortiert nach
+       <feldname>.
+*EXIT
+*STORE
+: STORE <ausdruck> TO <speichervariablen>
+      - speichert den Wert des <ausdrucks> in eine oder 
+        mehrere temporaere Speichervariablen.
+*EXIT
+*SUM
+: SUM <ausdruck1> [,<ausdruck2>,...]
+      [TO <speichervariable1>[,<speichervariable2>,...]]
+      [<bereich>] [FOR <bedingung>]
+    - berechnet die Summen von Feldern bzw. Ausdruecken fuer
+      einen <bereich> der aktuellen Datenbankdatei, wenn die 
+      <bedingung> erfuellt ist. Die Ergebnisse werden ange-
+      zeigt und auf Wunsch temporaer gespeichert.
+*EXIT
+*TEXT
+: TEXT         - gibt den in Befehlsdateien zwischen TEXT und
+  <text>         ENDTEXT befindlichen, ein- oder mehrzeiligen  
+  ENDTEXT        <text> auf Bildschirm aus.
+*EXIT
+*TOTAL
+: TOTAL ON <schluessel> TO <dateiname> [FIELD <feldnamen>]
+           [FOR <bedingung>]
+      - Fasst numerische Felder von Datensaetzen mit gleichem
+        Schluessel zusammen und speichert die verdichteten 
+        Saetze in einer neuen Datei.
+*EXIT
+*UPDATE
+: UPDATE FROM <dateiname> ON <schluessel> [ADD <feldnamen>]
+             [REPLACE <feldnamen> [WITH <feldnamen>]] [RANDOM]
+       - ermoeglicht das Aendern von Feldinhalten der 
+         aktuellen Datenbankdatei durch eine andere Datei. Die
+         Datenfelder koennen ersetzt oder zusammengefuegt 
+         werden. Beide Dateien muessen entweder nach dem 
+         Schluessel sortiert oder indiziert vorliegen oder die
+         zweite Datei ist unsortiert (RANDOM).
+*EXIT
+*USE
+: USE    - schliesst alle eroeffneten Dateien ab
+: USE <dateiname> [INDEX <indexdatei1>,<indexdatei2>,...]
+         - eroeffnet die genannten Dateien und schliesst
+           zuvor eroeffnete ab.
+*EXIT
+*WAIT
+: WAIT [TO <speichervariable>]
+     - unterbricht die Ausfuehrung von Befehlsdateien und
+       wartet auf eine Tastenbetaetigung durch den Nutzer. Das
+       eingegebene Zeichen kann in einer temporaeren
+       <speichervariablen> aufbewahrt werden.
+*EXIT
+*TASTATUR
+ Steuerfunktionen der Tastatur 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Ueber Tastenkombinationen sind die Steuerung des Cursors sowie
+die Einleitung oder der Abschluss von verschiedenen Aktionen
+moeglich.
+
+- Tastenkombinationen zur Cursorsteuerung im Seitenmodus 
+  (allgemein)
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+CONTROL-G   Loescheî deó durcè deî Cursoò positionierteî  Zei-
+            chens
+
+DELETE      Loeschen des Zeichens links vom Cursor 
+
+CONTROL-X   Bewegeî deó Cursoró zuí naechsteî Datenfeld
+CONTROL-F   Ist daó letztå Felä eineó Satzeó  erreicht,  wirä 
+            zum naechsten Datensatz uebergegangen.
+
+CONTROL-E   Bewegeî  deó Cursoró zuruecë  zuí  vorhergehendeî
+CONTROL-A   Feld, beim ersten Feld zum vorhergehenden Satz.
+
+CONTROL-D   Bewegen des Cursors um ein Zeichen vorwaerts
+
+CONTROL-S   Bewegen des Cursors um ein Zeichen zurueck
+
+CONTROL-Y   Fuelleî deó rechteî Teiló deó aktuelleî Daten-
+            feldes ab der Cursorposition mit Leerzeichen
+
+CONTROL-V   Umschalten  zwischeî   ueberschreibendeò   unä 
+            einfuegender Eingabe
+
+CONTROL-Q   Abbrecheî  deó  Seitenmoduó  unä  Ueberleiteî  zuí 
+            REDABAS-Befehlsmodus
+            Diå durchgefuehrteî Aenderungeî bleibeî dabeé
+            unwirksam,  d.h.  siå  werdeî nichô gespeichert.
+
+
+- Tastenkombinationen fuer die Befehle APPEND, CREATE, INSERT
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+CONTROL-C   Speicherî  deó  aktuelleî  Datensatzeó  auæ  diå 
+CONTROL-R   Diskette und Vorruecken zum naechsten Satz
+
+RETURN      nuò  wenî  deò  Cursoò  aí  Anfanç   deó   ersteî 
+            Datenfeldeó  stehô  unä aí  aktuelleî  Satú  keinå 
+            Aenderungeî vorgenommeî wurdenº  Beendeî deó  Sei-
+            tenmoduó  unä Ueberleiteî iî deî  REDABAS-Befehls-
+            moduó Š
+CONTROL-U   Setzeî bzw. Entferneî deò Loeschmarkierunç "*" deó
+            aktuelleî Datensatzes
+
+
+- Tastenkombinationen fuer den Befehl BROWSE
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+CONTROL-W   Speicherî  deó  aktuelleî  Datensatzeó  auæ  diå
+            Diskette und Beenden des Seitenmodus
+
+CONTROL-C   Speicherî  deó  aktuelleî  Datensatzeó  auæ  diå
+            Diskette und Anzeige des naechsten Datensatzes
+
+CONTROL-R   Speichern des aktuellen Datensatzes auf die 
+            Diskettå  unä  Anzeigå deó  vorhergehendeî  Daten-
+            satzeó 
+
+CONTROL-U   Ein-/Ausschalteî deò Loeschmarkierunç fueò eineî 
+            Datensatz
+
+CONTROL-B   Verschiebeî  deó  "Fensters"  um  eiî  Datenfelä
+            vorwaerts 
+
+CONTROL-Z   Verschiebeî  deó  "Fensters"  uí  eiî   Datenfelä 
+            zurueck 
+
+
+- Tastenkombinationen fuer den Befehl EDIT
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+CONTROL-W   Schreibeî deó aktuelleî Datensatzeó auæ diå  Dis-
+            kettå und Beenden der Funktion EDIT 
+
+CONTROL-C   Schreibeî  deó (geaenderten) Datensatzeó  auæ  die 
+            Diskettå  unä  Aufrufeî deó naechsteî  Satzeó  zuò 
+            Bearbeitung 
+
+CONTROL-R   Schreibeî  deó (geaenderten) Satzeó auæ  diå  Dis-
+            kettå  unä Aufrufeî deó vorhergehendeî Satzeó  zuò 
+            Bearbeitung
+
+CONTROL-U   Ein-/Ausschalteî deò Loeschmarkierunç fueò eineî 
+            Datensatz 
+            Beií  Einschalteî  erscheinô  aí obereî  Ranä  deò 
+            Satzmaskå  daó  Worô  "GELOESCHT".   Drueckô   maî 
+            <CONTROL-U>    nochmals,    kanî   diå   Loeschunç 
+            rueckgaengig gemacht werden.
+
+
+- Tastenkombinationen fuer den Befehl MODIFY
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+CONTROL-N   Einfuegeî  eineó neueî Datenfeldeó bzw. einer Zeile
+            aî deò  Cursorposition» allå folgendeî  Datenfeldeò
+            werdeî  uí einå Positioî nacè hinteî verschoben
+
+CONTROL-T   Loescheî deó Datenfeldeó bzw. der Zeile aî deò
+            Cursorposition» allå folgendeî Datenfeldeò rueckeî 
+            uí einå Positioî vor
+ŠCONTROL-C   Anzeigen der folgenden Datenfelder bzw. Zeile 
+            (naechste Bildschirmseite)
+
+CONTROL-R   Anzeigen dår vorangegangeneî Datenfeldeò bzw.
+            Zeilen (vorhergehende Bildschirmseite)
+
+CONTROL-W   Speicherî  deó  aktuelleî  Datensatzeó  auæ  der 
+            Diskettå unä Beenden des Seitenmodus
+
+
+- weitere allgemeine Steuerfunktionen
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+CONTROL-S   Stoppen und Fortsetzen einer Bildschirmausgabe
+
+CONTROL-P   zusaetzliche Druckausgabe (hardcopy)
+
+CONTROL-R   Wiederholung des zuletzt eingegebenen 
+            REDABAS-Befehls          
+
+CONTROL-U   Loeschen einer Befehlseingabe
+
+ESCAPE      Abbruch einer Befehlsdatei bei schrittweiser 
+            Abarbeitung
+*EXIT
+*LEISTUNG
+REDABAS - Leistungsparameter
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+max. Anzahl von Dateien                       beliebig
+Anzahl der waehrend der Verar-
+beitung eroeffneten Dateien                   max.    16
+Saetze pro Datei                              max. 65535
+Zeichen pro Satz                              max.  1000
+Felder pro Satz                               max.    32
+Zeichen pro Feld                              max.   254
+Feldformat                                    fest  
+Darstellungstyp                          alphanumerisch,
+                                              numerisch,
+                                                 logisch
+							63
+Groesste Zahl                             ca. +  1 . 10    
+                                              ~        -63
+Kleinste Zahl                             ca. +  1 . 10
+                                              ~
+Numerische Genauigkeit                        10 Ziffern
+Zeichenkettenlaenge                     max. 254 Zeichen
+Zeilenlaenge eines Befehls              max. 254 Zeichen
+Listenkopflaenge                        max. 254 Zeichen
+Felder pro Liste                        max.  24	
+Indexschluessellaenge                   max. 100 Zeichen
+Anzahl Speichervariablen                max.  64
+Anzahl Ausdruecke im SUM-Befehl         max.   5
+Anzahl aktiver GET's                    max.  64
+*EXIT
+*BEFEHLE
+Uebersicht aller REDABAS-Befehle
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+?, ??       - Anzeige von Ausdruecken
+@           - positionierte Dateneingabe/-ausgabe
+ACCEPT      - Eingabe von Zeichenketten in einen temporaeren
+              Speicher
+APPEND      - Anfuegen neuer Datensaetze in die Datenbank
+BROWSE      - Anzeigen mehrerer Datensaetze zur feldweisen
+              Bearbeitung
+CALL        - Aufruf von in Maschinensprache geschriebenen
+              Unterprogrammen
+CANCEL      - Abbruch eines Programmes
+CHANGE      - zeichenweise Aenderung von Datenfeldern
+CLEAR       - Abschliessen von Dateien und Loeschen tempo-
+              raerer Speicher
+CONTINUE    - Fortsetzen des LOCATE-Befehls
+COPY        - Kopieren von Daten aus einer Datei in eine
+              andere Datei
+COUNT       - Zaehlen von Datensaetzen
+CREATE      - Erstellen einer Datenbank und Erklaeren der
+              Dateistruktur
+DELETE      - Loeschen von Datensaetzen oder einer Datei
+DISPLAY     - Anzeige von Dateien, Datensaetzen, Strukturen,
+              temporaeren Speichern oder Programmparametern
+DO          - Ausfuehren von Programmdateien, bedingte Abar-
+              beitung von Befehlsfolgen
+EDIT        - Editieren eines Datensatzes
+EJECT       - Erzeugen von Seitenvorschub auf dem Drucker
+ELSE        - Alternative bei Bedingungen
+ENDCASE     - Beenden eines DO CASE - Befehls
+ENDDO       - Beenden eines DO WHILE - Befehls
+ENDIF       - Beenden eines IF - Befehls
+ENDTEXT     - Beenden eines TEXT - Befehls
+ERASE       - Loeschen des Bildschirms
+FIND        - Suchen eines Datensatzes in einer indizierten
+              Datei
+GO, GOTO    - Setzen des Datensatzzeigers auf eine bestimmte
+              Satznummer
+HELP        - Online - Hilfestellung fuer den Nutzer
+IF          - bedingte Ausfuehrung von Befehlen
+INDEX       - Erzeugen einer Indexdatei
+INPUT       - Eingabe von Ausdruecken in temporaere Speicher
+INSERT      - Einfuegen eines neuen Datensatzes in die Daten-
+              bank
+JOIN        - Verknuepfen von zwei Dateien zu einer dritten
+LIST        - Auflisten von Dateien, Datensaetzen,Strukturen,
+              temporaeren Speichern und Programmparametern
+LOCATE      - Auffinden eines Datensatzes entsprechend einer
+              Bedingung
+LOOP        - Rueckkehr zum Schleifenanfang innerhalb einer 
+              DO WHILE - Schleife
+MODIFY      - Erzeugen und/oder Bearbeiten einer Programm-
+              datei, Aendern der Dateistruktur
+NOTE oder * - Kommentar-Einleitung in einem Programm
+PACK        - Physisches Loeschen von markierten Datensaetzen
+POKE        - Aendern einzelner Bytes im Arbeitsspeicher 
+QUIT        - Beenden einer REDABAS-Sitzung 
+READ        - Aktivieren einer Editiermaske zur Eingabe und 
+              Aenderung von Variablen
+RECALL      - Entfernen der Loeschmarkierung von Datensaetzen
+REINDEX     - Aktualisieren einer bestehenden Indexdatei
+RELEASE     - Eliminieren unerwuenschter temporaerer Speicher-
+              variablen
+REMARK      - Anzeige von Kommentaren in einer Programmdatei
+RENAME      - Umbenennen von Dateien
+REPLACE     - Ersetzen des Inhalts von Datenfeldern durch
+              andere Werte
+REPORT      - Erzeugen eines Berichtes
+RESET       - Anzeigen eines Diskettenwechsels
+RESTORE     - Einlesen einer Variablendatei in den Arbeits-
+              speicher
+RETURN      - Beenden eines Programmes
+SAVE        - Speichern von temporaeren Variablen auf der
+              Diskette 
+SELECT      - Auswaehlen eines von zwei moeglichen Datei-
+              bereichen fuer den unmittelbaren Zugriff
+SET         - Setzen von REDABAS -Steuerparametern
+SKIP        - Veraendern des Datensatzzeigers 
+SORT        - Erzeugen einer nach einem Schluesselfeld
+              sortierten Datei
+STORE       - Erzeugen oder Aendern einer temporaeren 
+              Speichervariablen
+SUM         - Berechnen der Gesamtsummen von Feldern in einer
+              Datenbank
+TEXT        - Ausgabe von Textdaten
+TOTAL       - Komprimieren von Dateien bzw. Feldern
+UPDATE      - Aktualisieren einer Datei durch eine andere 
+              Datei
+USE         - Eroeffnen einer Datei fuer die Bearbeitung
+WAIT        - Unterbrechung der Programmausfuehrung, bis eine 
+              Eingabe vom Benutzer erfolgt ist
+*EXIT
+*NEU
+Es liegen keine Aenderungen zur Programmversion
+REDABAS 1.0 vor!
+*EXIT
+

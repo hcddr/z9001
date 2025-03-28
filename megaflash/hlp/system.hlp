@@ -1,0 +1,18 @@
+<YELLOW>MEGA-FLASH-System (V. Pohlers)
+
+<RED>DIR<WHITE> [suchmuster]    Kommandoliste
+<RED>DIR L<WHITE> [suchmuster]  -"- long
+<RED>DIR C<WHITE> [suchmuster]  -"- comment
+<RED>HELP<WHITE> [kommando]     Hilfe
+<RED>DUMP<WHITE> von bis        HEX/ASCII-Dump
+<RED>FILL<WHITE> von bis byte   Speicher fuellen
+<RED>TRANS<WHITE> von ziel anzahl  -"- kopieren
+<RED>IN<WHITE> port             Portabfrage
+<RED>OUT<WHITE> port byte       Portausgabe
+<RED>RUN<WHITE> adr [bank]      Programmstart
+<RED>MEM<WHITE> adr             Speicher editieren
+          neue Byte(s) eingeben + Enter
+          zurueck mit R, Ende mit ;
+<RED>CLS<WHITE>                 Bildschirm loeschen
+<RED>C<WHITE>                   Cursor on/off
+<RED>EOR<WHITE> [adr]           EOR setzen/anzeigen

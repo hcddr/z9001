@@ -1,0 +1,22 @@
+<YELLOW>Disk-OS (V. Pohlers 2012)
+<WHITE>
+<RED>DOSX  <WHITE>mit 64K-RAM-Modul
+<RED>DOS4<WHITE>  ohne 64k-RAM-Modul
+
+laedt CP/M-kompatible I/O-Routinen
+  anstelle Kassette wird nun in allen
+  Programmen auf Diskette gespeichert
+
+<YELLOW>Kommandos<WHITE>
+
+<RED>DRIVE <GREEN>lw:       <WHITE>Laufwerk waehlen
+  Lw unter CP/M vorher formatieren!
+  <GREEN>A:, B:<WHITE> Diskettenlaufwerke
+  <GREEN>P:<WHITE>     RAF2008 (Port 20h)
+<RED>DDIR<WHITE>            Disketteninhalt
+<RED>DDELETE <GREEN>fn.typ  <WHITE>Datei loeschen
+<RED>DDUMP <GREEN>fn.typ    <WHITE>Records anzeigen
+<RED>DOS             <WHITE>Umschalten auf Disk-OS
+<RED>CAOS            <WHITE>-"- auf Kassetten-OS
+
+

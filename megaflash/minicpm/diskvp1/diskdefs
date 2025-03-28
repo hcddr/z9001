@@ -1,0 +1,23 @@
+diskdef z9001
+  seclen 1024
+  tracks 160
+  sectrk 5
+  blocksize 2048
+  maxdir 192
+  skew 0
+  boottrk 0
+  os 2.2
+end
+
+;64K-Disk Kombi-Modul
+diskdef minicpm
+  seclen 128
+  tracks 64
+  sectrk 8
+  blocksize 1024
+  maxdir 31
+  skew 0
+  boottrk 0
+  os 2.2
+end
+

@@ -1,0 +1,6 @@
+menu
+im Ordner-Bild, Maus: Shift+Links ist nicht langsam
+im Dateien-Dialog: Maus: Shift+Links ist nicht langsam
+	am Rechner (nicht im Emulator!)
+		Shift+hoch-Runter bewegt Maus auch nach links
+

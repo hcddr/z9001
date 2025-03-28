@@ -1,0 +1,15 @@
+<YELLOW>CP/M mit dem SRAM64- und KOMBI-Modul
+<WHITE>
+<RED>BOOT <GREEN>[lw] <WHITE>Booten mit System-Disk
+<RED>INITKC    <WHITE>Floppy-Disk formatieren
+<RED>CPM-48K   <WHITE>CP/M 48K f. Initialisierung
+    C: ROM-Disk mit Systemprogrammen
+    ERADIR      Disk loeschen
+    RAFKOMBI    Treiber f. RAM-Disk
+    GIDEHP50    Treiber f. GIDE-Modul
+    UGET,UPUT,USB   Treiber f. USB-VDIP
+
+<GREEN>System-Disk erstellen:
+<WHITE>C:POWER COPY C:@CPMZ9.COM
+
+

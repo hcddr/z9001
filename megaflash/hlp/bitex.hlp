@@ -1,0 +1,19 @@
+<YELLOW>BITEX Textverabeitung
+
+<RED>RUN<WHITE> Tabulator
+<RED>INS<WHITE> Insert ein/aus
+<RED>STOP, ESC<WHITE> Wechsel Text-/Kommando
+<RED>--I<WHITE>  Seitenende (BS)
+<RED>I--<WHITE>  Seitenanfang (HOME)
+
+<YELLOW>Kommandos:<WHITE>
+A <RED>ASSIGN<WHITE> T, U, F, P, L
+C <RED>CURSOR<WHITE> A, E, S, T
+D <RED>DELETE<WHITE> A, E, S, T
+E <RED>END<WHITE>              Beenden
+L <RED>LIST<WHITE>             Drucken
+M <RED>MARK<WHITE>             Markeneingabe    
+P <RED>PUNCH<WHITE> A+PUNCH C  Ausgabe auf Kassette
+R <RED>READ<WHITE> ENTER, F    Lesen von Kassette
+S <RED>SUBST<WHITE>
+W <RED>WRITE<WHITE> S, T

@@ -1,0 +1,6 @@
+<YELLOW>Speichern auf Kassette (OSSAVE robotron)
+
+<WHITE>Aufruf:   SAVE name[.typ] von,bis[,sadr]
+
+fehlt typ, wird COM genommen
+fehlt sadr, wird aadr genommen

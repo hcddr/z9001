@@ -1,0 +1,22 @@
+<YELLOW>Disk-OS SRAM64- und KOMBI-Modul 
+V. Pohlers 2012/2018
+
+<RED>DOSX<WHITE>
+laedt CP/M-kompatible I/O-Routinen
+  anstelle Kassette wird nun in allen
+  Programmen auf Diskette gespeichert
+
+<YELLOW>Kommandos<WHITE>
+
+<RED>DRIVE <GREEN>lw:       <WHITE>Laufwerk waehlen
+  Lw vorher mit <RED>INITKC<WHITE> formatieren!
+  <GREEN>A:, B:<WHITE> Diskettenlaufwerke
+  <GREEN>M:<WHITE>     Modul-RAM-Floppy
+<RED>DDIR<WHITE>            Disketteninhalt
+<RED>DDELETE <GREEN>fn.typ  <WHITE>Datei loeschen
+<RED>DDUMP <GREEN>fn.typ    <WHITE>Records anzeigen
+<RED>DOS             <WHITE>Umschalten auf Disk-OS
+<RED>CAOS            <WHITE>-"- auf Kassetten-OS
+
+
+

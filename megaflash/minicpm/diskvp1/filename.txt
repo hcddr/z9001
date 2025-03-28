@@ -1,0 +1,23 @@
+Filenamen fuer CP/M-Z9001-Systeme
+=================================
+
+
+prinzipieller Aufbau:
+
+CPM [S] TT KK .COM
+ ^   ^  ^  ^
+ |   |  |  |______  2 Buchstaben Kennung fuer zus. Treiber
+ |   |  |_________  2 Buchst. Laufwerkstyp
+ |   |                (D8 - 80 Track DS
+ |   |                 S8 - 80 Track SS
+ |   |                 D4 - 40 Track DS
+ |   |                 S4 - 40 Track SS)
+ |   |____________  1 Buchst. geschaltetes System (s)
+ |__________________3 Buchst. CPM (konstant)
+
+
+
+Zusatzkennungen:
+
+sm - mit Treiber fuer S6010 (SIO-Karte)
+

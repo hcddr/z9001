@@ -1,0 +1,237 @@
+            Beschreibunç deò Fortè-Woerter
+
+
+Worô       Stackrelatioî          Beschreibung
+­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­-
+¡          î á ­-¾                Speicherô diå Zahì iî der
+                                  Adresså aî oberstå Stacë-
+                                  Position
+
+£          d± ­-¾ d²              Direkô beé deò Zahlenauó-
+                                  gabå miô Maskå fueò die
+                                  Zifferndarstellunç vorzeé-
+                                  chenloseò doppelô genauer
+                                  Integers
+
+#¾         ä ­-¾ aî               Beendeô diå maskiertå Zaè-
+                                  lenausgabe
+
+#/Î        ­-¾ î                  Forderô zuò Eingabå einer
+                                  einfacè genaueî Integeró 
+                                  auf
+
+#Ó         ä ­-¾ °                Wandelô beé deò Zahlenauó-
+                                  gabå miô Maskå Ziffernzeé-
+                                  cheî iî deî ASCIÉ-Codå um
+
+S¡         aó á ­-¾               Direkô zuí Speicheò von
+                                  Strings
+
+S¢         ­-¾ á                  Vereinbarô eineî Strinç im
+                                  Arbeitsspeicher
+
+Ó-TÂ                              Entfernô nachlaufendå     
+                                  Blankó voí String
+
+S®         á ­-¾                  Druckô eineî String
+
+SARRAÙ     n1n² ­-¾               Vereinbarô eineî Strinç-
+                                  Array
+
+SCOMPARÅ   a1a² ­-¾ î             Vergleichô Stringvariable
+
+SCONSTANÔ                         Vereinbarô einå Stringkoî-
+                                  stante
+
+SVARIABLÅ                         Vereinbarô einå Strinç­    
+                                  variable
+
+SXCÇ       a1a² ­-¾               Vertauschô diå Wertå in
+                                  Stringvariablen
+
+¬          á                      Lieferô diå Adresså des
+                                  naechsteî Worteó ií Eiî-
+                                  gabestrom
+
+¨                                 Leiteô eineî Kommentaò ein
+
+ª          n1n² ­-¾               Lieferô daó Produkô zweier
+                                  Zahlen
+Š*¯         n1n2n³ ­-¾ î           Multiplizierô n± miô n²  
+                                  unä dividierô daó doppelt
+                                  genauå Produkô durcè n3
+
+*/MOÄ      n1n2n³ ­-¾ nrnñ        Aehnlicè wiå */» liefert
+                                  jedocè aucè deî Rest
+
+«          n1n² ­-¾ î             Lieferô diå Summå zweier
+                                  Zahlen
+
++¡         ná ­-¾                 Inkrementierô deî gespeé-
+                                  cherteî Wert
+
++LOOÐ      î ­-¾                  Inkrementierô einå Schleé-
+                                  fenvariable
+
+§          î -¾                   Compilierô inó Woerterbuch
+
+­          n1n² ­-¾               Subtrahierô n² voî n1
+
+-TRAILINÇ  á n± -¾ á n²           Aktualisierô deî Zeileî-
+                                  zaehler
+
+®          î ­-¾                  Gibô einå Zahì aus
+
+.¢                                Gibô Texô aus
+
+.Ò         n1n² ­-¾               Gibô diå Zahì n± ií Dateî-
+                                  felä n² aus
+
+¯          n1n² ­-¾ ñ             Dividierô n± durcè n2
+
+/MOÄ       n1n² ­-¾ rñ            Divisioî miô Quotienô und
+                                  Rest
+
+0¼         î ­-¾ æ                "Wahr"¬ falló n<0
+
+0½         î ­-¾ æ                "Wahr"¬ falló n=0
+
+0¾         î ­-¾ æ                "Wahr"¬ falló n>0
+
+1«         î ­-¾ n±               Inkrementierô deî obersten
+                                  Stackeintraç uí Eins
+
+±­         î ­-¾ n±               Dekrementierô deî obersten
+                                  Stackeintraç uí Eins
+
+16ª        î ­-¾ n±               Multiplizierô deî obersten
+                                  Stackeintraç miô 16
+
+2¡         ä á ­-¾                Speicherô einå doppelô gå-
+                                  nauå Integer
+
+2SARRAÙ    n1n2n³ ­-¾             Definierô eineî zweidimeî-
+                                  sionaleî Strinç-Array
+
+2ª         î ­-¾ n±               Multiplizierô diå oberste
+                                  Integeò miô 2
+.paŠ2«         î ­-¾ n±               Addierô ² auæ diå oberste
+                                  Integer
+
+²­         î ­-¾ n±               Subtrahierô ² voî deò 
+                                  obersteî Integer
+
+2¯         î ­-¾ n±               Dividierô diå oberstå 
+                                  Integeò durcè 2
+
+2À         á ­-¾ ä                Holô einå doppelô genaue
+                                  Integer
+
+2ARRAÙ     n1n² ­-¾               Definierô eineî zweidimå-
+                                  sionaleî Array
+                                  
+2CONSTANÔ  ä ­-¾                  Definierô einå doppelt
+                                  genauå Konstante
+
+2DARRAÙ    n1n² ­-¾               Definierô eineî doppelt
+                                  genaueî Integeò-Array
+
+2DROÐ      ä ­-¾                  Entfernô diå oberstå doð-
+                                  pelô genauå Integeò voí 
+                                  Stack
+
+2DUÐ       ä ­-¾ ä ä              Duplizierô diå oberstå    
+                                  doppeltå genauå Integeò                                  
+                                  auæ deî Stack
+
+OVEÒ       d1d² ­-¾ d1d2d±        Duplizierô diå 2.doppelô 
+                                  genauå Integeò auæ deî 
+                                  Stacë aî oberstå Stacë-
+                                  Position
+
+2ROÔ       d1d2d³ ­->d2d3d±       Rotierô diå 3® doppelô   
+                                  genauå Integeò aî oberste
+                                  Stacë-Position
+
+2SWAÐ      d1d² ­-¾ d2d±          Vertauschô diå obersten
+                                  beideî doppelô genauen
+                                  Integeò 
+
+2VARIABLÅ                         Vereinbarô einå doppelt
+                                  genauå Variable
+
+º                                 Leiteô diå Definitioî 
+                                  eineó FORTÈ-Worteó ein
+
+»                                 Beendeô diå Definition
+                                  eineó FORTÈ-Wortes
+
+¼          n1n² ­-¾ æ             Wirä "wahr"¬ falló n1<n2
+
+<£                                Leiteô diå Zahleneingabe
+                                  miô Maskå ein
+
+<½         n1n² ­-¾ æ             Wirä "wahr"¬ falló n1<=n2
+
+<¾         n1n² ­-¾ æ             Wirä "wahr"¬ falló n1<>n2
+Š<CMOVÅ     a1a2î ­-¾              Duplizierô î Speicherwoeò-
+                                  teò beginnenä beé a± aî 
+                                  diå Adresså a2¬ Uebertrag
+                                  beginnô beé deò hoechsô-
+                                  wertigeî Adresse
+
+½          n1n² ­-¾ æ             Isô "wahr",falló n± gleich
+                                  n² ist
+
+>½         n1n² ­-¾ æ             Isô "wahr",falló n± >½ n2
+                                  ist
+
+</Î        ­-¾ á                  Enthaelô diå Startposition
+                                  fueò diå Untersuchunç des
+                                  Eingabestromes
+
+>Ò         î ­-¾                  Uebertraegô einå Integeò 
+                                  auæ deî Kontrolì-Stack;
+                                  benoetigô entsprechendes
+                                  R>
+
+?DUÐ       î ­-¾ nî               Duplizierô diå oberstå 
+                                  einfacè genauå Integer¬ es
+                                  seé denn,dieså isô gleicè °                                  
+À          á ­-¾ î                Holô diå iî deò Adresså 
+                                  gespeichertå einfacè gå­  
+                                  nauå Integer
+
+ABÓ        n± ­-¾ n²              Ersetzô diå oberstå eiî-
+                                  facè genauå Integeò durch
+                                  ihreî Absolutbetrag
+
+ALLOÔ      î ­-¾                  Erweiterô deî Speicherbå-
+                                  reicè eineò Variableî um
+                                  î Byte
+
+ANÄ        n1n² ­-¾ n³            Bitweiseó log® AND
+
+ARRAÙ                             Vereinbarô Array
+
+ASÃ        î ­-¾                  Legô deî ASCIÉ Werô des
+                                  ersteî Zeichenó iî deî   
+                                  String¬ deò beé á beginnt,
+                                  auæ deî Stack
+
+BASÅ       á ­-¾ î                Enthaelô diå Eiî-/Ausgabå-
+                                  radix
+
+BEGIÎ      ­-¾ á                  Leiteô diå Schleifå ein
+
+BLANË      á î ­-¾                Fuellô Speicherbereiche
+                                  miô Leerzeicheî   
+
+BLË        ­-¾ á                  Enthaelô diå Adresså des
+                                  Blockpufferó fueò deî 
+                                  Eingabestrom
+.paŠBLOCË      î ­-¾ á                Uebertraegô deî Blocë î 
+                                  voî deò Diskettå iî deî 
+                                  Arbeitsspeicheò unä legt
+                                  statô desseî Startadressen
+                                  auæ deî Stack

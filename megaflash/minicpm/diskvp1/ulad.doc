@@ -1,0 +1,68 @@
+	CP/M - Software                                           ULAD
+
+
+
+	******************************************************************
+
+	                             U L A D
+	       Universelles Ladeprogramm fuer HEX - und COM - Files
+
+	******************************************************************
+
+
+	ULAD ermoeglicht das Laden von HEX- und COM - Files unter CP/M auf 
+	Ladeadressen verschieden 100H.
+
+	- Die  Angabe einer Ladeadresse (fuer COM-Files) bzw.  einer  Ver-
+	  schiebung  (fuer  HEX-Files) sowie einer Startadresse  fuer  den 
+	  anschliessenden  Start  des geladenen Programms  sind  wahlweise 
+	  moeglich.
+	- Nach  seinem Aufruf verschiebt sich ULAD (100H bis 6FFH) an  das 
+	  Ende  des zur Verfuegung stehenden Speicherbereiches (Adr.  CCP) 
+	  und  gibt damit den gesamten Speicher von 0 bis  zum  CCP-Anfang 
+	  fuer das Laden von Programmen frei.
+	- Nach  dem  Laden werden Anfangs- und Endeadresse  des  geladenen 
+	  Bereiches und die CRC-Summe ueber diesem Bereich angezeigt.
+
+
+	1. Laden von COM - Files
+	------------------------
+
+	ULAD D:Filename.Typ , <Ladeadresse> , G <Startadresse>
+
+	- Als  COM-Files  werden alle Files mit einem Filetyp  verschieden 
+	  'HEX' geladen. Fehlt die Typangabe, wird 'COM' angenommen.
+	- Die Aufzeichnung wird fortlaufend ab der Ladeadresse im Speicher 
+	  abgelegt. Fehlt die Angabe der Ladeadeadresse, so wird ab 100H  geladen.
+	- Ist  der  Parameter 'G' angegeben,  so wird das Programm  sofort 
+	  nach  dem  Laden auf der angegebenen  Adresse  gestartet.  Fehlt 
+	  dabei die Angabe der Startadresse,  so wird auf der  Ladeadresse 
+	  gestartet.
+
+
+	2. Laden von HEX - Files
+	------------------------
+
+	ULAD D:Filename.HEX , <Verschiebung> , G <Startadresse>
+	ULAD RDR: , <Verschiebung> , G <Startadresse>
+
+	- Als  HEX-Files (d.h.  Files im "INTEL-HEX"-Format) werden  Files 
+	  mit dem Typ 'HEX' und alle Lochband-Files (RDR:) geladen.
+	- Geladen  wird ab der im Blockanfang stehenden  Ladeadresse.  Bei 
+	  Luecken in der fortlaufenden Speicherung der Aufzeichnung werden 
+	  Anfangs- und  Endeadresse  des geladenen Bereiches und die  CRC-
+	  Summe ueber diesen Bereich angezeigt,  danach wird die  Speiche-
+	  rung ab der neuen Ladeadresse fortgesetzt.
+	- Ist  eine Verschiebung angegeben,  so wird die gesamte Aufzeich-
+	  nung um diesen Wert verschoben in den Speicher geladen.
+	- Die  Handhabung von Startparameter und Startadresse ist wie  bei 
+	  COM-Files.  Eine Startadresse im Endeblock der Aufzeichnung wird 
+	  nicht beruecksichtigt.
+
+
+	3. Fehlermeldungen:        COMMAND ERROR
+	-------------------        FILE NOT FOUND
+	                           INVALID HEX DIGIT       : nur bei
+	                           INVALID FILE END        : HEX-Files
+	                           CHECK SUM ERROR         : moeglich
+	                           еееееееееееееееееееееееееееееееееееееееееееееееееееееееее

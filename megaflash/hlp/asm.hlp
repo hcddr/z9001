@@ -1,0 +1,24 @@
+<YELLOW>EDAS Editor/Assembler (robotron)
+
+Assembler:<WHITE> <YELLOW>zuerst immer Pass 1 starten!<WHITE>
+<RED>1<WHITE> Symboltabelle erzeugen
+<RED>P<GREEN>[von,bis]<WHITE> (print) Listing drucken
+<RED>M<WHITE> (MC-Output) Code erzeugen, s. Pass V
+<RED>F<WHITE> (fault) Syntaktische Pruefung
+<RED>X<WHITE> (cross-reference)
+  Ausgabe Crossreferenztabelle
+<RED>A<WHITE> (adress-dictionary)
+  Ausgabe Symbolreferenztabelle
+<RED>V<WHITE> (variation) Festlegen Ausgabe fuer
+  Pass M MO: T(ape) oder R(AM)
+  Pass L LO: C(onsole) oder F(Drucker)
+<RED>E<WHITE> (end) Ruecksprung ins OS
+<YELLOW>Fehler:<WHITE>
+<CYAN>OVERFLOW<WHITE> kein vollst. Pgm. (PN...END)
+<CYAN>NO PN:<WHITE> Programm beginnt nicht mit PN
+<CYAN>+A+<WHITE> Adressierungsfehler
+<CYAN>+C+<WHITE> Falsche Mnemonik
+<CYAN>+F+<WHITE> Formatfehler
+<CYAN>+M+<WHITE> mehrfach definiertes Symbol
+<CYAN>+N+<WHITE> nicht definiertes Symbol
+<CYAN>+O+<WHITE> Operandenfehler

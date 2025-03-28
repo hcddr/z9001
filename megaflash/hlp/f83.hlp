@@ -1,0 +1,22 @@
+<YELLOW>FORTH-83 der AIG Forth
+
+<WHITE>Standard Forth 83, Screen 512 Byte
+Aufruf:  F83A4, F83, WF83
+
+<RED>BYE<WHITE>         Beenden
+<RED>SEE<WHITE> <GREEN>word<WHITE>    Decompiler
+<GREEN>n<WHITE> <RED>LOAD<WHITE>      Lade (Kompiliere) Screen n
+<GREEN>u1 u2<WHITE> <RED>THRU<WHITE>  Laden der Screens u1 bis u2
+<GREEN>u<WHITE> <RED>LIST<WHITE>      Anzeige Screen u
+<GREEN>n<WHITE> <RED>GET<WHITE> <GREEN>fname<WHITE> Kassette lesen ab Screen n
+<GREEN>n1 n2<WHITE> <RED>PUT<WHITE> <GREEN>fname<WHITE> -"- speichern n1..n2
+<RED>SAVE-SYSTEM<WHITE> fname  Abspeichern FORTH
+<RED>.FILES<WHITE>    Anzeige Kassetteninhalt, STOP
+<GREEN>n<WHITE> <RED>EDIT<WHITE>      Screen n editieren
+      CONT     Screen loeschen
+      2xLIST   undo
+      STOP     Editorende
+<YELLOW>Nichttastaturzeichen
+<WHITE>LIST, dann  1 2 3 4 5 6 7 8 9
+           7F ` | \ ~ { } [ ]
+

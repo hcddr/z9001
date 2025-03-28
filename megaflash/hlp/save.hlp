@@ -1,0 +1,20 @@
+<YELLOW>Speichern/Laden auf Kassette (OS),
+Diskette (DOSX), USB-Stick (USBX)
+
+<RED>OS-SAVE<WHITE> name[.typ] von,bis[,sadr]
+  (orig OS-SAVE <YELLOW>robotron<WHITE>)
+  fehlt typ, wird COM genommen
+  fehlt sadr, wird aadr genommen
+<RED>kdo<WHITE> sucht kdo im Speicher. Wenn 
+   nicht gefunden, wird von Massen-
+   speicher geladen
+
+<RED>SAVE<WHITE> von bis [sadr] [1]
+  Es erfolgt eine Abfrage von name[.typ]  fehlt typ, wird COM genommen
+  fehlt sadr, wird von-Adr. genommen
+  folgt noch eine 1, wird ohne Kopfblock  gespeichert (nur DOSX, USBX)
+<RED>LOAD<WHITE> [aadr] [1]
+  analog SAVE Abfrage von Name+Typ 
+  aadr ist alternative Anfangsadresse
+  folgt eine 1, wird auch der erste 
+  Block normal gelesen (nur DOSX, USBX)

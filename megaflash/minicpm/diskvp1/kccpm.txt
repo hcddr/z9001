@@ -1,0 +1,204 @@
+.pl72
+.mt4
+.mb4
+.op
+.he                             - # -                     Z9001-CP/M
+.po8
+
+                 CP/Í 2.² auæ KÃ 85/± unä KÃ 87
+
+                       F® Schwarzenberg
+
+
+
+Ií   folgendeî  werdeî  Besonderheiteî  deò  Implementatioî   voî 
+CP/M2.²  auæ deî o.g® Heimcomputerî erl„utert¬ diå  insbesonderå 
+beé  deò  šbernahmå  voî  CP/Í-Programmeî  voî  andereî  Rechnerî 
+beachteô werdeî sollten.
+
+.tc1 1® Speicheraufteilung                                 #
+1® Speicheraufteilung
+
+FFFF          _____________
+              ü           ü       Z900± Betriebssystem
+              ü    BOÓ    |
+F000          -------------
+              ü BÓ «FAÓ   ü       Bild­ «Farbattributspeicher
+E800          ------------­ --
+              ü           ü  |
+              üBIOÓ (CP/M)ü  |     
+              ü           ü  |
+              ------------­   ¾   CP/M
+              ü   BDOÓ    ü  |
+              ------------­  |
+              ü   CCĞ     ü  |
+              ------------­ --
+              |           |
+              |           |
+              ü   TPÁ     ü        Anwenderbereich
+              ü           |
+              ü           |
+0100          -------------
+              ü  Systeí   ü        CP/Í « BOÓ ­ Arbeitsbereich
+0000          -------------
+
+
+Diå Gr”sså deó TPÁ isô generierungsabh„ngiç (i.A® >51Ë !).
+Deò gesamtå Adressrauí voî ° .® E7FÆ mu›á aló RAÍ verfgbaò sein.
+Hardwarevoraussetzunç  fò einå CP/Í-Implementatioî isô  folglicè 
+einå (64KB© RAM-Karte¬ diå deî genannteî Adressrauí belegt.
+
+Daó  Z900±-Betriebssysteí (BOS© wirä weiterhiî miô verwendet®  Eó 
+belegô  eineî Teiì deó fò CP/Í unä BIOÓ  reservierteî  Speicher
+bereicheó  voî ° .® 80H® Diå Z8°-Restarô-Adresseî sowiå  diå  voî 
+CP/Í  2.²  standardm„áiç  verwendeteî  Bereichå  (bió  auæ   einå 
+Ausnahme¬  s® I/Ï-Byte© sinä davoî nichô betroffen® Vorsichô  isô 
+abeò  beé  solcheî Programmeî geboten¬ diå insbesonderå  deî  fò 
+zuknftigå  BIOÓ-Erweiterungeî reservierteî Platú nutzeî (40è  .® 
+5Bh)® Dieseò Bereicè wirä voí BOÓ genutzt!.
+
+.cp14ŠDiå  verwendetå 6´ KÂ-RAÍ-Erweiterunç erlaubô diå  Nutzunç  eineò 
+"versteckten¢ 1¶ KÂ­Banë (s® Dokumentatioî RAM-Karte):
+
+E800      -----------
+          ü         |
+          ü  10Ë    |
+C00°      |---------|
+          ü  16K    |
+          ü         |
+800°      ---------------------
+          ü         ü         |
+          ü   16Ë   ü   16Ë   |
+400°      ü_________|_________|
+
+
+Diå  verstecktå  Banë wirä voí BIOÓ fò deî  sog®  Disë-Transfeò-
+Buffeò  sowiå  zuí  Halteî eineò Kopiå deó CCĞ  (keiî  Ladeî  voî 
+Diskettå beií Warmstart!© genutzt® Damiô sinä jå nacè Gr”sså  deó 
+Diskbufferó (1K..8Ë jå nacè Generierung¬ Standarä isô 1K©  3..10Ë 
+deò Banë voí BIOÓ genutzt® Diå Belegunç deò Banë erfolgô voî obeî 
+nacè unteî (aâ 7FFFè abw„rts).
+
+.tc1 2® Bildschirmformat                                   #
+2® Bildschirmformat
+
+Deò  KÃ realisierô einå Bilddarstellunç ií Formaô voî 4°  Zeicheî 
+a§  2° odeò 2´ Zeilen® Vielå CP/Í-Programmå erforderî eiî  Formaô 
+voî  80*2´  odeò zumindesô 64*16® Einigå Programmå  sinä  deshalâ 
+nichô ohnå weitereó lauff„hiç (z.B® Wordstaò bzw® TP).
+Diå  Cursoò-Positionierunç  kanî beò einå  Controì-Sequencå  deò 
+folgendeî Forí erfolgenº    CSÉ   Zeile+12¸   Spalte+128
+(kompatibeì zuí PÃ 1715© mit
+
+     CSÉ      1bH
+     Zeilå    0..23
+     Spaltå   0..3¹ .
+
+
+.tc1 3® KÃ ­ Tastatur                                      #
+3® KÃ ­ Tastatur
+
+Diå Codierunç deò Cursortasteî unä Sondertasteî isô beií KÃ nichô 
+standardgerechô  unä erzwingô beé deò Installatioî  einigeò  Pro
+grammå Kompromisså (z.B® Turbï-Pascal¬ ^Ë kanî nichô  beibehalteî 
+werden¬  dá sonsô diå Cursoò-Hocè-Tastå nichô  sinngem„›á  genutzô 
+werdeî kann).
+Einigå  auæ  deò Tastatuò nichô vorhandenå  Tasteî  k”nneî  durcè 
+direkô  vorhergehendeó Bet„tigeî deò LIST‚-Tastå  (1CH©  simulierô 
+werden:
+          [ ()   ==¾  LISÔ « (
+          ] (š)   ==¾  LISÔ « )
+          û („)   ==¾  LISÔ « <
+          ı ()   ==¾  LISÔ « >
+          ü (”)   ==¾  LISÔ « i
+          Ü (™©   ==¾  LISÔ « /
+          ş (á©   ==¾  LISÔ « s
+
+D.h®  ² Tasteî sinä zõ bet„tigen¬ uí diå obeî  gezeigteî  Zeicheî 
+zõ erhalteî (1® LIST¬ 2® s.o¬ ohnå SHIFT-Taste!).
+.cp10Š.tc1 4® I/O-Byte                                           #
+4® I/O-Byte
+
+Daó I/Ï-Bytekonzepô deó CP/Í wurdå miô realisierô (s.a® Abschnitô 
+Ger„tetreiber)¬ dá deò entsprechendå Mechanismuó bereitó ií  BOÓ-
+Z900±  enthalteî ist® Einå Besonderheiô ergibô sicè dadurch¬  da›á 
+voí  BOÓ  daó  I/Ï-Bytå ií Gegensatú zuí  CP/Í-Standarä  auæ  deò 
+Adresså ´ erwarteô wird:
+
+          Adr.             3                 4
+          --------------------------------------------
+          CP/M          I/O-Bytå         akt® Laufwerk
+          CP/M-Z900±    akt® Laufwerë    I/O-Byte
+
+Programme¬  diå  das I/Ï-Bytå direkô  abfragen/ver„ndern¬  msseî 
+entsprechenä  angepaáô  werden® Fò  diå  wesentlicheî  Programmå 
+liegô einå angepaátå Versioî voò (STAT¬ Turbï-Pascal).
+
+.tc1 5® Standardm„ssiç implementiertå Ger„tetreiber        #
+5® Standardm„ssiç implementiertå Ger„tetreiber
+
+Mehrerå    Druckeò­   unä   Consoltreibeò   sinä    standardm„áiç 
+implementiert® Diå Treibeò k”nneî beò daó I/Ï-Bytå (z.B® miô deí 
+Programí STAT© jederzeiô w„hrenä deó Betriebeó ausgew„hlô werden.
+Folgendå Treibeò steheî zuò Verfgung:
+.cp8
+­  Consoleº   (STAÔ CON:=TTY:© ==¾ Tastatur-Beeğ
+                                   Umwandlunç Groá­ <==¾ Kleinb.
+                                   Behandlunç  deò   Sondertasteî 
+                                   wiå unteò 3® angegeben.
+              (STAÔ CON:=CRT:© ==¾ Tastatur-Beep¬ keinå Umwandlg.
+                                   (zõ  empfehleî beé deò  Arbeiô 
+                                   miô Basic)
+              (STAT CON:=UC±º) ==¾ ohnå Beeğ unä Umwandlung
+
+­ Druckerº    (STAÔ LST:=CRT:© ==¾ V2´-Userporô 120° Bauä
+              (STAÔ LST:=LPT:© ==¾ V24-Userporô 960° Baud
+              (STAÔ LST:=UL1:© ==¾ Centronics-Userport
+
+V2´-Betrieâ erforderô geringfgigå Maánahmeî zuò  Pegelanpassunç 
+sowiå daó sog® DTR-(bzw® Hardware-)Protokoll.
+Deò    Centronicó-Treibeò    bertr„gô    ·    Datenbits®     Diå 
+Treiberproblematië isô ausfhrlicè beschriebeî iî deò Zeitschrifô 
+Mikroprozessortechnië 10/87.
+
+.tc1 6® BASIC                                              #
+6® BASIC
+
+Daó  MBASIÃ  (bzw®  BASÉ etc.© deó CP/Í  kanî  verwendeô  werden® 
+Ferneò wurdå daó KÃ-BASIÃ fò deî Betrieâ unteò CP/Í  modifizierô 
+(aufrufbaò  aló ZBASIC)® Ausgangspunkô fò diå  Modifikatioî  waò 
+daó  sog®  RAÍ-BASIC® Vollå Kompatibilit„ô  isô  gegeben¬  soferî 
+dieså  zuí  RAÍ-BASIÃ  gegebeî  waò  (d.h®  Basiã-Programmå   miô 
+Maschinencode-Anteiì laufeî i.A® nicht!).
+Beé   deò  Arbeiô  miô  Disketteî  isô  auæ  Groáschreibunç   deò 
+Dateinameî  zõ achten¬ andernfalló kanî eó insbesonderå  fò  deî 
+ungebteî Nutzeò zõ Problemeî kommen® Diå Dateinameî k”nneî  max® 
+¸   Zeicheî   lanç  seiî  (Buchstaben,Zahlen)®   Aló   Tyğ   wirä 
+standardm„áiç  "ZBS¢ verwendeô (kanî voí Nutzeò nichô  beeinfluáô 
+werden)®     Z.B®    erscheinô    daó    Programí    PASCH‚     ií 
+Diskettenverzeichnió aló PASCH.ZBS.
+ 
+.cp8Š
+.tc1 7® Ladeî deó CP/M                                     #
+7® Ladeî deó CP/M
+
+Deò  Bootstrağ-Ladeò  mu›á  auæ  eineò  (geschalteten©   ROÍ-Kartå 
+gesteckô  sein®  Danî kanî daó Ladeî voí OÓ-Modå  miô  CPÍ  (bzw® 
+BOOT©  erfolgen®  Diå  Systeí-Diskettå  mu›á  vorheò  ií  Laufwerë 
+eingelegô sein.
+.cp8
+.tc1 8® Systeí unä Disk-Formate                            #
+8® Systeí unä Disk-Formate
+
+Daó  Z900±-CP/Í-Systeí mu›á auæ deò Systemdisë aló 1.Filå miô  deí 
+Nameî  @CPMZ9.COÍ  vorliegen®  Einå neuå  Systemdisë  kanî  durcè 
+einfacheó  Kopiereî dieseó Fileó auæ einå leere‚ Diskettå  erzeugô 
+werden.
+
+Aló  Standarä-Disë-Formaô wirä daó 800Ë-Formaô fò  8°  Tracë-DÓ-
+Laufwerkå  (1.6© eingesetzt® Einå Reihå andereò g„ngigeò  Formatå 
+werdeî  abeò automatiscè erkannô (780K¬ 720K¬ 624K¬  400K¬  360K¬ 
+200K¬ 148Ë ..).
+
+
+
