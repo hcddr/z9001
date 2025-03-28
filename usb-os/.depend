@@ -1,0 +1,21 @@
+ch376os.bin:	ch376os.asm system/USBkdo376.asm system/USBkdoVDIP.asm system/crtdrv.asm system/dir376.asm system/dirSD.asm system/dirVDIP.asm system/helpkdo.asm system/modul.asm system/os376.asm system/osSD.asm system/osVDIP.asm system/sdxkdo.asm system/sysinfo_loader.bin system/syskdo.asm system/zmonkdo.asm
+comfiles/GRPLOT.bin:	comfiles/GRPLOT.asm comfiles/basic.inc
+comfiles/ZM20A.bin:	comfiles/ZM20A.asm comfiles/z9001.inc
+comfiles/ZM30.bin:	comfiles/ZM30.asm comfiles/ZM20A.asm
+comfiles/ZMA8.bin:	comfiles/ZMA8.asm comfiles/ZM20A.asm
+comfiles/basic.bin:	comfiles/basic.asm comfiles/basic_8k_kern.asm comfiles/bm608pd.asm
+comfiles/graf.bin:	comfiles/graf.asm comfiles/basic.inc
+comfiles/graf14.bin:	comfiles/graf14.asm comfiles/basic.inc
+comfiles/grafp.bin:	comfiles/grafp.asm comfiles/basic.inc
+comfiles/hbasic.bin:	comfiles/hbasic.asm comfiles/basic_8k_kern.asm comfiles/bm608pd.asm
+comfiles/hlpedit.bin:	comfiles/hlpedit.asm comfiles/hlpedit_crt40.asm
+comfiles/x.bin:	comfiles/x.asm system/SD.asm
+sdos.bin:	sdos.asm system/USBkdo376.asm system/USBkdoVDIP.asm system/crtdrv.asm system/dir376.asm system/dirSD.asm system/dirVDIP.asm system/helpkdo.asm system/modul.asm system/os376.asm system/osSD.asm system/osVDIP.asm system/sdxkdo.asm system/sysinfo_loader.bin system/syskdo.asm system/zmonkdo.asm
+sdos38.bin:	sdos38.asm system/USBkdo376.asm system/USBkdoVDIP.asm system/crtdrv.asm system/dir376.asm system/dirSD.asm system/dirVDIP.asm system/helpkdo.asm system/modul.asm system/os376.asm system/osSD.asm system/osVDIP.asm system/sdxkdo.asm system/sysinfo_loader.bin system/syskdo.asm system/zmonkdo.asm
+sdosc0.bin:	sdosc0.asm system/USBkdo376.asm system/USBkdoVDIP.asm system/crtdrv.asm system/dir376.asm system/dirSD.asm system/dirVDIP.asm system/helpkdo.asm system/modul.asm system/os376.asm system/osSD.asm system/osVDIP.asm system/sdxkdo.asm system/sysinfo_loader.bin system/syskdo.asm system/zmonkdo.asm
+system/modul.bin:	system/modul.asm system/USBkdo376.asm system/USBkdoVDIP.asm system/crtdrv.asm system/dir376.asm system/dirSD.asm system/dirVDIP.asm system/helpkdo.asm system/os376.asm system/osSD.asm system/osVDIP.asm system/sdxkdo.asm system/sysinfo_loader.bin system/syskdo.asm system/zmonkdo.asm
+system/os376.bin:	system/os376.asm system/CH376.asm
+system/osVDIP.bin:	system/osVDIP.asm system/VDIP.asm
+system/ossd.bin:	system/ossd.asm system/SD_dummy.asm
+system/sysinfo_loader.bin:	system/sysinfo_loader.asm system/SYSINFO.BIN.zx7 system/dzx7_standard.asm
+vdipos.bin:	vdipos.asm system/USBkdo376.asm system/USBkdoVDIP.asm system/crtdrv.asm system/dir376.asm system/dirSD.asm system/dirVDIP.asm system/helpkdo.asm system/modul.asm system/os376.asm system/osSD.asm system/osVDIP.asm system/sdxkdo.asm system/sysinfo_loader.bin system/syskdo.asm system/zmonkdo.asm
