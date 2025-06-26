@@ -5,9 +5,9 @@
 ;------------------------------------------------------------------------------
 
 
-megarom			equ	"MEGA"			; A.Schön; 10K Bänke
+;megarom			equ	"MEGA"			; A.Schön; 10K Bänke
 ;megarom			equ	"MEGA8"		; buebchen; 8K Bänke + 2K RAM
-;megarom			equ	"KOMBI"		; U.Zander; 128 x 16K Bänke, abwechselnd 10k und 6K, Rest von RAM aufgefüllt
+megarom			equ	"KOMBI"		; U.Zander; 128 x 16K Bänke, abwechselnd 10k und 6K, Rest von RAM aufgefüllt
 
 ;------------------------------------------------------------------------------
 ; orig. Hardware, 3 ROMs oder 5 ROMs. 10K-Bänke
@@ -34,7 +34,6 @@ minicpm_disk2		equ	0		; 1 = disk2 (C:) für Mini-CPM mit einbinden
 
 useincport		equ	0
 sysbankretrn		equ	1		; nach Laden Systembank aktivieren
-rom_uzander		equ	0		; hier immer 0!
 
 ;------------------------------------------------------------------------------
 ; Buebchen-Rx3. Nur 8K-Bänke
@@ -56,7 +55,6 @@ minicpm_disk2		equ	0		; 1 = disk2 (C:) für Mini-CPM mit einbinden
 
 useincport		equ	0
 sysbankretrn		equ	1		; nach Laden Systembank aktivieren
-rom_uzander		equ	0		; hier immer 0!
 
 ;------------------------------------------------------------------------------
 ; Ulrichs ROM-Bank. Abwechselnd 10k und 6k-Bänke
@@ -66,8 +64,9 @@ rom_uzander		equ	0		; hier immer 0!
 ; Konfiguration
 bankport		equ	075h		; Portadresse Modul
 bankportinc		equ	078h		; Portadresse Modul weiterschalten
-systembank		equ	000h		; erste Bank mit Flashsoftware. davor liegende Bänke werden nicht beachtet
+systembank		equ	002h		; erste Bank mit Flashsoftware. davor liegende Bänke werden nicht beachtet
 						; (wg. Megamodul)
+						; Systembank muss eine große Bank sein (gerade Zahl)!
 lastbank		equ	07fh		; letzte zu durchsuchende Bank
 ;27010 128K EPROM = 128/16*2 = 16 Bänke	0fh
 ;27020 256K EPROM = 256/16*2 = 32 Bänke	1fh

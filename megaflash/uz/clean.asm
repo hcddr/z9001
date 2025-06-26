@@ -33,7 +33,7 @@ clean:		ld	de, aLoeschen	; "Speicher \{aadr}-E7FFH loeschen? Y/[N]:"
 		sub	'Y'
 		jr	nz, clean1
 
-		if rom_uzander=0
+		if rom_uzander<>1
 		;vp: zuerst Meldung und DI
 		;denn nach dem Löschen sind auch Treiber weg, aber die Pointer 
 		;noch nicht zurückgesetzt

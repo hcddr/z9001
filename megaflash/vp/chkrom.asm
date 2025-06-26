@@ -30,7 +30,7 @@ chkrom:		ld	de, txt1
 		ld	a,b		; die eigene Bank (bei gepackten Programmen)
 		ld	(eigenebank),a
 		
-		ld	a, -1
+		ld	a, systembank-1	; start mit Systembank
 		ld	(mycurrbank), a
 		
 chkrom1:	ld	a,(mycurrbank)

@@ -4,15 +4,12 @@
 
 # Prüfsummen erzeugen
 
-$ARGV[0] = 'packedroms.bin';
 
-open IN, "<$ARGV[0]";
-binmode IN;
-
-print "chkrom $ARGV[0]...\n";
-
-
+#########################################
 # Test auf Kombi-Modul
+
+open IN, "<systembank/bank0.bin";
+binmode IN;
 read IN, $block, 0x100;
 if ( $block =~ /KOMBI-MODUL/ ) {
   print "für Kombi/64K-SRAM-Modul\n";
@@ -22,6 +19,18 @@ if ( $block =~ /KOMBI-MODUL/ ) {
   print "für Mega-Modul\n";
   $banksize = 10 * 1024;    # 16K
 }
+
+#########################################
+# packedroms analysieren
+
+$ARGV[0] = 'packedroms.bin';
+
+open IN, "<$ARGV[0]";
+binmode IN;
+
+print "chkrom $ARGV[0]...\n";
+
+
 seek IN, 0, 0;              # auf Fileanfang 
 
 

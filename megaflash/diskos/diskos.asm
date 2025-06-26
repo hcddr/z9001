@@ -44,6 +44,11 @@ shadow_off	macro
 	endif
 		endm
 
+rst_sbos	macro
+		;rst	28h		;der RST für den Sprungverteiler
+		CALL 0C02Fh
+		endm
+		
 ;------------------------------------------------------------------------------
 
 ; im Shadow-RAM !!!!
@@ -348,7 +353,7 @@ cload5:
 	POP	HL
 	LD	BC,(BCSV)
 	LD	SP,(SPSV)
-	rst	28h
+	rst_sbos
 	db	14	; CLOAD
 	ret
 
@@ -372,7 +377,7 @@ csave5:
 	POP	HL
 	LD	BC,(BCSV)
 	LD	SP,(SPSV)
-	rst	28h
+	rst_sbos
 	db	15	; CSAVE
 	ret
 

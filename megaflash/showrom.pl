@@ -8,12 +8,12 @@ Aufruf: showrom.pl rom
 zeigt Inhalt des erzeugten ROMs ähnlich DIR L an
 HELP
 
-open IN, "<$ARGV[0]";
-binmode IN;
-print "liste $ARGV[0]...\n";
 
-
+#########################################
 # Test auf Kombi-Modul
+
+open IN, "<systembank/bank0.bin";
+binmode IN;
 read IN, $block, 0x100;
 if ( $block =~ /KOMBI-MODUL/ ) {
   print "für Kombi/64K-SRAM-Modul\n";
@@ -23,12 +23,13 @@ if ( $block =~ /KOMBI-MODUL/ ) {
   print "für Mega-Modul\n";
   $banksize = 10 * 1024;    # 16K
 }
-seek IN, 0, 0;              # auf Fileanfang
 
+#########################################
 
+open IN, "<$ARGV[0]";
+binmode IN;
+print "liste $ARGV[0]...\n";
 
-# Test auf Kombi-Modul
-read IN, $block, 0x100;
 if ( $uz_modul == 1 ) {
   open OUT, ">$ARGV[0]_kombi.txt";
   print OUT "Kombi-Modul\n\n";

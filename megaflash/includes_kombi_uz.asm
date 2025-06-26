@@ -18,6 +18,7 @@ megarom			equ	"KOMBI"		; U.Zander; 128 x 16K B‰nke, abwechselnd 10k und 6K, Rest
 bankport		equ	0ffh		; Portadresse Modul
 systembank		equ	000h		; erste Bank mit Flashsoftware. davor liegende B‰nke werden nicht beachtet
 						; (wg. Megamodul)
+						; Systembank muss eine groﬂe Bank sein (gerade Zahl)!
 lastbank		equ	0ffh		; letzte zu durchsuchende Bank
 ;lastbank		equ	07fh		; letzte zu durchsuchende Bank (f. Winbond W29C020)
 ;27010 128K EPROM = 3fh

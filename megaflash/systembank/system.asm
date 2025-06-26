@@ -85,16 +85,16 @@ AUR2		equ	0EFD7h		; Eigentlich Adresse UR2-Treiber für READER
 ; !!! Banknummern mit packedroms.asm syncronisieren !!!
 
 	if megarom == "KOMBI"
-b_basic		equ	2		;Basic-Bank für ft_BASIC-Programme, s.a. packedroms.asm
-b_basicp	equ	4		;Basic-Bank für ft_BASIC-Programme mit neuem PRINT-AT, s.a. packedroms.asm
+b_basic		equ	2+systembank		;Basic-Bank für ft_BASIC-Programme, s.a. packedroms.asm
+b_basicp	equ	4+systembank		;Basic-Bank für ft_BASIC-Programme mit neuem PRINT-AT, s.a. packedroms.asm
 	else
-b_basic		equ	1		;Basic-Bank für ft_BASIC-Programme, s.a. packedroms.asm
-b_basicp	equ	2		;Basic-Bank für ft_BASIC-Programme mit neuem PRINT-AT, s.a. packedroms.asm
+b_basic		equ	1+systembank		;Basic-Bank für ft_BASIC-Programme, s.a. packedroms.asm
+b_basicp	equ	2+systembank		;Basic-Bank für ft_BASIC-Programme mit neuem PRINT-AT, s.a. packedroms.asm
 	endif
 
 	if megarom == "MEGA8"
-b_hibanks1	equ	5
-b_hibanks2	equ	10
+b_hibanks1	equ	5+systembank
+b_hibanks2	equ	10+systembank
 	endif
 
 ; Ports
@@ -137,6 +137,8 @@ on_reset:	jp	0ffffh	; RET
 on_cold:	jp	0ffffh	; RET
 on_gocpm:	jp	0ffffh	; RET
 sys_lastbank:	db	lastbank
+
+jp_sbos:	jp	SBOS			; Sprungverteiler direktruf
 
 ;------------------------------------------------------------------------------
 ; CCP
@@ -376,7 +378,7 @@ CCP2:
 COLD:
 		call	on_cold
 
-	if 	rom_uzander==0		;Treiber werden vom orig ZM überschrieben, das geht
+	if 	rom_uzander<>1		;Treiber werden vom orig ZM überschrieben, das geht
 					;daher nicht bei Ulrichs seziellem Release
 
 		; on_cold-Treiber via AUR1 starten (USBX/DOSX)

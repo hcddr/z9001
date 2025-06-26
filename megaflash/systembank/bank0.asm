@@ -24,7 +24,7 @@
 
 		org	0CF00h
 		
-		if	rom_uzander = 0
+		if	rom_uzander <> 1
 		binclude	"..\uz\clean.bin"	
 		else
 		binclude	"..\uz\clean_cf00.rom"	
@@ -48,7 +48,7 @@ loc_C00D:       ld      hl, 0d020h
 ;------------------------------------------------------------------------------
 		org	0d020h
 
-		if	rom_uzander = 0
+		if	rom_uzander <> 1
 
 		binclude	"..\vp\zm20a_3000.bin"
 ; Patch: Transientkommando-Rahmen

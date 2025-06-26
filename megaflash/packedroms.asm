@@ -60,7 +60,7 @@ addFile	macro	fileXname, aXadr, eXadr, sXadr, pXname, pXtyp, pXklasse, pXComment
 lfdnr		eval	lfdnr+1
 id		eval	"\{lfdnr}"
 
-		align	100h
+		myalign	100h
 
 	if megarom == "KOMBI"
 ;; große bank (gerade Nr, blocksize) + kleine Bank (ungerade Nr., blocksize2) = 16K
@@ -137,9 +137,27 @@ aadr_{id}	equ	aXadr
 ; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ; blocksize = 10K = Größe einer Bank
 
+; Platz vor Systembank 
+	if systembank > 0
+		if megarom == "KOMBI"
+		binclude	usbos\startbank.bin
+		else
+		db	0ffh		; min 1 Byte
+		endif
+
+	; align next bank	
+	if megarom == "MEGA"
+	myalign	(blocksize * systembank)
+	elseif megarom == "KOMBI"
+	myalign	((blocksize+blocksize2) * (systembank/2))
+	endif		
+
+	endif
+sysbank_offs 	equ  $
+
 ;Systembank
 	BINCLUDE "systembank/bank0.bin"
-
+	
 packedCode_start equ $
 
 ;------------------------------------------------------------------------------
@@ -148,7 +166,7 @@ packedCode_start equ $
 
 ;komplette Bänke
 	myalign	blocksize
-b_basic		equ ($ / blocksize + systembank)
+b_basic		equ ($ / blocksize + systembank)	; Banknummer Basic
 	binclude "vp\basic_16d.bin"			; 16 Farben, korr. CSAVE
 	myalign	blocksize
 b_basicp	equ ($ / blocksize + systembank)
@@ -175,7 +193,7 @@ b_basic86	equ ($ / blocksize + systembank)
 
 ;komplette Bänke
 	myalign	blocksize
-b_basic		equ ($ / blocksize + systembank)
+b_basic		equ ($ / blocksize + systembank)		; Banknummer Basic
 	binclude "vp\basic_16d.bin",0,blocksize			; 16 Farben, korr. CSAVE
 	myalign	blocksize
 b_basicp	equ ($ / blocksize + systembank)
@@ -457,8 +475,12 @@ b_hibanks2	equ ($ / blocksize + systembank)
 	include "hlp/dos.hlp.bin.inc"
 
 ; 25.04.2016 USB-VDIP
-	addFile "diskos/usbos.bin.zx7",			0b600h,	,	,	"USBX",		ft_MC+ft_packed,	fk_tools,	"VDIP USB OS"
+	addFile "usbos/usbos.bin.zx7",			0b600h,	,	,	"USBX",		ft_MC+ft_packed,	fk_tools,	"VDIP USB OS"
 	include "hlp/usb.hlp.bin.inc"
+
+; 26.06.2025 USB-CH376
+	addFile "usbos/usbos376.bin.zx7",		0b600h,	,	,	"CHX",		ft_MC+ft_packed,	fk_tools,	"CH376 USB OS"
+
 
 ;------------------------------------------------------------------------------
 ;soft1
@@ -780,7 +802,7 @@ b_hibanks2	equ ($ / blocksize + systembank)
 
 ;------------------------------------------------------------------------------
 
-	addFile "soft6/prettyC.bin.zx7", 		0300h, 0BFFFh, 0BD00h, "PRETTYC", 		ft_MC+ft_packed+ft_systembank,		fk_programmierung,"Dr.Wobst"
+	addFile "soft6/prettyCStart.bin.zx7", 		0300h, 0B5FFh, 09500h, "PRETTYC", 		ft_MC+ft_packed+ft_systembank,		fk_programmierung,"Dr.Wobst"
 	include "hlp/prettyc.hlp.bin.inc"
 
 ;------------------------------------------------------------------------------
@@ -835,24 +857,29 @@ cpmBank2	equ $/blocksize
 ;------------------------------------------------------------------------------
 ;------------------------------------------------------------------------------
 ;------------------------------------------------------------------------------
-; die geraden Bänke sind 10k groß.
+; die geraden Bänke sind 10k groß. die ungeraden 6k (blocksize2)
+; Systembank muss eine große Bank (blocksize) sein!
+
+		myalign	blocksize			; Systembank auffüllen
 
 	if	lastbank = 0fh
 	; nur 16 Bänke, davon 10 für minicpm
 
-	org	02800h	; bank 1 
+	org	02800h+sysbank_offs	; bank 1 
 	binclude "z9001roms\idas.rom",0,017FFh		; in ZM gepatcht, C3 03 F0 -> C3 00 00
 
-	org	04000h  ; bank 2 
-b_basic		equ	2	; Banknummer
+	org	04000h+sysbank_offs  ; bank 2 
+b_basic		equ	2 + systembank	; Banknummer
 	binclude "vp\basic_16d.bin"			; 16 Farben, korr. CSAVE
 	
-	org	06800h  ; bank 3 
+	org	06800h+sysbank_offs  ; bank 3 
 	include "hlp/system.hlp.bin.inc"
 	include "hlp/idas.hlp.bin.inc"
 	include "hlp/zm.hlp.bin.inc"
-	addFile "diskos/usbos.bin.zx7",			0b600h,	,	,	"USBX",		ft_MC+ft_packed,	fk_tools,	"VDIP USB OS"
+	addFile "usbos/usbos.bin.zx7",			0b600h,	,	,	"USBX",		ft_MC+ft_packed,	fk_tools,	"VDIP USB OS"
 	include "hlp/usb.hlp.bin.inc"
+; 26.06.2025 USB-CH376
+	addFile "usbos/usbos376.bin.zx7",		0b600h,	,	,	"CHX",		ft_MC+ft_packed,	fk_tools,	"CH376 USB OS"
 
 
 	addFile "vp/grafp.bin.zx7",			08D60h,	0A7FFh,	0FFFFh,	"GRAFP",	ft_MC+ft_packed,	fk_treiber,	"KRT Grafik"
@@ -885,14 +912,14 @@ b_basic		equ	2	; Banknummer
 
 
 
-	org	02800h	; bank 1 
+	org	02800h + sysbank_offs	; bank 1 
 	binclude "z9001roms\bitex.rom"
 
-	org	04000h  ; bank 2 
-b_basic		equ	2	; Banknummer
+	org	04000h + sysbank_offs  ; bank 2 
+b_basic		equ	2 + systembank	; Banknummer
 	binclude "vp\basic_16d.bin"			; 16 Farben, korr. CSAVE
 	
-	org	06800h  ; bank 3 
+	org	06800h + sysbank_offs  ; bank 3 
 	addFile "systembank/menu.bin.zx7",		0300h,	0D20h,	,	"MENU", 	ft_MC+ft_packed+ft_systembank,	fk_tools,	"GEM X"
 	include "hlp/system.hlp.bin.inc"
 	include "hlp/asm.hlp.bin.inc"
@@ -901,63 +928,67 @@ b_basic		equ	2	; Banknummer
 	include "hlp/zm.hlp.bin.inc"
 
 
-	org	08000h  ; bank 4 
-b_basicp	equ	4	; Banknummer
+	org	08000h + sysbank_offs  ; bank 4 
+b_basicp	equ	4 + systembank	; Banknummer
 	binclude "vp\basic_16dp.bin"			; 16 Farben, korr. CSAVE, neues PRINT-AT
 	shared b_basic, b_basicp
 
 
-	if	rom_uzander = 0
+	if	rom_uzander <> 1
 
-	org	0A800h  ; bank 5 
+	org	0A800h + sysbank_offs  ; bank 5 
 	binclude "z9001roms\idas.rom",0,017FFh		; in ZM gepatcht, C3 03 F0 -> C3 00 00
 
-	org	0C000h  ; bank 6 
+	org	0C000h + sysbank_offs  ; bank 6 
 	binclude "z9001roms\edas.rom"			; in ZM gepatcht, C3 03 F0 -> C3 00 00
 
 
-	org	0E800h  ; bank 7 
+	org	0E800h + sysbank_offs  ; bank 7 
 	addFile "robotron/eproma2_com.bin.zx7",		0A200h,	0A5A1h,	0A200h,	"EPROMA2",	ft_MC+ft_packed,	fk_tools,	"R0112"
 	addFile	"vp/eprommer.bin.zx7",			300h,	0BA6h,	,	"EPROMCCL",	ft_MC+ft_packed,	fk_tools,	"Z1013/buebchen"
 	addFile "vp/ossave.bin.zx7",			0A000h,	0A2ABh,	,	"OS-SAVE",	ft_MC+ft_packed,	fk_tools,	"R0111"
 	include "hlp/save.hlp.bin.inc"
 ; 25.04.2016 USB-VDIP
-	addFile "diskos/usbos.bin.zx7",			0b600h,	,	,	"USBX",		ft_MC+ft_packed,	fk_tools,	"VDIP USB OS"
+	addFile "usbos/usbos.bin.zx7",			0b600h,	,	,	"USBX",		ft_MC+ft_packed,	fk_tools,	"VDIP USB OS"
 	include "hlp/usb.hlp.bin.inc"
+; 26.06.2025 USB-CH376
+	addFile "usbos/usbos376.bin.zx7",		0b600h,	,	,	"CHX",		ft_MC+ft_packed,	fk_tools,	"CH376 USB OS"
 	addfile	"vp/chkrom.bin",			00300H,	,	,	"CHKROM",	ft_MC,	fk_tools,	"Selbsttest"
 
 	
 	else	; rom_uzander = 1
 
-	org	0A800h  ; bank 5 
+	org	0A800h + sysbank_offs  ; bank 5 
 	binclude "uz\bank5_datum.rom"			; DATUM
 
-	org	0C000h  ; bank 6 
+	org	0C000h + sysbank_offs  ; bank 6 
 	binclude "uz\idas_uz2.rom"		; Ulrichs Version
 
-	org	0E800h  ; bank 7 
+	org	0E800h + sysbank_offs  ; bank 7 
 ;	addFile "robotron/eproma2_com.bin.zx7",		0A200h,	0A5A1h,	0A200h,	"EPROMA2",	ft_MC+ft_packed,	fk_tools,	"R0112"
 	addFile	"vp/eprommer.bin.zx7",			300h,	0BA6h,	,	"EPROMCCL",	ft_MC+ft_packed,	fk_tools,	"Z1013/buebchen"
 	addFile "vp/ossave.bin.zx7",			0A000h,	0A2ABh,	,	"OS-SAVE",	ft_MC+ft_packed,	fk_tools,	"R0111"
 	include "hlp/save.hlp.bin.inc"
 ; 25.04.2016 USB-VDIP
-	addFile "diskos/usbos.bin.zx7",			0b600h,	,	,	"USBX",		ft_MC+ft_packed,	fk_tools,	"VDIP USB OS"
+	addFile "usbos/usbos.bin.zx7",			0b600h,	,	,	"USBX",		ft_MC+ft_packed,	fk_tools,	"VDIP USB OS"
 	include "hlp/usb.hlp.bin.inc"
+; 26.06.2025 USB-CH376
+	addFile "usbos/usbos376.bin.zx7",		0b600h,	,	,	"CHX",		ft_MC+ft_packed,	fk_tools,	"CH376 USB OS"
 
-	if $ > 10000h
+	if $ > 10000h + sysbank_offs
 		warning "memory overlapping (10000h  ; bank 8)!"
 	endif
-	org	10000h  ; bank 8 
+	org	10000h + sysbank_offs  ; bank 8 
 	binclude "z9001roms\edas.rom"
 
 ;	org	12800h  ; bank 9 
 ; frei
 
 	if	lastbank = 7fh
-	if $ > 14000h
+	if $ > 14000h + sysbank_offs
 		warning "memory overlapping (14000h  ; bank 10)!"
 	endif
-	org	14000h  ; bank 10 
+	org	14000h + sysbank_offs  ; bank 10 
 	binclude "z9001roms\r80.rom"
 	endif
 
@@ -1074,7 +1105,7 @@ b_basicp	equ	4	; Banknummer
 
 ;------------------------------------------------------------------------------
 
-	addFile "soft6/prettyC.bin.zx7", 		0300h, 0BFFFh, 0BD00h, "PRETTYC", 		ft_MC+ft_packed+ft_systembank,		fk_programmierung,"Dr.Wobst"
+	addFile "soft6/prettyCStart.bin.zx7", 		0300h, 0B5FFh, 09500h, "PRETTYC", 		ft_MC+ft_packed+ft_systembank,		fk_programmierung,"Dr.Wobst"
 	include "hlp/prettyc.hlp.bin.inc"
 
 ;------------------------------------------------------------------------------

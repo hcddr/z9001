@@ -18,7 +18,6 @@ megarom			equ	"KOMBI"		; U.Zander; 128 x 16K B‰nke, abwechselnd 10k und 6K, Rest
 bankport		equ	0ffh		; Portadresse Modul
 systembank		equ	000h		; erste Bank mit Flashsoftware. davor liegende B‰nke werden nicht beachtet
 						; (wg. Megamodul)
-						; Systembank muss eine groﬂe Bank sein (gerade Zahl)!
 lastbank		equ	0ffh		; letzte zu durchsuchende Bank
 ;lastbank		equ	07fh		; letzte zu durchsuchende Bank (f. Winbond W29C020)
 ;27010 128K EPROM = 3fh
@@ -59,14 +58,16 @@ sysbankretrn		equ	1		; nach Laden Systembank aktivieren
 
 ;------------------------------------------------------------------------------
 ; Ulrichs ROM-Bank. Abwechselnd 10k und 6k-B‰nke
+; Version Sven Haubold Uni-Modul. 1. Bank enth‰lt USB-OS, danach Flash-Software
 
 		elseif megarom == "KOMBI"
 
 ; Konfiguration
 bankport		equ	075h		; Portadresse Modul
 bankportinc		equ	078h		; Portadresse Modul weiterschalten
-systembank		equ	000h		; erste Bank mit Flashsoftware. davor liegende B‰nke werden nicht beachtet
+systembank		equ	002h		; erste Bank mit Flashsoftware. davor liegende B‰nke werden nicht beachtet
 						; (wg. Megamodul)
+						; Systembank muss eine groﬂe Bank sein (gerade Zahl)!
 lastbank		equ	00fh		; letzte zu durchsuchende Bank
 ;27010 128K EPROM = 128/16*2 = 16 B‰nke	0fh
 ;27020 256K EPROM = 256/16*2 = 32 B‰nke	1fh
@@ -85,7 +86,8 @@ searchloopdelay		equ	0600h		; f. Warteschleife in cd_cprom4
 minicpm			equ	1		; 1 = minicpm mit einbinden
 minicpm_disk2		equ	0		; immer 0, wird bei Kombi nicht genutzt
 
-rom_uzander		equ	0		; 1 - softwarezusammenstellung u.zander + ein paar extras
+rom_uzander		equ	2		; 1 - softwarezusammenstellung u.zander + ein paar extras
+						; 2 - Version Sven Haubold
 
 ;------------------------------------------------------------------------------
 
