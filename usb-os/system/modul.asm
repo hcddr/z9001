@@ -505,7 +505,7 @@ phase	eval	"CODE"
 		include	os376.asm
 	elseif p_connector=2
 		public sdxkdo
-		include	osSD.asm
+		include	ossd.asm
 	endif
 
 ;dirkdo:

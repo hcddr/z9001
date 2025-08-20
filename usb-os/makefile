@@ -13,19 +13,21 @@ DEPENDFILE = .depend
 
 # Zu erzeugende Dateien
 
-FILES=vdipos.rom ch376os.rom sdosc0.rom sdos.com sdos38.com comfiles\x.com usb-stick\load87
-COMFILES=comfiles\basic.com comfiles\graf.com comfiles\grafp.com comfiles\graf14.com comfiles\crt40.com comfiles\hlpedit.com comfiles\zm30.com comfiles\zma8.com
+FILES=vdipos.rom ch376os.rom sdosc0.rom sdos.com sdos38.com comfiles/x.com usb-stick/load87
+COMFILES=comfiles/basic.com comfiles/graf.com comfiles/grafp.com comfiles/graf14.com comfiles/crt40.com comfiles/hlpedit.com comfiles/zm30.com comfiles/zma8.com
 
 ALL:	$(FILES) $(DEPENDFILE)
 COM:	$(COMFILES)
 
-depend .depend:
+depend: $(DEPENDFILE)
+
+$(DEPENDFILE):
 	$(PERL) mkdepend.pl *.asm */*.asm > $(DEPENDFILE)
 
 -include $(DEPENDFILE)
 
-usb-stick\load87: comfiles/x.com
-	copy /y comfiles\x.com usb-stick\load87
+usb-stick/load87: comfiles/x.com
+	cp comfiles/x.com usb-stick/load87
 
 # ROM-Files
 %.rom: %.bin
@@ -40,13 +42,13 @@ usb-stick\load87: comfiles/x.com
 
 # Konvertieren
 %.com:	%.bin
-	rem Anfangsadresse ermitteln
+	# Anfangsadresse ermitteln
 	$(PERL) bin2kcc.pl $< $(shell $(PERL) p2adr.pl $*.p)
-	copy /y $@ usb-stick
+	cp $@ usb-stick
 
 # Konvertieren
 %.kcc:	%.bin
-	rem Anfangsadresse ermitteln
+	# Anfangsadresse ermitteln
 	$(PERL) bin2kcc.pl $< $(shell $(PERL) p2adr.pl $*.p)
 	del $*.kcc
 	ren $*.com $*.kcc
@@ -58,19 +60,19 @@ usb-stick\load87: comfiles/x.com
 #%.bin:	%.tap
 #	$(PERL) kc2bin.pl $<
 
-CLEAN_FILES=*.bin *.p *.inc
-
 #make clean	Aufräumen
-clean:	
-	del /s $(CLEAN_FILES)
-	del comfiles\*.com
-#	del $(DEPENDFILE)
+clean:
+	find . -name "*.bin" -type f -delete
+	find . -name "*.p" -type f -delete
+	find . -name "*.inc" -type f -delete
+	rm -f *.zip
+	rm -f comfiles/*.com
 
 #make clobber	noch mehr aufräumen
 clobber: clean
-	del $(DEPENDFILE)
+	rm -f $(DEPENDFILE)
 
-DATE=$(strip $(shell date /t))
+DATE=$(strip $(shell date +%d_%m_%y))
 
 ROMFILES=*.rom usb-stick/*.* *.txt usb-os.pdf sd-os.pdf
 

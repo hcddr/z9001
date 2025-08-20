@@ -42,7 +42,7 @@ p_zbs		equ	1	;Dateiendung '.ZBS' (analog CPM-Version) oder '.SSS', '.TTT'
 				;(wichtig für Diskettenarbeit)
 
 ;U.Zander
-p_farb16	equ	0	;INK, PAPER f. 16 Farben zulassen
+p_farb16	equ	1	;INK, PAPER f. 16 Farben zulassen
 p_wtape		equ	0	;Patch auf BIOS-Routinen statt CALL 5, verhindert Block 0
 				;nicht nutzbar bei p_disk=1
 

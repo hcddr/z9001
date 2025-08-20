@@ -191,17 +191,25 @@ init_path_ok:
 		xor	a
 		ret
 
-no_ch376:
+;A = error code
+;     1 = no CH376
+;     2 = no USB
+;     3 = no disk (mount failure)
+no_ch376:	push	af
 		ld	de,txt_no_ch376
 		ld	c,9
 		call	5
+		pop	af
+		add	A,'0'	; num to char
+		CALL	OUTA		
+		CALL	OCRLF
 		scf
 		ret
 
 ;txt_dosinit:
 ;		db	"VDIP-USB OS V.Pohlers ",DATE,0dh,0ah,0
 txt_no_ch376:
-		db	"Kein USB-Modul!",0dh,0ah,0
+		db	"USB error ", 0
 
 ;-----------------------------------------------------------------------------
 ; CALL 5-Routine

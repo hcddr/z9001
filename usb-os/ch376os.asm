@@ -20,7 +20,7 @@ p_crt	equ	1	; fast CLS + zusätzl. Tasten
 p_help	equ	1	; HELP-Kdo
 p_zmon	equ	1	; Monitorzusatzkommandos
 			; MENU, DUMP, FILL, TRANS, RUN, IN, OUT, MEM, EOR, LOAD, SAVE, FCB
-p_sysinfo equ	0	; Systeminfo-Programm im ROM
+p_sysinfo equ	1	; Systeminfo-Programm im ROM
 
 ;
 p_load_nore	equ	1	; 1 - nur 1x LOAD-Versuch, kein "rewind" (default)

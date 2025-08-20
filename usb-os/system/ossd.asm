@@ -581,7 +581,7 @@ CLOSW:
 
 ;-----------------------------------------------------------------------------
 
-	include	SD.asm
+	include	sd.asm
 
 
 ; neue BDOS-Funktionen

@@ -1,0 +1,16 @@
+<YELLOW>USB-OS CH376 (Pohlers/Hecht 2024)
+<WHITE>
+<YELLOW>Kommandos<WHITE>
+<RED>DOS	 <WHITE>Umschalten auf USB-OS
+	USB error 1-no CH376
+	USB error 2-no USB
+	USB error 3-mount err
+<RED>CAOS	 <WHITE>-"- auf Kassetten-OS
+<RED>DIR<WHITE> <GREEN>[suchmuster]<WHITE> USB-Inhalt
+<RED>CD<WHITE> <GREEN>[dirname]<WHITE>     Verzeichniswechsel
+	 CD / root, CD .. eins rauf
+<RED>ERA	 <WHITE>Datei löschen
+<YELLOW>Zusatzkommandos
+<RED>MENU	 <WHITE>Auflisten aller Kommandos
+<RED>HELP <GREEN>[kdo]		<WHITE>kurze Hilfe
+<RED>SAVE <GREEN>aadr eadr sadr	<WHITE>Speichern
