@@ -1,11 +1,12 @@
 ;------------------------------------------------------------------------------
 ; Z9001 MEGA-FLASH-Modul (2.5M-Modul)
 ; (c) V. Pohlers 2011
-; letzte Änderung 30.09.2021
+; letzte Änderung 12.08.2025
 ;------------------------------------------------------------------------------
 
 alternative Software fürs MegaROM, MegaFlash, Buebchen-Rx3 (in Entwicklung, uvst.)
 und auch f. Ulrich Zanders TU-ROM-Bank, 64K-SRAM Modul und das KOMBI-Modul
+2025: Version SH für USB-CH376-Uni-Modul 
 
 ;------------------------------------------------------------------------------
 
@@ -569,3 +570,12 @@ https://spectrumcomputing.co.uk/zxdb/sinclair/entries/0027996/ZX7_SourceCode.zip
 https://spectrumcomputing.co.uk/zxdb/sinclair/entries/0027996/ZX7_(WindowsExecutable).zip
 
 **25.06.2025** PrettyC patched, usbos vdip (USBX) + ch376 (CHX)
+
+**12.08.2025** Version Uni-Modul (includes_kombi_sh.asm)
+In Bank 0 befindet sich das USB-System ch376os.rom. Die Mega-Flash-Software steht ab
+Bank 1! Man wechselt zur Mega-Software mit dem Kommando "MEGA". Das gilt dann bis Reset.
+In der Mega-Flash-Software gibt es den Treiber "CHX" zur Nutzung von USB.
+	USB error 1 = no CH376
+	USB error 2 = no USB
+	USB error 3 = no disk (mount failure)
+neue Sysinfo 2.5

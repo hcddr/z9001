@@ -94,7 +94,7 @@ initdos:	ld	hl, BOS
 		; CH376 init
 		call	usb__reset
 		call	usb__ready
-		jp	nz, novdip
+		jp	nz, no_ch376
 		;; Test auf gültigen Pfad
 		call	usb__open_path
 		jr	z, init_path_ok
@@ -145,19 +145,28 @@ eor		equ	0036h		; EOR	oberes RAM-Ende
 		xor	a
 		ret
 
-novdip:		ld	hl,0ffffh
+;A = error code
+;     1 = no CH376
+;     2 = no USB
+;     3 = no disk (mount failure)
+no_ch376:	ld	hl,0ffffh
 		ld	(AUR2),hl	;ON_COLD
-		
-		ld	de,txt_novdip
+			
+		push	af
+		ld	de,txt_no_ch376
 		ld	c,9
 		call	5
+		pop	af
+		add	A,'0'	; num to char
+		CALL	OUTA		
+		CALL	OCRLF
 		xor	a
 		ret
 
 txt_dosinit:
 		db	"CH376-USB OS V.Pohlers ",DATE,0dh,0ah,0
-txt_novdip:
-		db	"Kein USB-Modul!",0dh,0ah,0
+txt_no_ch376:
+		db	"USB error ", 0
 
 ;-----------------------------------------------------------------------------
 ; CALL 5-Routine

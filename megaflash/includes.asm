@@ -3,11 +3,13 @@
 ; (c) V. Pohlers 2011
 ; letzte Änderung 08.01.2013
 ;------------------------------------------------------------------------------
-
+; Version UNI-Modul Sven Haubold
 
 ;megarom			equ	"MEGA"			; A.Schön; 10K Bänke
 ;megarom			equ	"MEGA8"		; buebchen; 8K Bänke + 2K RAM
 megarom			equ	"KOMBI"		; U.Zander; 128 x 16K Bänke, abwechselnd 10k und 6K, Rest von RAM aufgefüllt
+
+;rom_uzander		equ	2		; 2 - Version Sven Haubold, s.u.
 
 ;------------------------------------------------------------------------------
 ; orig. Hardware, 3 ROMs oder 5 ROMs. 10K-Bänke
@@ -58,6 +60,7 @@ sysbankretrn		equ	1		; nach Laden Systembank aktivieren
 
 ;------------------------------------------------------------------------------
 ; Ulrichs ROM-Bank. Abwechselnd 10k und 6k-Bänke
+; Version Sven Haubold Uni-Modul. 1. Bank enthält USB-OS, danach Flash-Software
 
 		elseif megarom == "KOMBI"
 
@@ -80,12 +83,13 @@ blocksize		equ	2800h		; 10K
 blocksize2		equ	1800h		; 6K
 useincport		equ	1		; Port 78H zum weiterschalten nutzen
 sysbankretrn		equ	0		; nach Laden Systembank aktivieren
-searchloopdelay		equ	0600h		; f. Warteschleife in cd_cprom4
+searchloopdelay		equ	101h		; f. Warteschleife in cd_cprom4, min=101h
 
 minicpm			equ	1		; 1 = minicpm mit einbinden
 minicpm_disk2		equ	0		; immer 0, wird bei Kombi nicht genutzt
 
-rom_uzander		equ	0		; 1 - softwarezusammenstellung u.zander + ein paar extras
+rom_uzander		equ	2		; 1 - softwarezusammenstellung u.zander + ein paar extras
+						; 2 - Version Sven Haubold
 
 ;------------------------------------------------------------------------------
 
