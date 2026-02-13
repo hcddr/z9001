@@ -7,6 +7,10 @@
 ; 20.01.2025 SD-OS V. Pohlers
 ;------------------------------------------------------------------------------
 
+; Funktionen für AS
+hi		function x,(x>>8)&255 	; oberes Byte eines 16-Bit-Wortes
+setlength	function text,len,substr(text+'        ',0,len)
+
 	cpu	z80undoc
 
 ; Connector
@@ -210,7 +214,13 @@ CCP:		LD	SP,200H
 		if p_crt==1
 		; CRT-Treiber in Treibertabelle eintragen
 		ld	hl,CRT
-		ld	(0EFCBh),hl
+;		ld	(0EFCBh),hl	;Adresse CRT-Treiber für CONST (Log. Nr. 1)
+;04.11.2025 Wechsel auf UC wg. CP/M
+		ld	(0EFCFh),hl	;Adresse UC-Treiber für CONST (Log. Nr. 3)
+		ld	hl,iobyt
+		set	0,(HL)
+		set	1,(HL)		;log. 3 setzen
+		
 		xor	a
 		ld	(keybu1),a
 		ld	(keybu2),a
@@ -471,7 +481,7 @@ vertxt:	if p_connector=2
 	endif	
 		db	13,10
 		db	"(c) V.Pohlers, Neustadt i.H., "
-		db	DATE
+		db	setlength(DATE,10)
 		db	13,10
 	if p_connector=1
 		db	"CH376 Ronald Hecht, Bruce Abbott"

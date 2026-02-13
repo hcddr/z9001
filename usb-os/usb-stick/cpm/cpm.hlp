@@ -1,0 +1,18 @@
+<YELLOW>CP/M mit dem Z9001 / USB Starter
+<WHITE>
+<RED>INITKC<WHITE> neue Disk formatieren
+<RED>BOOT <GREEN>[lw] <WHITE>Boot f. robotron-Floppy-Modul
+  benoetigt Boot-Disk
+<RED>CPML<WHITE> Auswahlmenue f. 4 Systeme
+  keine Systemdisk noetig, 
+  nur formatierte Disk!
+  nach Start steht das CPM im TPA. 
+  Bootdisk erstellen (leere Disk!): 
+  <YELLOW>GO, dann SAVE 40 @CPMZ9.COM
+<RED>Versionen:<WHITE> 
+  CP/M orig. robotron
+  CP/M orig. ZFK Rossendorf
+    benoetigen 64K-RAM-Modul!
+  CP/M 48K robotron 
+    LW C: ROM-Disk (Mega o. Kombi/UZ)
+    benoetigen 2 RAM-Module

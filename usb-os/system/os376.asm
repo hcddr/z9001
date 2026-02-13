@@ -194,13 +194,16 @@ init_path_ok:
 ;A = error code
 ;     1 = no CH376
 ;     2 = no USB
-;     3 = no disk (mount failure)
+;     else = no disk (mount failure) bilden wir auf 3 ab 
 no_ch376:	push	af
 		ld	de,txt_no_ch376
 		ld	c,9
 		call	5
 		pop	af
-		add	A,'0'	; num to char
+		cp	3
+		jr	c,no_ch376a	; bei 1 und 2
+		ld	a,3		; sonst 3 setzen
+no_ch376a:	add	A,'0'	; num to char
 		CALL	OUTA		
 		CALL	OCRLF
 		scf

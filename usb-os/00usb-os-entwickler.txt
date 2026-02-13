@@ -79,9 +79,18 @@ neue Funktionen: (sind im Orig. OS ungenutzt und liefern 'BOS error')
 ;	- HL = Adr. Buffer 	
 ; Return:
 ;	- 
-;	bei Bit 5 -> ab (HL) Ende mit 0
-;	1. Byte Typ (D ir/F ile), max 13 Byte Name Format "8.3"
+;	bei Bit 5 -> Ablage im Speicher ab (HL); Ende mit 0 statt Typ-Byte
+;	pro Datei: 1. Byte Typ (D ir/F ile), Name Format "8.3", 0 am Ende (also max 13 Byte)
+;	Ende: 1. Byte Typ = 0
 ;	HL = Ende Adr. Buffer
+
+VDIP (alt)
+; 2030   46 4E 4F 50 4F 57 45 52 2E 50 54 33 00 46 4F 49   FNOPOWER.PT3.FOI
+; 2040   4C 2E 50 54 33 00 46 54 45 41 52 53 2E 50 54 33   L.PT3.FTEARS.PT3
+; 2050   00 46 54 52 59 2E 50 54 33 00 00 00 FF 00 FF 00   .FTRY.PT3.......
+CH376 + SD
+legt immer 1+8+3 zeichen ab, mit Leerzeichen aufgefuellt -> 'F',"OIL     PT3",0
+
 ;-----------------------------------------------------------------------------
 ; # CHDIR C=32
 ;
@@ -90,18 +99,21 @@ neue Funktionen: (sind im Orig. OS ungenutzt und liefern 'BOS error')
 ; Eingang:
 ; 	- A = 0 List directories,
 ;	- A <> 0 change directory, b=länge, de=dir
+	1,'/' -> wechsel ins root-verzeichnis
 ; Return:
 ;-----------------------------------------------------------------------------
 ; # CLOAD C=34
 ;
 ; Funktion:
-; 	- Schreiben einer Datei auf Kassette
+; 	- Laden einer Datei von Kassette
 ; 	- Block 0 wird nicht lesen, wenn (fcb+24) = 'N'
 ; Eingang:
 ;   A=0 => Dateiname+Typ ist bereits im FCB eingetragen
 ;   A=1 => Dateiname "Name[.Typ]" muss in CONBU abgelegt sein (als OS-Parameter)
+	d.h. #max #anz (ohne abschl. trennz) text trennzeichen(00)
 ;   A=2 => zuerst Abfrage "Filename:"
-;   A=3 => Dateiname "Name[.Typ]" muss in CONBU abgelegt sein, ohne initiales GVAL
+;   A=3 => Dateiname "Name[.Typ]" muss in CONBU abgelegt sein (GVAL muss schon erfolgt sein!)
+	s. helpkdo.asm
 ;   A+80h -> in IX Zeiger auf Default-Dateityp (3 Char), sonst COM
 ;   HL = 0 => orig. aadr wird genommen
 ;   HL <> 0 => aadr

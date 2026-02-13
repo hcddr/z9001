@@ -324,7 +324,64 @@ Num2	inc	a
 	inc	de
 	ret              
 
+;-------------------------------------------------
+; 12.12.2025
+; Dateiname kopieren
+; in HL=Format "8.3",0 oder "12345678EEE",0
+; kopieren nach DE als "8.3",0
+
+COPYFN:	LD	BC,8
+SERIE5:	LD	A,(HL)
+	LDI
+	CP	0H	;NAME FERTIG KOPIERT?
+	RET	Z	;JA
+	CP	'.'
+	JR	Z,SERIE6	;wenn Punkt kopiert
+	CP	' '		;Leerzeichen?
+	JR	NZ,SERIE5B	;diese nicht kopieren
+	DEC	DE
+SERIE5B:	LD	A,B
+	OR	C
+	JR	NZ,SERIE5	;max 8 Zeichen
+;folgt Punkt? nein, dann einfuegen
+	LD	A,'.'
+	CP	(HL)
+	JR	Z,SERIE5
+	LD	(DE),A
+SERIE5A:	INC	DE
+	JR	SERIE5
+;nach punkt alles weiterkopieren
+SERIE6:	ld	bc,0
+	JR	SERIE5
+
 ; Speicher für DIR-Einträge
 dirbuf	equ	$
 
 	end	0ffffh
+
+
+;-----------------------------------------------------------------------------
+; # DIRS C=19
+;
+; Funktion:
+; 	- LIST FILES
+; Eingang:
+;	- A Bit 7 = 1 Suchmuster in DE, sonst alles anzeigen
+;	- DE = String, mit 00-Byte
+;	- A Bit 6 = 1 Dateityp nicht anzeigen
+;	- A Bit 5 = 1 Ablegen in Speicher ab HL		-- neu 31.01.2025
+;	- HL = Adr. Buffer 	
+; Return:
+;	- 
+;	bei Bit 5 -> Ablage im Speicher ab (HL); Ende mit 0 statt Typ-Byte
+;	pro Datei: 1. Byte Typ (D ir/F ile), Name Format "8.3", 0 am Ende (also max 13 Byte)
+;	Ende: 1. Byte Typ = 0
+;	HL = Ende Adr. Buffer
+
+VDIP (alt)
+; 2030   46 4E 4F 50 4F 57 45 52 2E 50 54 33 00 46 4F 49   FNOPOWER.PT3.FOI
+; 2040   4C 2E 50 54 33 00 46 54 45 41 52 53 2E 50 54 33   L.PT3.FTEARS.PT3
+; 2050   00 46 54 52 59 2E 50 54 33 00 00 00 FF 00 FF 00   .FTRY.PT3.......
+CH376 + SD
+legt immer 1+8+3 zeichen ab, mit Leerzeichen aufgefuellt -> 'F',"OIL     PT3",0
+

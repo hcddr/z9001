@@ -381,11 +381,23 @@ cdkdo0:	ld	a, (de)
 	inc	de
 	jr	cdkdo0		;Weitersuchen bis Ende
 cdkdo1:
-	pop	de		;Anfangsadresse des Pfadnamens wiederherstellen
+	ld	a,b
+	or	a
+	jr	nz,cdkdo2
+	;Anzeige aktueller Pfad
+	ld	c,9
+	ld	de,acurrdir
+	call	5
+	ld	de,PathName
+	call	5
+	call	ocrlf
+	;
+cdkdo2	pop	de		;Anfangsadresse des Pfadnamens wiederherstellen
 	ld	c, 32		;BOS Systemruf CHDIR
 	ld	a, b		;Wenn Länge gleich Null, dann List directories
 	call	5		;BOS
 	xor	a		;Fehlerbehandlung durch BOS
 	ret
 
+acurrdir	db "current dir: ",0
 ; -----------------------------------------------------------------------------

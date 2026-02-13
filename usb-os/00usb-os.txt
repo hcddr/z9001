@@ -455,3 +455,7 @@ Version für Kingsteners SD-Modul
 
 **04.02.2025**
 CALL 5 DIR erweitert um Ablage im Speicher, neues Programm DIRX.COM
+
+**17.12.2025**
+CRTX-Treiber auf Kanal 3 (UC) geändert
+

@@ -454,12 +454,12 @@ usb__set_usb_mode:
 ;         NZ = error, A = error code
 ;                          1 = no CH376
 ;                          2 = no USB
-;                          3 = no disk (mount failure)
+;                          else = no disk (mount failure)
 ;
 usb__ready:
         PUSH    BC
         call    usb__check_exists       ; CH376 hardware present?
-        jr      nz,.done
+        jr      nz,.done		; dann A:=1
         ld      c,1                     ; C = flag, 1 = before set_usb_mode
 .mount:
         LD      B,5                     ; retry count for mount
@@ -471,6 +471,7 @@ usb__ready:
         JR      NZ,.done                ; yes, fail
         call    usb__set_usb_mode       ; put CH376 into USB mode
         JR      Z,.mount                ; if successful then try to mount disk
+        				; err a:=2
 .done:  POP     BC
         RET
 
